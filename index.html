@@ -840,28 +840,7 @@
           const memSnap = await getDocs(query(collection(db, "members"), where("chitId", "==", this.activeChitId)));
           this.members = memSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-          // Fallback seeding of 40 default subscribers if database is empty
-          if (this.members.length === 0 && this.userRole === 'admin') {
-            for (let i = 1; i <= 40; i++) {
-              const numStr = `M-${String(i).padStart(2, '0')}`;
-              const docRef = doc(db, "members", `${this.activeChitId}_${numStr}`);
-              const defaultMember = {
-                chitId: this.activeChitId,
-                memberNo: numStr,
-                name: `Subscriber ${i}`,
-                phone: `98765432${String(i).padStart(2, '0')}`,
-                email: "",
-                address: "Kochi, Kerala",
-                isPrized: false,
-                prizedMonth: null,
-                prizeMoney: 0,
-                isActive: true
-              };
-              await setDoc(docRef, defaultMember);
-              this.members.push(defaultMember);
-            }
-          }
-
+          
           // Fetch collections
           const colSnap = await getDocs(query(collection(db, "collections"), where("chitId", "==", this.activeChitId)));
           this.collections = colSnap.docs.map(d => ({ id: d.id, ...d.data() }));
