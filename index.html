@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>mis-org | Chit Fund Management System</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Phosphor Icons CDN -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    @media print {
+      body * { visibility: hidden; }
+      #printable-area, #printable-area * { visibility: visible; }
+      #printable-area { position: absolute; left: 0; top: 0; width: 100%; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+  <!-- ================= TOP NAVIGATION ================= -->
+  <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <button id="nav-back-btn" onclick="app.goBack()" class="hidden p-2 rounded-lg bg-indigo-800 hover:bg-indigo-700 transition">
+          <i class="ph ph-arrow-left text-lg"></i>
+        </button>
+        <div>
+          <span class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            <i class="ph ph-vault text-amber-400 text-2xl"></i> mis-org
+          </span>
+          <span id="header-subtitle" class="text-xs text-indigo-200 block">Chit Fund Administration</span>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <!-- Chit Selector -->
+        <div id="chit-select-container" class="hidden">
+          <select id="selected-chit" onchange="app.changeChit(this.value)" class="bg-indigo-800 text-xs sm:text-sm text-white rounded-lg px-2 py-1.5 border border-indigo-700 focus:outline-none">
+            <option value="group_a">Chit Group A (₹5L / 41M)</option>
+          </select>
+        </div>
+
+        <!-- User Role Badge & Signout -->
+        <div id="user-profile-widget" class="hidden flex items-center space-x-3">
+          <span id="user-role-badge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase bg-amber-400 text-indigo-950">Admin</span>
+          <span id="user-email-label" class="text-xs hidden md:inline text-indigo-200"></span>
+          <button onclick="app.signOut()" title="Sign Out" class="p-2 rounded-lg bg-indigo-800 hover:bg-red-600 transition text-white">
+            <i class="ph ph-sign-out text-base"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= NOTIFICATION BANNER ================= -->
+  <div id="toast" class="hidden fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-3 transition">
+    <i id="toast-icon" class="ph ph-info text-xl text-amber-400"></i>
+    <span id="toast-message" class="text-sm font-medium">Notification</span>
+  </div>
+
+  <!-- ================= AUTH SCREEN ================= -->
+  <main id="auth-screen" class="flex-1 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-100 max-w-md w-full p-8 text-center">
+      <div class="w-16 h-16 bg-indigo-50 text-indigo-900 rounded-2xl mx-auto flex items-center justify-center text-3xl mb-4">
+        <i class="ph ph-shield-check"></i>
+      </div>
+      <h2 class="text-2xl font-bold text-slate-900">Welcome to mis-org</h2>
+      <p class="text-sm text-slate-500 mt-2 mb-6">Secure portal for Subscribers, Foremen, and Chit Admins.</p>
+
+      <button onclick="app.signInWithGoogle()" class="w-full flex items-center justify-center gap-3 py-3 px-4 border border-slate-300 rounded-xl font-medium text-slate-700 bg-white hover:bg-slate-50 shadow-sm transition">
+        <svg class="w-5 h-5" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        Sign in with Google
+      </button>
+
+      <div class="mt-6 text-xs text-slate-400">
+        Strict Role Enforcement: Only email accounts pre-authorized in the system database can access this terminal.
+      </div>
+    </div>
+  </main>
+
+  <!-- ================= APPLICATION INTERFACE ================= -->
+  <div id="app-container" class="hidden flex-1 flex flex-col">
+    <!-- Module Tab Bar (Hidden for Members) -->
+    <nav id="module-tabs" class="bg-white border-b border-slate-200 shadow-sm no-print">
+      <div class="max-w-7xl mx-auto px-4 flex space-x-1 overflow-x-auto py-2">
+        <button onclick="app.navigate('dashboard')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-900 hover:bg-slate-100 flex items-center gap-2" data-tab="dashboard">
+          <i class="ph ph-chart-pie-slice"></i> Dashboard
+        </button>
+        <button onclick="app.navigate('schedule')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-900 hover:bg-slate-100 flex items-center gap-2" data-tab="schedule">
+          <i class="ph ph-calendar"></i> Master Schedule
+        </button>
+        <button onclick="app.navigate('members')" id="tab-members" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-900 hover:bg-slate-100 flex items-center gap-2" data-tab="members">
+          <i class="ph ph-users"></i> Member Directory
+        </button>
+        <button onclick="app.navigate('collections')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-900 hover:bg-slate-100 flex items-center gap-2" data-tab="collections">
+          <i class="ph ph-money"></i> Collections Grid
+        </button>
+        <button onclick="app.navigate('passbook')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-900 hover:bg-slate-100 flex items-center gap-2" data-tab="passbook">
+          <i class="ph ph-book-open"></i> Passbook
+        </button>
+        <button onclick="app.navigate('auctions')" id="tab-auctions" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-900 hover:bg-slate-100 flex items-center gap-2" data-tab="auctions">
+          <i class="ph ph-gavel"></i> Auctions
+        </button>
+        <button onclick="app.navigate('reports')" id="tab-reports" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-900 hover:bg-slate-100 flex items-center gap-2" data-tab="reports">
+          <i class="ph ph-file-text"></i> Reports
+        </button>
+        <button onclick="app.navigate('audit')" id="tab-audit" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-900 hover:bg-slate-100 flex items-center gap-2" data-tab="audit">
+          <i class="ph ph-list-magnifying-glass"></i> Activity Log
+        </button>
+      </div>
+    </nav>
+
+    <div class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+      
+      <!-- 1. DASHBOARD -->
+      <section id="view-dashboard" class="space-y-6 hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Current Month Progress</span>
+            <div class="mt-2 flex items-baseline justify-between">
+              <span id="dash-month-name" class="text-2xl font-bold text-slate-900">Month 1</span>
+              <span id="dash-paid-count" class="text-sm font-semibold text-indigo-700 bg-indigo-50 px-2 py-1 rounded-md">0 / 40 Paid</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">Cut-off Date: 15th of each month</p>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Month 1 Collections</span>
+            <div class="mt-2 text-2xl font-bold text-emerald-600" id="dash-month-collected">₹0</div>
+            <p class="text-xs text-slate-500 mt-2" id="dash-month-expected">Target: ₹5,00,000</p>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Subscribers Prized</span>
+            <div class="mt-2 flex items-baseline justify-between">
+              <span id="dash-prized-ratio" class="text-2xl font-bold text-indigo-900">0 / 40</span>
+              <span class="text-xs font-medium text-slate-500" id="dash-nonprized-count">40 Non-prized</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">Total Duration: 41 Months</p>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Pending Dues</span>
+            <div class="mt-2 text-2xl font-bold text-rose-600" id="dash-total-pending">₹0</div>
+            <p class="text-xs text-slate-500 mt-2">Cumulative across all subscribers</p>
+          </div>
+        </div>
+
+        <!-- Chit Details Banner -->
+        <div class="bg-indigo-900 text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <span class="px-2 py-1 rounded bg-indigo-800 text-amber-300 font-semibold text-xs">Standard Chit Scheme</span>
+            <h3 class="text-xl font-bold mt-1">₹5,00,000 Gross Value • 40 Subscribers • 41 Months</h3>
+            <p class="text-sm text-indigo-200 mt-1">Starting October 2026. Month 1 (Foreman Chit: ₹5,00,000), Month 10 (Special Chit: ₹5,00,000).</p>
+          </div>
+          <button onclick="app.navigate('collections')" class="px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-indigo-950 font-bold rounded-xl text-sm transition">
+            Record Monthly Collection
+          </button>
+        </div>
+      </section>
+
+      <!-- 2. MASTER SCHEDULE -->
+      <section id="view-schedule" class="space-y-4 hidden">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Master Schedule (Fixed 41 Months)</h2>
+            <p class="text-sm text-slate-500">Fixed EMI, Base installment, Dividend, and Auction Discounts (All EMIs in multiples of ₹50).</p>
+          </div>
+          <button onclick="window.print()" class="px-4 py-2 border rounded-xl bg-white text-slate-700 text-sm font-medium hover:bg-slate-50 flex items-center gap-2">
+            <i class="ph ph-printer"></i> Print Schedule
+          </button>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto" id="printable-area">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
+              <tr>
+                <th class="p-3">Month</th>
+                <th class="p-3">Calendar Month</th>
+                <th class="p-3 text-right">Base Installment</th>
+                <th class="p-3 text-right">Auction Discount</th>
+                <th class="p-3 text-right">Dividend / Member</th>
+                <th class="p-3 text-right">Net EMI Payable</th>
+                <th class="p-3 text-right">Net Prize Money</th>
+                <th class="p-3 text-center">Remark</th>
+              </tr>
+            </thead>
+            <tbody id="schedule-table-body" class="divide-y divide-slate-100">
+              <!-- Dynamically populated from PDF table -->
+            </tbody>
+            <tfoot class="bg-slate-100 font-bold border-t">
+              <tr>
+                <td class="p-3" colspan="4">TOTAL</td>
+                <td class="p-3 text-right text-emerald-600" id="total-dividend-sum">₹47,500</td>
+                <td class="p-3 text-right text-indigo-900" id="total-emi-sum">₹4,65,000</td>
+                <td class="p-3" colspan="2"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </section>
+
+      <!-- 3. MEMBER DIRECTORY -->
+      <section id="view-members" class="space-y-4 hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Member Directory</h2>
+            <p class="text-sm text-slate-500">Manage 40 chit subscribers and verify prize statuses.</p>
+          </div>
+          <div class="flex gap-2 w-full sm:w-auto">
+            <input type="text" id="member-search" placeholder="Search by name, phone, M-01..." oninput="app.filterMembers(this.value)" class="px-4 py-2 border rounded-xl text-sm w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+            <button id="add-member-btn" onclick="app.openMemberModal()" class="px-4 py-2 bg-indigo-900 hover:bg-indigo-800 text-white rounded-xl text-sm font-semibold whitespace-nowrap">
+              + Add Member
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
+              <tr>
+                <th class="p-3">Member ID</th>
+                <th class="p-3">Subscriber Name</th>
+                <th class="p-3">Contact</th>
+                <th class="p-3 text-center">Prized Month</th>
+                <th class="p-3 text-right">Prize Disbursed</th>
+                <th class="p-3 text-right">Total Paid</th>
+                <th class="p-3 text-center">Status</th>
+                <th class="p-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="member-table-body" class="divide-y divide-slate-100">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 4. MONTHLY COLLECTIONS -->
+      <section id="view-collections" class="space-y-4 hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-2xl border border-slate-200">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Monthly Collections</h2>
+            <p class="text-xs text-slate-500">Record subscriber payments. Cutoff: 15th of the month. Past months are locked.</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <label class="text-xs font-semibold text-slate-500">Select Month:</label>
+            <select id="collection-month-select" onchange="app.loadCollectionsGrid(parseInt(this.value))" class="border rounded-xl px-3 py-1.5 text-sm font-medium bg-slate-50">
+              <!-- 41 Months options -->
+            </select>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
+              <tr>
+                <th class="p-3">Member No</th>
+                <th class="p-3">Member Name</th>
+                <th class="p-3 text-right">Scheduled EMI</th>
+                <th class="p-3 text-right">Amount Paid (₹)</th>
+                <th class="p-3">Payment Mode</th>
+                <th class="p-3">Payment Date</th>
+                <th class="p-3">Reference / Remarks</th>
+                <th class="p-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="collection-grid-body" class="divide-y divide-slate-100">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 5. MEMBER PASSBOOK -->
+      <section id="view-passbook" class="space-y-4 hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 no-print">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Subscriber Passbook</h2>
+            <p class="text-sm text-slate-500">Month-by-month financial ledger with automatic advance/due carry forward.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <div id="passbook-picker-container">
+              <select id="passbook-member-select" onchange="app.renderPassbook(this.value)" class="border rounded-xl px-4 py-2 text-sm font-medium bg-white">
+                <!-- Members populated here -->
+              </select>
+            </div>
+            <button onclick="window.print()" class="px-4 py-2 border rounded-xl bg-white text-slate-700 text-sm font-medium hover:bg-slate-50 flex items-center gap-2">
+              <i class="ph ph-printer"></i> Print / PDF
+            </button>
+          </div>
+        </div>
+
+        <div id="printable-passbook" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
+          <div class="border-b pb-4 flex justify-between items-start">
+            <div>
+              <h3 class="text-2xl font-bold text-indigo-900">mis-org Chit Fund Ledger</h3>
+              <p class="text-sm text-slate-500 mt-1">Chit Value: ₹5,00,000 | 41 Months | Base Installment: ₹12,500</p>
+              <div class="mt-4 grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
+                <div><span class="text-slate-400 font-medium">Subscriber:</span> <span id="pb-member-name" class="font-bold text-slate-800">-</span></div>
+                <div><span class="text-slate-400 font-medium">Member ID:</span> <span id="pb-member-id" class="font-bold text-slate-800">-</span></div>
+                <div><span class="text-slate-400 font-medium">Phone:</span> <span id="pb-member-phone" class="text-slate-800">-</span></div>
+                <div><span class="text-slate-400 font-medium">Prize Status:</span> <span id="pb-member-prized" class="font-semibold text-slate-800">Non-Prized</span></div>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-xs font-semibold uppercase text-slate-400">Current Balance Status</span>
+              <div id="pb-balance-pill" class="mt-1 text-lg font-bold px-3 py-1 rounded-xl bg-slate-100 text-slate-700">Settled</div>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs sm:text-sm">
+              <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
+                <tr>
+                  <th class="p-2">Month</th>
+                  <th class="p-2">Date</th>
+                  <th class="p-2 text-right">Scheduled EMI</th>
+                  <th class="p-2 text-right">Dividend</th>
+                  <th class="p-2 text-right">Amount Paid</th>
+                  <th class="p-2 text-right">Month Balance</th>
+                  <th class="p-2 text-right">Cumulative Balance</th>
+                  <th class="p-2 text-center">Status</th>
+                  <th class="p-2">Mode & Ref</th>
+                </tr>
+              </thead>
+              <tbody id="passbook-ledger-body" class="divide-y divide-slate-100">
+                <!-- Ledger rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. AUCTIONS -->
+      <section id="view-auctions" class="space-y-4 hidden">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Chit Auctions</h2>
+            <p class="text-sm text-slate-500">Record winning bids. Winners are permanently marked as prized and cannot bid again.</p>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
+              <tr>
+                <th class="p-3">Month</th>
+                <th class="p-3">Calendar Month</th>
+                <th class="p-3 text-right">Fixed Discount</th>
+                <th class="p-3 text-right">Net Prize Money</th>
+                <th class="p-3">Prized Subscriber</th>
+                <th class="p-3">Auction Date</th>
+                <th class="p-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="auction-table-body" class="divide-y divide-slate-100">
+              <!-- Auction rows -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 7. REPORTS -->
+      <section id="view-reports" class="space-y-6 hidden">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Financial Reports & Exports</h2>
+            <p class="text-sm text-slate-500">Defaulter auditing, mode-wise breakup, and Excel/CSV exporting.</p>
+          </div>
+          <button onclick="app.exportDefaultersCSV()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-sm font-semibold flex items-center gap-2">
+            <i class="ph ph-file-csv"></i> Export Defaulters to CSV
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200">
+            <h3 class="font-bold text-slate-900 mb-3">Defaulters List (Pending Dues)</h3>
+            <div class="overflow-y-auto max-h-80">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+                  <tr>
+                    <th class="p-2">Member</th>
+                    <th class="p-2 text-right">Expected</th>
+                    <th class="p-2 text-right">Paid</th>
+                    <th class="p-2 text-right text-rose-600">Due Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="defaulters-table-body" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200">
+            <h3 class="font-bold text-slate-900 mb-3">Collections by Payment Method</h3>
+            <div class="space-y-4 pt-2" id="payment-mode-stats">
+              <!-- Mode aggregates -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8. AUDIT ACTIVITY LOG -->
+      <section id="view-audit" class="space-y-4 hidden">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">Immutable Activity Log</h2>
+          <p class="text-sm text-slate-500">Read-only audit log tracking changes made in the system.</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+          <table class="w-full text-left text-xs sm:text-sm">
+            <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
+              <tr>
+                <th class="p-3">Timestamp</th>
+                <th class="p-3">User</th>
+                <th class="p-3">Role</th>
+                <th class="p-3">Screen</th>
+                <th class="p-3">Action</th>
+                <th class="p-3">Details</th>
+              </tr>
+            </thead>
+            <tbody id="audit-table-body" class="divide-y divide-slate-100">
+              <!-- Populated via Firestore -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- ================= MODALS ================= -->
+  <!-- Collection Entry Modal -->
+  <div id="collection-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <h3 class="text-lg font-bold text-slate-900 mb-1" id="coll-modal-title">Record Collection</h3>
+      <p class="text-xs text-slate-500 mb-4" id="coll-modal-subtitle"></p>
+      
+      <form id="collection-form" onsubmit="app.saveCollection(event)" class="space-y-4">
+        <input type="hidden" id="coll-member-id" />
+        <input type="hidden" id="coll-month" />
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Amount Paid (₹)</label>
+          <input type="number" id="coll-amount" required step="50" class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 focus:outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Payment Method</label>
+          <select id="coll-method" class="w-full border rounded-xl px-3 py-2 text-sm bg-white focus:outline-none">
+            <option value="UPI">UPI to Foreman</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="Cash">Cash</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Payment Date (DD-MM-YYYY)</label>
+          <input type="date" id="coll-date" required class="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Transaction Ref / Remarks (Optional)</label>
+          <input type="text" id="coll-remarks" placeholder="UTR, cheque no or remarks" class="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none" />
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="app.closeCollectionModal()" class="px-4 py-2 border rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-indigo-900 text-white rounded-xl text-sm font-bold hover:bg-indigo-800">Save Entry</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Member Add/Edit Modal -->
+  <div id="member-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <h3 class="text-lg font-bold text-slate-900 mb-4" id="member-modal-title">Subscriber Record</h3>
+      <form id="member-form" onsubmit="app.saveMember(event)" class="space-y-4">
+        <input type="hidden" id="mem-edit-id" />
+        
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Member Number (e.g. M-01 to M-40)</label>
+          <input type="text" id="mem-number" required placeholder="M-01" class="w-full border rounded-xl px-3 py-2 text-sm uppercase" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Full Name</label>
+          <input type="text" id="mem-name" required class="w-full border rounded-xl px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Phone Number</label>
+          <input type="tel" id="mem-phone" required class="w-full border rounded-xl px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Subscriber Google Account Email (For Member Sign-in)</label>
+          <input type="email" id="mem-email" class="w-full border rounded-xl px-3 py-2 text-sm" placeholder="member@example.com" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Address (Optional)</label>
+          <textarea id="mem-address" rows="2" class="w-full border rounded-xl px-3 py-2 text-sm"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="app.closeMemberModal()" class="px-4 py-2 border rounded-xl text-sm font-medium text-slate-600">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-indigo-900 text-white rounded-xl text-sm font-bold">Save Subscriber</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Record Auction Winner Modal -->
+  <div id="auction-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <h3 class="text-lg font-bold text-slate-900 mb-1">Record Auction Winner</h3>
+      <p class="text-xs text-slate-500 mb-4" id="auc-modal-month-info"></p>
+      <form id="auction-form" onsubmit="app.saveAuction(event)" class="space-y-4">
+        <input type="hidden" id="auc-month" />
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Select Non-Prized Subscriber</label>
+          <select id="auc-winner-select" required class="w-full border rounded-xl px-3 py-2 text-sm bg-white"></select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Auction Date</label>
+          <input type="date" id="auc-date" required class="w-full border rounded-xl px-3 py-2 text-sm" />
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="document.getElementById('auction-modal').classList.add('hidden')" class="px-4 py-2 border rounded-xl text-sm font-medium">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-indigo-900 text-white rounded-xl text-sm font-bold">Confirm Winner</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= FIREBASE & APP SCRIPT ================= -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { 
+      getAuth, 
+      GoogleAuthProvider, 
+      signInWithPopup, 
+      signOut, 
+      onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { 
+      getFirestore, 
+      doc, 
+      getDoc, 
+      setDoc, 
+      addDoc, 
+      collection, 
+      query, 
+      where, 
+      getDocs, 
+      serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // ------------------------------------------------------------------------
+    // Replace with your Firebase Project Configuration from Firebase Console
+    // ------------------------------------------------------------------------
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const fbApp = initializeApp(firebaseConfig);
+    const auth = getAuth(fbApp);
+    const db = getFirestore(fbApp);
+
+    // FIXED 41-MONTH MASTER SCHEDULE[span_0](start_span)[span_0](end_span)
+    const MASTER_SCHEDULE = [
+      { m: 1,  emi: 12500, div: 0,    disc: 0,     net: 500000, note: "Foreman's Chit" },
+      { m: 2,  emi: 10150, div: 2350, disc: 94000, net: 406000, note: "" },
+      { m: 3,  emi: 10200, div: 2300, disc: 92000, net: 408000, note: "" },
+      { m: 4,  emi: 10300, div: 2200, disc: 88000, net: 412000, note: "" },
+      { m: 5,  emi: 10350, div: 2150, disc: 86000, net: 414000, note: "" },
+      { m: 6,  emi: 10400, div: 2100, disc: 84000, net: 416000, note: "" },
+      { m: 7,  emi: 10450, div: 2050, disc: 82000, net: 418000, note: "" },
+      { m: 8,  emi: 10500, div: 2000, disc: 80000, net: 420000, note: "" },
+      { m: 9,  emi: 10550, div: 1950, disc: 78000, net: 422000, note: "" },
+      { m: 10, emi: 12500, div: 0,    disc: 0,     net: 500000, note: "Special Chit" },
+      { m: 11, emi: 10650, div: 1850, disc: 74000, net: 426000, note: "" },
+      { m: 12, emi: 10700, div: 1800, disc: 72000, net: 428000, note: "" },
+      { m: 13, emi: 10750, div: 1750, disc: 70000, net: 430000, note: "" },
+      { m: 14, emi: 10800, div: 1700, disc: 68000, net: 432000, note: "" },
+      { m: 15, emi: 10850, div: 1650, disc: 66000, net: 434000, note: "" },
+      { m: 16, emi: 10900, div: 1600, disc: 64000, net: 436000, note: "" },
+      { m: 17, emi: 10950, div: 1550, disc: 62000, net: 438000, note: "" },
+      { m: 18, emi: 11000, div: 1500, disc: 60000, net: 440000, note: "" },
+      { m: 19, emi: 11050, div: 1450, disc: 58000, net: 442000, note: "" },
+      { m: 20, emi: 11100, div: 1400, disc: 56000, net: 444000, note: "" },
+      { m: 21, emi: 11150, div: 1350, disc: 54000, net: 446000, note: "" },
+      { m: 22, emi: 11200, div: 1300, disc: 52000, net: 448000, note: "" },
+      { m: 23, emi: 11250, div: 1250, disc: 50000, net: 450000, note: "" },
+      { m: 24, emi: 11300, div: 1200, disc: 48000, net: 452000, note: "" },
+      { m: 25, emi: 11400, div: 1100, disc: 44000, net: 456000, note: "" },
+      { m: 26, emi: 11450, div: 1050, disc: 42000, net: 458000, note: "" },
+      { m: 27, emi: 11550, div: 950,  disc: 38000, net: 462000, note: "" },
+      { m: 28, emi: 11600, div: 900,  disc: 36000, net: 464000, note: "" },
+      { m: 29, emi: 11700, div: 800,  disc: 32000, net: 468000, note: "" },
+      { m: 30, emi: 11750, div: 750,  disc: 30000, net: 470000, note: "" },
+      { m: 31, emi: 11850, div: 650,  disc: 26000, net: 474000, note: "" },
+      { m: 32, emi: 11900, div: 600,  disc: 24000, net: 476000, note: "" },
+      { m: 33, emi: 12000, div: 500,  disc: 20000, net: 480000, note: "" },
+      { m: 34, emi: 12050, div: 450,  disc: 18000, net: 482000, note: "" },
+      { m: 35, emi: 12100, div: 400,  disc: 16000, net: 484000, note: "" },
+      { m: 36, emi: 12200, div: 300,  disc: 12000, net: 488000, note: "" },
+      { m: 37, emi: 12250, div: 250,  disc: 10000, net: 490000, note: "" },
+      { m: 38, emi: 12300, div: 200,  disc: 8000,  net: 492000, note: "" },
+      { m: 39, emi: 12400, div: 100,  disc: 4000,  net: 496000, note: "" },
+      { m: 40, emi: 12450, div: 50,   disc: 2000,  net: 498000, note: "" },
+      { m: 41, emi: 12500, div: 0,    disc: 0,     net: 500000, note: "Final Chit" }
+    ]; //[span_1](start_span)[span_1](end_span)
+
+    class ChitFundApp {
+      constructor() {
+        this.currentUser = null;
+        this.userRole = null;
+        this.memberRecord = null;
+        this.activeChitId = "group_a";
+        this.currentMonthIdx = 1; // Month 1 = Oct 2026
+        this.startYear = 2026;
+        this.startMonth = 10;
+        this.cutoffDay = 15;
+        this.navigationStack = [];
+
+        // In-memory collections cache
+        this.members = [];
+        this.collections = [];
+        this.auctions = [];
+        
+        this.init();
+      }
+
+      init() {
+        this.setupAuthListener();
+        this.renderSchedule();
+        this.populateMonthDropdowns();
+        this.calculateActiveMonth();
+      }
+
+      // Formatters
+      formatINR(val) {
+        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val || 0);
+      }
+
+      formatDate(dStr) {
+        if (!dStr) return "-";
+        const parts = dStr.split("-");
+        if (parts.length === 3 && parts[0].length === 4) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        return dStr;
+      }
+
+      getMonthLabel(mNum) {
+        // Month 1 = Oct 2026
+        const d = new Date(this.startYear, this.startMonth - 1 + (mNum - 1), 1);
+        return d.toLocaleString('en-IN', { month: 'short', year: 'numeric' });
+      }
+
+      calculateActiveMonth() {
+        const today = new Date();
+        const start = new Date(this.startYear, this.startMonth - 1, 1);
+        const diffMonths = (today.getFullYear() - start.getFullYear()) * 12 + (today.getMonth() - start.getMonth()) + 1;
+        this.currentMonthIdx = Math.min(Math.max(diffMonths, 1), 41);
+        document.getElementById('collection-month-select').value = this.currentMonthIdx;
+      }
+
+      // Toast Notifications
+      notify(msg, isError = false) {
+        const toast = document.getElementById('toast');
+        const text = document.getElementById('toast-message');
+        const icon = document.getElementById('toast-icon');
+        text.innerText = msg;
+        icon.className = isError ? "ph ph-warning-circle text-rose-500 text-xl" : "ph ph-check-circle text-emerald-400 text-xl";
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 3500);
+      }
+
+      // Authentication
+      setupAuthListener() {
+        onAuthStateChanged(auth, async (user) => {
+          if (user) {
+            // Verify if user exists in Firestore users collection
+            try {
+              const uDoc = await getDoc(doc(db, "users", user.uid));
+              if (!uDoc.exists()) {
+                // Secondary check by email
+                const q = query(collection(db, "users"), where("email", "==", user.email));
+                const qSnap = await getDocs(q);
+                if (qSnap.empty) {
+                  await signOut(auth);
+                  this.notify("Unauthorized account. Contact Admin to register your email.", true);
+                  this.showAuthScreen();
+                  return;
+                }
+              }
+
+              const profile = uDoc.exists() ? uDoc.data() : null;
+              this.currentUser = user;
+              this.userRole = profile ? profile.role : "member";
+              this.userProfile = profile;
+
+              this.onUserAuthenticated();
+            } catch (err) {
+              console.error(err);
+              this.notify("Authentication verification failed", true);
+              this.showAuthScreen();
+            }
+          } else {
+            this.showAuthScreen();
+          }
+        });
+      }
+
+      async signInWithGoogle() {
+        const provider = new GoogleAuthProvider();
+        try {
+          await signInWithPopup(auth, provider);
+        } catch (err) {
+          this.notify(err.message, true);
+        }
+      }
+
+      async signOut() {
+        await signOut(auth);
+        location.reload();
+      }
+
+      showAuthScreen() {
+        document.getElementById('auth-screen').classList.remove('hidden');
+        document.getElementById('app-container').classList.add('hidden');
+        document.getElementById('user-profile-widget').classList.add('hidden');
+        document.getElementById('chit-select-container').classList.add('hidden');
+      }
+
+      async onUserAuthenticated() {
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('app-container').classList.remove('hidden');
+        document.getElementById('user-profile-widget').classList.remove('hidden');
+        document.getElementById('chit-select-container').classList.remove('hidden');
+        document.getElementById('user-email-label').innerText = this.currentUser.email;
+        document.getElementById('user-role-badge').innerText = this.userRole;
+
+        // Role-based visibility
+        if (this.userRole === "member") {
+          document.getElementById('module-tabs').classList.add('hidden');
+          document.getElementById('chit-select-container').classList.add('hidden');
+          document.getElementById('passbook-picker-container').classList.add('hidden');
+          await this.loadData();
+          // Find this member's ID
+          const me = this.members.find(m => m.email === this.currentUser.email);
+          if (me) {
+            this.renderPassbook(me.memberNo);
+            this.navigate('passbook', false);
+          } else {
+            this.notify("No subscriber profile associated with this Google email.", true);
+          }
+          return;
+        }
+
+        if (this.userRole === "foreman") {
+          document.getElementById('tab-members').classList.add('hidden');
+          document.getElementById('tab-auctions').classList.add('hidden');
+          document.getElementById('tab-audit').classList.add('hidden');
+          document.getElementById('add-member-btn').classList.add('hidden');
+        }
+
+        await this.loadData();
+        this.navigate('dashboard', false);
+      }
+
+      // Navigation & Back-button tracking
+      navigate(tabName, addToHistory = true) {
+        if (addToHistory && this.currentView && this.currentView !== tabName) {
+          this.navigationStack.push(this.currentView);
+          document.getElementById('nav-back-btn').classList.remove('hidden');
+        }
+
+        this.currentView = tabName;
+        document.querySelectorAll('main, section[id^="view-"]').forEach(el => el.classList.add('hidden'));
+        const targetView = document.getElementById(`view-${tabName}`);
+        if (targetView) targetView.classList.remove('hidden');
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+          if (btn.dataset.tab === tabName) {
+            btn.className = "tab-btn px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-900 text-white shadow-sm flex items-center gap-2";
+          } else {
+            btn.className = "tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-900 hover:bg-slate-100 flex items-center gap-2";
+          }
+        });
+
+        // Trigger view-specific re-renders
+        if (tabName === 'dashboard') this.renderDashboard();
+        if (tabName === 'members') this.renderMembers();
+        if (tabName === 'collections') this.loadCollectionsGrid(this.currentMonthIdx);
+        if (tabName === 'auctions') this.renderAuctions();
+        if (tabName === 'reports') this.renderReports();
+        if (tabName === 'audit') this.renderAuditLogs();
+      }
+
+      goBack() {
+        if (this.navigationStack.length > 0) {
+          const prev = this.navigationStack.pop();
+          this.navigate(prev, false);
+          if (this.navigationStack.length === 0) {
+            document.getElementById('nav-back-btn').classList.add('hidden');
+          }
+        }
+      }
+
+      // Logging (Immutable Audit)
+      async logActivity(screen, action, oldVal, newVal) {
+        try {
+          await addDoc(collection(db, "activity_logs"), {
+            chitId: this.activeChitId,
+            timestamp: new Date().toISOString(),
+            userEmail: this.currentUser.email,
+            userRole: this.userRole,
+            screen: screen,
+            action: action,
+            oldVal: oldVal ? JSON.stringify(oldVal) : null,
+            newVal: newVal ? JSON.stringify(newVal) : null
+          });
+        } catch (e) {
+          console.error("Activity log entry failed", e);
+        }
+      }
+
+      // Data Load
+      async loadData() {
+        try {
+          // Fetch members
+          const memSnap = await getDocs(query(collection(db, "members"), where("chitId", "==", this.activeChitId)));
+          this.members = memSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+          // Fallback seeding of 40 default subscribers if database is empty
+          if (this.members.length === 0 && this.userRole === 'admin') {
+            for (let i = 1; i <= 40; i++) {
+              const numStr = `M-${String(i).padStart(2, '0')}`;
+              const docRef = doc(db, "members", `${this.activeChitId}_${numStr}`);
+              const defaultMember = {
+                chitId: this.activeChitId,
+                memberNo: numStr,
+                name: `Subscriber ${i}`,
+                phone: `98765432${String(i).padStart(2, '0')}`,
+                email: "",
+                address: "Kochi, Kerala",
+                isPrized: false,
+                prizedMonth: null,
+                prizeMoney: 0,
+                isActive: true
+              };
+              await setDoc(docRef, defaultMember);
+              this.members.push(defaultMember);
+            }
+          }
+
+          // Fetch collections
+          const colSnap = await getDocs(query(collection(db, "collections"), where("chitId", "==", this.activeChitId)));
+          this.collections = colSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+          // Fetch auctions
+          const aucSnap = await getDocs(query(collection(db, "auctions"), where("chitId", "==", this.activeChitId)));
+          this.auctions = aucSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+          this.populatePassbookSelector();
+        } catch (err) {
+          console.error("Data load error:", err);
+        }
+      }
+
+      // Master Schedule Rendering
+      renderSchedule() {
+        const tbody = document.getElementById('schedule-table-body');
+        tbody.innerHTML = MASTER_SCHEDULE.map(row => `
+          <tr class="${row.m === 1 || row.m === 10 || row.m === 41 ? 'bg-amber-50/70 font-semibold' : ''}">
+            <td class="p-3 text-slate-900 font-medium">Month ${row.m}</td>
+            <td class="p-3 text-slate-500">${this.getMonthLabel(row.m)}</td>
+            <td class="p-3 text-right text-slate-700">${this.formatINR(12500)}</td>
+            <td class="p-3 text-right text-rose-600">${this.formatINR(row.disc)}</td>
+            <td class="p-3 text-right text-emerald-600">${this.formatINR(row.div)}</td>
+            <td class="p-3 text-right font-bold text-indigo-900">${this.formatINR(row.emi)}</td>
+            <td class="p-3 text-right font-medium text-slate-800">${this.formatINR(row.net)}</td>
+            <td class="p-3 text-center">
+              ${row.note ? `<span class="px-2 py-0.5 rounded text-xs bg-amber-200 text-amber-900 font-bold">${row.note}</span>` : '-'}
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      populateMonthDropdowns() {
+        const select = document.getElementById('collection-month-select');
+        select.innerHTML = MASTER_SCHEDULE.map(r => `
+          <option value="${r.m}">Month ${r.m} (${this.getMonthLabel(r.m)}) - EMI: ${this.formatINR(r.emi)}</option>
+        `).join('');
+      }
+
+      // Dashboard
+      renderDashboard() {
+        const curM = this.currentMonthIdx;
+        const curSchedule = MASTER_SCHEDULE.find(s => s.m === curM);
+        const monthCollections = this.collections.filter(c => c.month === curM);
+        const paidSubscribersCount = new Set(monthCollections.filter(c => c.amountPaid >= curSchedule.emi).map(c => c.memberNo)).size;
+        const totalAmountMonth = monthCollections.reduce((acc, c) => acc + (Number(c.amountPaid) || 0), 0);
+        
+        document.getElementById('dash-month-name').innerText = `Month ${curM} (${this.getMonthLabel(curM)})`;
+        document.getElementById('dash-paid-count').innerText = `${paidSubscribersCount} / 40 Paid`;
+        document.getElementById('dash-month-collected').innerText = this.formatINR(totalAmountMonth);
+        document.getElementById('dash-month-expected').innerText = `Expected: ${this.formatINR(curSchedule.emi * 40)}`;
+
+        const prizedCount = this.members.filter(m => m.isPrized).length;
+        document.getElementById('dash-prized-ratio').innerText = `${prizedCount} / 40`;
+        document.getElementById('dash-nonprized-count').innerText = `${40 - prizedCount} Non-prized`;
+
+        // Calculate pending dues up to current month
+        let totalExpectedAll = 0;
+        for (let m = 1; m <= curM; m++) {
+          const sch = MASTER_SCHEDULE.find(s => s.m === m);
+          totalExpectedAll += sch.emi * 40;
+        }
+        const totalPaidAll = this.collections.reduce((sum, c) => sum + (Number(c.amountPaid) || 0), 0);
+        const totalPending = Math.max(0, totalExpectedAll - totalPaidAll);
+        document.getElementById('dash-total-pending').innerText = this.formatINR(totalPending);
+      }
+
+      // Member Directory
+      renderMembers(list = this.members) {
+        const tbody = document.getElementById('member-table-body');
+        tbody.innerHTML = list.map(m => {
+          const totalPaid = this.collections
+            .filter(c => c.memberNo === m.memberNo)
+            .reduce((sum, c) => sum + (Number(c.amountPaid) || 0), 0);
+
+          return `
+            <tr class="hover:bg-slate-50 transition">
+              <td class="p-3 font-mono font-bold text-indigo-900">${m.memberNo}</td>
+              <td class="p-3">
+                <div class="font-medium text-slate-800">${m.name}</div>
+                <div class="text-xs text-slate-400">${m.email || 'No Google account linked'}</div>
+              </td>
+              <td class="p-3 text-slate-600">${m.phone || '-'}</td>
+              <td class="p-3 text-center">
+                ${m.isPrized ? `<span class="px-2 py-1 bg-amber-100 text-amber-800 rounded-md font-bold text-xs">Month ${m.prizedMonth}</span>` : '<span class="text-slate-400 text-xs">Non-prized</span>'}
+              </td>
+              <td class="p-3 text-right font-medium text-slate-700">${m.prizeMoney ? this.formatINR(m.prizeMoney) : '-'}</td>
+              <td class="p-3 text-right font-bold text-emerald-700">${this.formatINR(totalPaid)}</td>
+              <td class="p-3 text-center">
+                <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${m.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                  ${m.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </td>
+              <td class="p-3 text-right space-x-2">
+                <button onclick="app.viewPassbookForMember('${m.memberNo}')" title="View Passbook" class="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100">
+                  <i class="ph ph-book-open text-base"></i>
+                </button>
+                ${this.userRole === 'admin' ? `
+                  <button onclick="app.openMemberModal('${m.memberNo}')" title="Edit Member" class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50">
+                    <i class="ph ph-pencil-simple text-base"></i>
+                  </button>
+                ` : ''}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      filterMembers(queryStr) {
+        const q = queryStr.toLowerCase();
+        const filtered = this.members.filter(m => 
+          m.name.toLowerCase().includes(q) || 
+          m.memberNo.toLowerCase().includes(q) || 
+          (m.phone && m.phone.includes(q))
+        );
+        this.renderMembers(filtered);
+      }
+
+      openMemberModal(memberNo = null) {
+        if (this.userRole !== 'admin') {
+          this.notify("Admin role required to manage subscribers", true);
+          return;
+        }
+        document.getElementById('member-form').reset();
+        document.getElementById('mem-edit-id').value = "";
+        
+        if (memberNo) {
+          const m = this.members.find(x => x.memberNo === memberNo);
+          document.getElementById('member-modal-title').innerText = `Edit Subscriber ${m.memberNo}`;
+          document.getElementById('mem-edit-id').value = m.memberNo;
+          document.getElementById('mem-number').value = m.memberNo;
+          document.getElementById('mem-number').readOnly = true;
+          document.getElementById('mem-name').value = m.name;
+          document.getElementById('mem-phone').value = m.phone;
+          document.getElementById('mem-email').value = m.email || '';
+          document.getElementById('mem-address').value = m.address || '';
+        } else {
+          document.getElementById('member-modal-title').innerText = "Add New Subscriber";
+          document.getElementById('mem-number').readOnly = false;
+        }
+        document.getElementById('member-modal').classList.remove('hidden');
+      }
+
+      closeMemberModal() {
+        document.getElementById('member-modal').classList.add('hidden');
+      }
+
+      async saveMember(e) {
+        e.preventDefault();
+        const editId = document.getElementById('mem-edit-id').value;
+        const num = document.getElementById('mem-number').value.trim().toUpperCase();
+        const data = {
+          chitId: this.activeChitId,
+          memberNo: num,
+          name: document.getElementById('mem-name').value.trim(),
+          phone: document.getElementById('mem-phone').value.trim(),
+          email: document.getElementById('mem-email').value.trim(),
+          address: document.getElementById('mem-address').value.trim(),
+          isActive: true
+        };
+
+        const oldVal = editId ? this.members.find(m => m.memberNo === editId) : null;
+        try {
+          const docRef = doc(db, "members", `${this.activeChitId}_${num}`);
+          await setDoc(docRef, data, { merge: true });
+          
+          await this.logActivity("Member Directory", editId ? "UPDATE_MEMBER" : "ADD_MEMBER", oldVal, data);
+          this.notify("Subscriber record saved");
+          this.closeMemberModal();
+          await this.loadData();
+          this.renderMembers();
+        } catch (err) {
+          this.notify(err.message, true);
+        }
+      }
+
+      // Monthly Collections Grid
+      loadCollectionsGrid(monthNum) {
+        const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
+        const tbody = document.getElementById('collection-grid-body');
+        
+        tbody.innerHTML = this.members.map(m => {
+          const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
+          const isPaid = entry && entry.amountPaid > 0;
+          
+          // Editing permissions check
+          const isPastMonth = monthNum < this.currentMonthIdx;
+          const isCreator = entry && entry.recordedByUid === this.currentUser?.uid;
+          const canEdit = !isPastMonth && (this.userRole === 'admin' || isCreator || !entry);
+
+          return `
+            <tr class="hover:bg-slate-50 transition">
+              <td class="p-3 font-mono font-bold text-indigo-900">${m.memberNo}</td>
+              <td class="p-3 font-medium text-slate-800">${m.name}</td>
+              <td class="p-3 text-right font-semibold text-slate-600">${this.formatINR(sch.emi)}</td>
+              <td class="p-3 text-right font-bold ${isPaid ? 'text-emerald-600' : 'text-slate-400'}">
+                ${entry ? this.formatINR(entry.amountPaid) : '₹0'}
+              </td>
+              <td class="p-3 text-xs text-slate-600">${entry?.paymentMethod || '-'}</td>
+              <td class="p-3 text-xs text-slate-500">${this.formatDate(entry?.paymentDate)}</td>
+              <td class="p-3 text-xs text-slate-400 max-w-xs truncate">${entry?.remarks || entry?.reference || '-'}</td>
+              <td class="p-3 text-right">
+                ${canEdit ? `
+                  <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}',${entry?.amountPaid || sch.emi})" 
+                          class="px-3 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg text-xs font-semibold">
+                    ${entry ? 'Update' : 'Record'}
+                  </button>
+                ` : `
+                  <span class="text-xs text-slate-400 italic">Locked</span>
+                `}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      openCollectionModal(monthNum, memberNo, defaultAmt) {
+        const mem = this.members.find(m => m.memberNo === memberNo);
+        const existing = this.collections.find(c => c.month === monthNum && c.memberNo === memberNo);
+
+        document.getElementById('coll-modal-title').innerText = `Record Month ${monthNum} Collection`;
+        document.getElementById('coll-modal-subtitle').innerText = `Subscriber: ${memberNo} - ${mem.name}`;
+        document.getElementById('coll-member-id').value = memberNo;
+        document.getElementById('coll-month').value = monthNum;
+        document.getElementById('coll-amount').value = existing ? existing.amountPaid : defaultAmt;
+        document.getElementById('coll-method').value = existing ? existing.paymentMethod : "UPI";
+        document.getElementById('coll-date').value = existing?.paymentDate || new Date().toISOString().split('T')[0];
+        document.getElementById('coll-remarks').value = existing?.remarks || existing?.reference || "";
+
+        document.getElementById('collection-modal').classList.remove('hidden');
+      }
+
+      closeCollectionModal() {
+        document.getElementById('collection-modal').classList.add('hidden');
+      }
+
+      async saveCollection(e) {
+        e.preventDefault();
+        const monthNum = parseInt(document.getElementById('coll-month').value);
+        const memberNo = document.getElementById('coll-member-id').value;
+        const amount = parseFloat(document.getElementById('coll-amount').value);
+
+        if (monthNum < this.currentMonthIdx) {
+          this.notify("Previous months' collections are locked and cannot be edited.", true);
+          return;
+        }
+
+        const docKey = `${this.activeChitId}_M${monthNum}_${memberNo}`;
+        const existing = this.collections.find(c => c.month === monthNum && c.memberNo === memberNo);
+
+        const payload = {
+          chitId: this.activeChitId,
+          month: monthNum,
+          memberNo: memberNo,
+          amountPaid: amount,
+          paymentMethod: document.getElementById('coll-method').value,
+          paymentDate: document.getElementById('coll-date').value,
+          remarks: document.getElementById('coll-remarks').value,
+          recordedByUid: existing ? existing.recordedByUid : this.currentUser.uid,
+          recordedByName: existing ? existing.recordedByName : (this.currentUser.displayName || this.currentUser.email),
+          updatedAt: new Date().toISOString()
+        };
+
+        try {
+          await setDoc(doc(db, "collections", docKey), payload, { merge: true });
+          await this.logActivity("Collections", existing ? "UPDATE_COLLECTION" : "RECORD_COLLECTION", existing, payload);
+          this.notify("Collection saved successfully");
+          this.closeCollectionModal();
+          await this.loadData();
+          this.loadCollectionsGrid(monthNum);
+        } catch (err) {
+          this.notify(err.message, true);
+        }
+      }
+
+      // Member Passbook & Carry-forward balance ledger
+      populatePassbookSelector() {
+        const select = document.getElementById('passbook-member-select');
+        select.innerHTML = this.members.map(m => `
+          <option value="${m.memberNo}">${m.memberNo} - ${m.name}</option>
+        `).join('');
+      }
+
+      viewPassbookForMember(memberNo) {
+        document.getElementById('passbook-member-select').value = memberNo;
+        this.renderPassbook(memberNo);
+        this.navigate('passbook');
+      }
+
+      renderPassbook(memberNo) {
+        const mem = this.members.find(m => m.memberNo === memberNo);
+        if (!mem) return;
+
+        document.getElementById('pb-member-name').innerText = mem.name;
+        document.getElementById('pb-member-id').innerText = mem.memberNo;
+        document.getElementById('pb-member-phone').innerText = mem.phone || "-";
+        document.getElementById('pb-member-prized').innerText = mem.isPrized ? `Prized in Month ${mem.prizedMonth} (Payout: ${this.formatINR(mem.prizeMoney)})` : "Non-Prized";
+
+        let runningBalance = 0; // Positive = Advance (+₹X), Negative = Due (-₹X)
+        const tbody = document.getElementById('passbook-ledger-body');
+
+        tbody.innerHTML = MASTER_SCHEDULE.map(sch => {
+          const entry = this.collections.find(c => c.memberNo === memberNo && c.month === sch.m);
+          const paid = entry ? Number(entry.amountPaid) : 0;
+          const monthExcessShort = paid - sch.emi;
+          runningBalance += monthExcessShort;
+
+          let statusBadge = "";
+          if (runningBalance > 0) {
+            statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">Advance: +${this.formatINR(runningBalance)}</span>`;
+          } else if (runningBalance < 0) {
+            statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-semibold bg-rose-100 text-rose-800">Due: -${this.formatINR(Math.abs(runningBalance))}</span>`;
+          } else {
+            statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">Settled</span>`;
+          }
+
+          return `
+            <tr class="hover:bg-slate-50 transition">
+              <td class="p-2 font-medium">Month ${sch.m}</td>
+              <td class="p-2 text-slate-500">${this.getMonthLabel(sch.m)}</td>
+              <td class="p-2 text-right font-semibold text-slate-700">${this.formatINR(sch.emi)}</td>
+              <td class="p-2 text-right text-emerald-600">${this.formatINR(sch.div)}</td>
+              <td class="p-2 text-right font-bold text-slate-900">${paid > 0 ? this.formatINR(paid) : '-'}</td>
+              <td class="p-2 text-right font-medium ${monthExcessShort >= 0 ? 'text-emerald-700' : 'text-rose-600'}">
+                ${monthExcessShort !== 0 ? (monthExcessShort > 0 ? `+${this.formatINR(monthExcessShort)}` : this.formatINR(monthExcessShort)) : '₹0'}
+              </td>
+              <td class="p-2 text-right font-bold ${runningBalance >= 0 ? 'text-emerald-700' : 'text-rose-600'}">
+                ${runningBalance > 0 ? `+${this.formatINR(runningBalance)}` : (runningBalance < 0 ? `-${this.formatINR(Math.abs(runningBalance))}` : '₹0')}
+              </td>
+              <td class="p-2 text-center">${statusBadge}</td>
+              <td class="p-2 text-xs text-slate-500">${entry ? `${entry.paymentMethod}${entry.remarks ? `(${entry.remarks})` : ''}` : '-'}</td>
+            </tr>
+          `;
+        }).join('');
+
+        const pill = document.getElementById('pb-balance-pill');
+        if (runningBalance > 0) {
+          pill.className = "mt-1 text-lg font-bold px-3 py-1 rounded-xl bg-emerald-100 text-emerald-800";
+          pill.innerText = `Advance: +${this.formatINR(runningBalance)}`;
+        } else if (runningBalance < 0) {
+          pill.className = "mt-1 text-lg font-bold px-3 py-1 rounded-xl bg-rose-100 text-rose-800";
+          pill.innerText = `Pending Due: -${this.formatINR(Math.abs(runningBalance))}`;
+        } else {
+          pill.className = "mt-1 text-lg font-bold px-3 py-1 rounded-xl bg-slate-100 text-slate-700";
+          pill.innerText = "Settled (Nil Due)";
+        }
+      }
+
+      // Auctions
+      renderAuctions() {
+        const tbody = document.getElementById('auction-table-body');
+        tbody.innerHTML = MASTER_SCHEDULE.map(sch => {
+          const auc = this.auctions.find(a => a.month === sch.m);
+          const winner = auc ? this.members.find(m => m.memberNo === auc.winnerMemberNo) : null;
+
+          return `
+            <tr class="hover:bg-slate-50 transition">
+              <td class="p-3 font-semibold text-slate-800">Month ${sch.m}</td>
+              <td class="p-3 text-slate-500">${this.getMonthLabel(sch.m)}</td>
+              <td class="p-3 text-right text-rose-600 font-medium">${this.formatINR(sch.disc)}</td>
+              <td class="p-3 text-right text-indigo-900 font-bold">${this.formatINR(sch.net)}</td>
+              <td class="p-3">
+                ${winner ? `
+                  <span class="font-bold text-slate-800">${winner.memberNo}</span> -${winner.name}
+                ` : '<span class="text-slate-400 italic">Not Awarded</span>'}
+              </td>
+              <td class="p-3 text-slate-500">${this.formatDate(auc?.auctionDate)}</td>
+              <td class="p-3 text-right">
+                ${!auc && this.userRole === 'admin' ? `
+                  <button onclick="app.openAuctionModal(${sch.m})" class="px-3 py-1 bg-indigo-900 text-white hover:bg-indigo-800 rounded-lg text-xs font-semibold">
+                    Conduct Auction
+                  </button>
+                ` : (auc ? '<span class="text-xs text-emerald-700 font-bold">Awarded</span>' : '-')}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      openAuctionModal(monthNum) {
+        const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
+        document.getElementById('auc-modal-month-info').innerText = `Month ${monthNum} (${this.getMonthLabel(monthNum)}) | Net Prize Money: ${this.formatINR(sch.net)}`;
+        document.getElementById('auc-month').value = monthNum;
+        document.getElementById('auc-date').value = new Date().toISOString().split('T')[0];
+
+        // Non-prized members dropdown
+        const select = document.getElementById('auc-winner-select');
+        const nonPrized = this.members.filter(m => !m.isPrized);
+        select.innerHTML = nonPrized.map(m => `
+          <option value="${m.memberNo}">${m.memberNo} - ${m.name}</option>
+        `).join('');
+
+        document.getElementById('auction-modal').classList.remove('hidden');
+      }
+
+      async saveAuction(e) {
+        e.preventDefault();
+        const monthNum = parseInt(document.getElementById('auc-month').value);
+        const winnerNo = document.getElementById('auc-winner-select').value;
+        const date = document.getElementById('auc-date').value;
+        const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
+
+        const auctionData = {
+          chitId: this.activeChitId,
+          month: monthNum,
+          winnerMemberNo: winnerNo,
+          auctionDiscount: sch.disc,
+          prizeMoney: sch.net,
+          auctionDate: date,
+          recordedBy: this.currentUser.email
+        };
+
+        try {
+          await setDoc(doc(db, "auctions", `${this.activeChitId}_M${monthNum}`), auctionData);
+          
+          // Mark member as prized
+          const memRef = doc(db, "members", `${this.activeChitId}_${winnerNo}`);
+          await setDoc(memRef, { isPrized: true, prizedMonth: monthNum, prizeMoney: sch.net }, { merge: true });
+
+          await this.logActivity("Auctions", "AWARD_AUCTION", null, auctionData);
+          this.notify(`Auction awarded to subscriber ${winnerNo}`);
+          document.getElementById('auction-modal').classList.add('hidden');
+          await this.loadData();
+          this.renderAuctions();
+        } catch (err) {
+          this.notify(err.message, true);
+        }
+      }
+
+      // Reports & Export
+      renderReports() {
+        const curM = this.currentMonthIdx;
+        let totalExpectedPerMember = 0;
+        for (let m = 1; m <= curM; m++) {
+          totalExpectedPerMember += MASTER_SCHEDULE.find(s => s.m === m).emi;
+        }
+
+        const tbody = document.getElementById('defaulters-table-body');
+        const defaulters = [];
+
+        this.members.forEach(mem => {
+          const totalPaid = this.collections
+            .filter(c => c.memberNo === mem.memberNo && c.month <= curM)
+            .reduce((sum, c) => sum + (Number(c.amountPaid) || 0), 0);
+          
+          const due = totalExpectedPerMember - totalPaid;
+          if (due > 0) {
+            defaulters.push({ memberNo: mem.memberNo, name: mem.name, expected: totalExpectedPerMember, paid: totalPaid, due: due });
+          }
+        });
+
+        tbody.innerHTML = defaulters.length > 0 ? defaulters.map(d => `
+          <tr>
+            <td class="p-2"><span class="font-bold text-indigo-900">${d.memberNo}</span> ${d.name}</td>
+            <td class="p-2 text-right">${this.formatINR(d.expected)}</td>
+            <td class="p-2 text-right">${this.formatINR(d.paid)}</td>
+            <td class="p-2 text-right font-bold text-rose-600">${this.formatINR(d.due)}</td>
+          </tr>
+        `).join('') : `<tr><td colspan="4" class="p-4 text-center text-slate-400">Nil Defaulters! All subscribers have cleared current dues.</td></tr>`;
+
+        // Payment Mode aggregates
+        const modes = { 'UPI': 0, 'Bank Transfer': 0, 'Cash': 0 };
+        this.collections.forEach(c => {
+          if (modes[c.paymentMethod] !== undefined) modes[c.paymentMethod] += Number(c.amountPaid) || 0;
+        });
+
+        const modeContainer = document.getElementById('payment-mode-stats');
+        modeContainer.innerHTML = Object.entries(modes).map(([mode, amt]) => `
+          <div>
+            <div class="flex justify-between text-sm font-semibold mb-1">
+              <span>${mode}</span>
+              <span class="text-indigo-900">${this.formatINR(amt)}</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-2.5">
+              <div class="bg-indigo-600 h-2.5 rounded-full" style="width: ${this.collections.length > 0 ? Math.min(100, (amt / (this.collections.reduce((a,b)=>a+(Number(b.amountPaid)||0),1)))*100) : 0}%"></div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      exportDefaultersCSV() {
+        const curM = this.currentMonthIdx;
+        let totalExpected = 0;
+        for (let m = 1; m <= curM; m++) {
+          totalExpected += MASTER_SCHEDULE.find(s => s.m === m).emi;
+        }
+
+        let csv = "Member No,Subscriber Name,Phone,Expected EMI,Amount Paid,Pending Due\n";
+        this.members.forEach(mem => {
+          const totalPaid = this.collections
+            .filter(c => c.memberNo === mem.memberNo && c.month <= curM)
+            .reduce((sum, c) => sum + (Number(c.amountPaid) || 0), 0);
+          const due = totalExpected - totalPaid;
+          if (due > 0) {
+            csv += `"${mem.memberNo}","${mem.name}","${mem.phone || ''}",${totalExpected},${totalPaid},${due}\n`;
+          }
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `mis_org_defaulters_month_${curM}.csv`;
+        link.click();
+      }
+
+      // Activity Audit Log
+      async renderAuditLogs() {
+        if (this.userRole !== 'admin') return;
+        const tbody = document.getElementById('audit-table-body');
+        try {
+          const snap = await getDocs(query(collection(db, "activity_logs")));
+          const logs = snap.docs.map(d => d.data()).sort((a,b) => b.timestamp.localeCompare(a.timestamp));
+          
+          tbody.innerHTML = logs.map(l => `
+            <tr class="hover:bg-slate-50 transition">
+              <td class="p-3 text-slate-500 whitespace-nowrap">${new Date(l.timestamp).toLocaleString('en-IN')}</td>
+              <td class="p-3 font-medium text-slate-800">${l.userEmail}</td>
+              <td class="p-3"><span class="px-2 py-0.5 bg-slate-100 rounded text-xs font-semibold uppercase text-slate-600">${l.userRole}</span></td>
+              <td class="p-3 text-slate-600">${l.screen}</td>
+              <td class="p-3 font-semibold text-indigo-900">${l.action}</td>
+              <td class="p-3 text-xs text-slate-500 max-w-sm truncate">${l.newVal || '-'}</td>
+            </tr>
+          `).join('');
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    }
+
+    // Attach to global window
+    window.app = new ChitFundApp();
+  </script>
+</body>
+</html>
