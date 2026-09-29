@@ -1252,9 +1252,28 @@
         }
       }
 
+      
       renderAuctions() {
         const tbody = document.getElementById('auction-table-body');
         tbody.innerHTML = MASTER_SCHEDULE.map(sch => {
+          // Month 1 is reserved exclusively for the Foreman
+          if (sch.m === 1) {
+            return `
+              <tr class="bg-amber-50/60">
+                <td class="p-2.5 font-bold text-amber-900">Month 1</td>
+                <td class="p-2.5 text-right font-extrabold text-indigo-900">${this.formatINR(sch.net)}</td>
+                <td class="p-2.5 font-bold text-amber-900">
+                  <span class="px-2 py-0.5 rounded-md bg-amber-200 text-amber-900 text-xs font-bold">Foreman's Chit</span> (Organizer Payout)
+                </td>
+                <td class="p-2.5 text-slate-500">${this.getMonthLabel(1)}</td>
+                <td class="p-2.5 text-right">
+                  <span class="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">Foreman Reserved</span>
+                </td>
+              </tr>
+            `;
+          }
+
+          // Months 2 to 41 are auctioned among the 40 subscribers
           const auc = this.auctions.find(a => a.month === sch.m);
           const winner = auc ? this.members.find(m => m.memberNo === auc.winnerMemberNo) : null;
 
@@ -1265,14 +1284,15 @@
               <td class="p-2.5 font-semibold">${winner ? `${winner.memberNo} -${winner.name}` : '<span class="text-slate-400 italic">Not Awarded</span>'}</td>
               <td class="p-2.5 text-slate-500">${this.formatDate(auc?.auctionDate)}</td>
               <td class="p-2.5 text-right">
-                ${!auc && this.userRole === 'admin' ? `
+                ${!auc && (this.userRole === 'admin' || this.userRole === 'foreman') ? `
                   <button onclick="app.openAuctionModal(${sch.m})" class="px-2.5 py-1 bg-indigo-900 text-white rounded-lg text-xs font-bold">Award</button>
                 ` : (auc ? '<span class="text-emerald-600 font-bold text-xs">Awarded</span>' : '-')}
               </td>
             </tr>
           `;
         }).join('');
-      }
+            }
+      
 
       openAuctionModal(monthNum) {
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
