@@ -2,74 +2,99 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>mis-org | Chit Fund Management System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>mis-org | Chit Fund Management</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Phosphor Icons CDN -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    input, select, textarea, button { font-size: 16px !important; }
     @media print {
       body * { visibility: hidden; }
-      #printable-area, #printable-area * { visibility: visible; }
-      #printable-area { position: absolute; left: 0; top: 0; width: 100%; }
+      #printable-passbook, #printable-passbook * { visibility: visible; }
+      #printable-passbook { position: absolute; left: 0; top: 0; width: 100%; }
       .no-print { display: none !important; }
     }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white pb-12 sm:pb-0">
 
   <!-- ================= TOP NAVIGATION ================= -->
-  <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <button id="nav-back-btn" onclick="app.goBack()" class="hidden p-2 rounded-lg bg-indigo-800 hover:bg-indigo-700 transition">
+  <header class="bg-indigo-900 text-white shadow sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <button id="nav-back-btn" onclick="app.goBack()" class="hidden p-2 -ml-1 rounded-xl bg-indigo-800/80 active:bg-indigo-700 transition" aria-label="Go Back">
           <i class="ph ph-arrow-left text-lg"></i>
         </button>
-        <div>
-          <span class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            <i class="ph ph-vault text-amber-400 text-2xl"></i> mis-org
-          </span>
-          <span id="header-subtitle" class="text-xs text-indigo-200 block">Chit Fund Administration</span>
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-amber-400 flex items-center justify-center text-indigo-950 font-black shadow-sm">
+            <i class="ph ph-vault text-xl"></i>
+          </div>
+          <div>
+            <span class="text-base sm:text-lg font-bold tracking-tight block leading-tight">mis-org</span>
+            <span class="text-[10px] text-indigo-200 block -mt-0.5">Chit Management</span>
+          </div>
         </div>
       </div>
 
-      <div class="flex items-center space-x-4">
-        <!-- Chit Selector -->
-        <div id="chit-select-container" class="hidden">
-          <select id="selected-chit" onchange="app.changeChit(this.value)" class="bg-indigo-800 text-xs sm:text-sm text-white rounded-lg px-2 py-1.5 border border-indigo-700 focus:outline-none">
-            <option value="group_a">Chit Group A (₹5L / 41M)</option>
-          </select>
-        </div>
-
-        <!-- User Role Badge & Signout -->
-        <div id="user-profile-widget" class="hidden flex items-center space-x-3">
-          <span id="user-role-badge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase bg-amber-400 text-indigo-950">Admin</span>
-          <span id="user-email-label" class="text-xs hidden md:inline text-indigo-200"></span>
-          <button onclick="app.signOut()" title="Sign Out" class="p-2 rounded-lg bg-indigo-800 hover:bg-red-600 transition text-white">
+      <div class="flex items-center space-x-2">
+        <div id="user-profile-widget" class="hidden flex items-center gap-2">
+          <span id="user-role-badge" class="px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold uppercase bg-amber-400 text-indigo-950">Admin</span>
+          <button onclick="app.signOut()" title="Sign Out" class="p-2 rounded-xl bg-indigo-800/80 hover:bg-rose-600 active:scale-95 transition text-white">
             <i class="ph ph-sign-out text-base"></i>
           </button>
         </div>
       </div>
     </div>
+
+    <!-- Scrollable Navigation Tabs -->
+    <nav id="module-tabs" class="bg-indigo-950/70 border-t border-indigo-800/60 overflow-x-auto no-scrollbar flex space-x-1 px-3 py-1.5 no-print hidden">
+      <button onclick="app.navigate('dashboard')" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5" data-tab="dashboard">
+        <i class="ph ph-chart-pie-slice text-sm"></i> Dashboard
+      </button>
+      <button onclick="app.navigate('schedule')" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5" data-tab="schedule">
+        <i class="ph ph-calendar text-sm"></i> Schedule
+      </button>
+      <button onclick="app.navigate('members')" id="tab-members" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5" data-tab="members">
+        <i class="ph ph-users text-sm"></i> Members
+      </button>
+      <button onclick="app.navigate('collections')" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5" data-tab="collections">
+        <i class="ph ph-money text-sm"></i> Collections
+      </button>
+      <button onclick="app.navigate('passbook')" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5" data-tab="passbook">
+        <i class="ph ph-book-open text-sm"></i> Passbook
+      </button>
+      <button onclick="app.navigate('auctions')" id="tab-auctions" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5" data-tab="auctions">
+        <i class="ph ph-gavel text-sm"></i> Auctions
+      </button>
+      <button onclick="app.navigate('reports')" id="tab-reports" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5" data-tab="reports">
+        <i class="ph ph-file-text text-sm"></i> Reports
+      </button>
+      <button onclick="app.navigate('audit')" id="tab-audit" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5" data-tab="audit">
+        <i class="ph ph-list-magnifying-glass text-sm"></i> Audit Log
+      </button>
+    </nav>
   </header>
 
-  <!-- ================= NOTIFICATION BANNER ================= -->
-  <div id="toast" class="hidden fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-3 transition">
+  <!-- ================= NOTIFICATION TOAST ================= -->
+  <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-auto sm:right-6 z-50 bg-slate-900/95 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 w-11/12 sm:w-auto border border-slate-700">
     <i id="toast-icon" class="ph ph-info text-xl text-amber-400"></i>
-    <span id="toast-message" class="text-sm font-medium">Notification</span>
+    <span id="toast-message" class="text-xs sm:text-sm font-medium">Notification</span>
   </div>
 
   <!-- ================= AUTH SCREEN ================= -->
   <main id="auth-screen" class="flex-1 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-xl border border-slate-100 max-w-md w-full p-8 text-center">
+    <div class="bg-white rounded-3xl shadow-xl border border-slate-200 max-w-sm w-full p-6 text-center">
       <div class="w-16 h-16 bg-indigo-50 text-indigo-900 rounded-2xl mx-auto flex items-center justify-center text-3xl mb-4">
         <i class="ph ph-shield-check"></i>
       </div>
-      <h2 class="text-2xl font-bold text-slate-900">Welcome to mis-org</h2>
-      <p class="text-sm text-slate-500 mt-2 mb-6">Secure portal for Subscribers, Foremen, and Chit Admins.</p>
+      <h2 class="text-xl font-bold text-slate-900">Sign in to mis-org</h2>
+      <p class="text-xs text-slate-500 mt-1 mb-6">Enter via your registered Google Account</p>
 
-      <button onclick="app.signInWithGoogle()" class="w-full flex items-center justify-center gap-3 py-3 px-4 border border-slate-300 rounded-xl font-medium text-slate-700 bg-white hover:bg-slate-50 shadow-sm transition">
+      <button onclick="app.signInWithGoogle()" class="w-full flex items-center justify-center gap-3 py-3 px-4 border border-slate-300 rounded-xl font-medium text-slate-700 bg-white hover:bg-slate-50 active:scale-95 shadow-sm transition">
         <svg class="w-5 h-5" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
           <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -78,354 +103,254 @@
         </svg>
         Sign in with Google
       </button>
-
-      <div class="mt-6 text-xs text-slate-400">
-        Strict Role Enforcement: Only email accounts pre-authorized in the system database can access this terminal.
-      </div>
     </div>
   </main>
 
-  <!-- ================= APPLICATION INTERFACE ================= -->
+  <!-- ================= APP CONTAINER ================= -->
   <div id="app-container" class="hidden flex-1 flex flex-col">
-    <!-- Module Tab Bar (Hidden for Members) -->
-    <nav id="module-tabs" class="bg-white border-b border-slate-200 shadow-sm no-print">
-      <div class="max-w-7xl mx-auto px-4 flex space-x-1 overflow-x-auto py-2">
-        <button onclick="app.navigate('dashboard')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-900 hover:bg-slate-100 flex items-center gap-2" data-tab="dashboard">
-          <i class="ph ph-chart-pie-slice"></i> Dashboard
-        </button>
-        <button onclick="app.navigate('schedule')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-900 hover:bg-slate-100 flex items-center gap-2" data-tab="schedule">
-          <i class="ph ph-calendar"></i> Master Schedule
-        </button>
-        <button onclick="app.navigate('members')" id="tab-members" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-900 hover:bg-slate-100 flex items-center gap-2" data-tab="members">
-          <i class="ph ph-users"></i> Member Directory
-        </button>
-        <button onclick="app.navigate('collections')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-900 hover:bg-slate-100 flex items-center gap-2" data-tab="collections">
-          <i class="ph ph-money"></i> Collections Grid
-        </button>
-        <button onclick="app.navigate('passbook')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-900 hover:bg-slate-100 flex items-center gap-2" data-tab="passbook">
-          <i class="ph ph-book-open"></i> Passbook
-        </button>
-        <button onclick="app.navigate('auctions')" id="tab-auctions" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-900 hover:bg-slate-100 flex items-center gap-2" data-tab="auctions">
-          <i class="ph ph-gavel"></i> Auctions
-        </button>
-        <button onclick="app.navigate('reports')" id="tab-reports" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-900 hover:bg-slate-100 flex items-center gap-2" data-tab="reports">
-          <i class="ph ph-file-text"></i> Reports
-        </button>
-        <button onclick="app.navigate('audit')" id="tab-audit" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-900 hover:bg-slate-100 flex items-center gap-2" data-tab="audit">
-          <i class="ph ph-list-magnifying-glass"></i> Activity Log
-        </button>
-      </div>
-    </nav>
-
-    <div class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+    <div class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8">
       
       <!-- 1. DASHBOARD -->
-      <section id="view-dashboard" class="space-y-6 hidden">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Current Month Progress</span>
-            <div class="mt-2 flex items-baseline justify-between">
-              <span id="dash-month-name" class="text-2xl font-bold text-slate-900">Month 1</span>
-              <span id="dash-paid-count" class="text-sm font-semibold text-indigo-700 bg-indigo-50 px-2 py-1 rounded-md">0 / 40 Paid</span>
+      <section id="view-dashboard" class="space-y-4 hidden">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm col-span-2 sm:col-span-1">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Current Month</span>
+            <div class="mt-1 flex items-baseline justify-between">
+              <span id="dash-month-name" class="text-lg sm:text-xl font-extrabold text-slate-900">Month 1</span>
+              <span id="dash-paid-count" class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">0 / 0 Paid</span>
             </div>
-            <p class="text-xs text-slate-500 mt-2">Cut-off Date: 15th of each month</p>
+            <p class="text-[11px] text-slate-400 mt-1">Due cutoff: 15th</p>
           </div>
 
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Month 1 Collections</span>
-            <div class="mt-2 text-2xl font-bold text-emerald-600" id="dash-month-collected">₹0</div>
-            <p class="text-xs text-slate-500 mt-2" id="dash-month-expected">Target: ₹5,00,000</p>
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Collected (Month)</span>
+            <div class="mt-1 text-lg sm:text-xl font-extrabold text-emerald-600" id="dash-month-collected">₹0</div>
+            <p class="text-[11px] text-slate-400 mt-1" id="dash-month-expected">Target: ₹0</p>
           </div>
 
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Subscribers Prized</span>
-            <div class="mt-2 flex items-baseline justify-between">
-              <span id="dash-prized-ratio" class="text-2xl font-bold text-indigo-900">0 / 40</span>
-              <span class="text-xs font-medium text-slate-500" id="dash-nonprized-count">40 Non-prized</span>
-            </div>
-            <p class="text-xs text-slate-500 mt-2">Total Duration: 41 Months</p>
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Prized Status</span>
+            <div class="mt-1 text-lg sm:text-xl font-extrabold text-indigo-900" id="dash-prized-ratio">0 / 0</div>
+            <p class="text-[11px] text-slate-400 mt-1" id="dash-nonprized-count">0 Non-prized</p>
           </div>
 
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Pending Dues</span>
-            <div class="mt-2 text-2xl font-bold text-rose-600" id="dash-total-pending">₹0</div>
-            <p class="text-xs text-slate-500 mt-2">Cumulative across all subscribers</p>
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm col-span-2 sm:col-span-1">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Dues</span>
+            <div class="mt-1 text-lg sm:text-xl font-extrabold text-rose-600" id="dash-total-pending">₹0</div>
+            <p class="text-[11px] text-slate-400 mt-1">Pending dues across members</p>
           </div>
         </div>
 
-        <!-- Chit Details Banner -->
-        <div class="bg-indigo-900 text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="bg-gradient-to-br from-indigo-900 to-indigo-950 text-white rounded-2xl p-5 shadow flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <span class="px-2 py-1 rounded bg-indigo-800 text-amber-300 font-semibold text-xs">Standard Chit Scheme</span>
-            <h3 class="text-xl font-bold mt-1">₹5,00,000 Gross Value • 40 Subscribers • 41 Months</h3>
-            <p class="text-sm text-indigo-200 mt-1">Starting October 2026. Month 1 (Foreman Chit: ₹5,00,000), Month 10 (Special Chit: ₹5,00,000).</p>
+            <span class="px-2 py-0.5 rounded bg-indigo-800 text-amber-300 font-bold text-[10px] uppercase">Chit Group A</span>
+            <h3 class="text-base sm:text-lg font-bold mt-1">₹5,00,000 • 40 Subscribers • 41 Months</h3>
+            <p class="text-xs text-indigo-200 mt-0.5">Start: Oct 2026. Month 1 (Foreman: ₹5,00,000), Month 10 (Special: ₹5,00,000).</p>
           </div>
-          <button onclick="app.navigate('collections')" class="px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-indigo-950 font-bold rounded-xl text-sm transition">
+          <button onclick="app.navigate('collections')" class="w-full sm:w-auto px-5 py-2.5 bg-amber-400 hover:bg-amber-300 active:scale-95 text-indigo-950 font-bold rounded-xl text-xs sm:text-sm shadow-sm transition">
             Record Monthly Collection
           </button>
         </div>
       </section>
 
       <!-- 2. MASTER SCHEDULE -->
-      <section id="view-schedule" class="space-y-4 hidden">
+      <section id="view-schedule" class="space-y-3 hidden">
         <div class="flex justify-between items-center">
           <div>
-            <h2 class="text-xl font-bold text-slate-900">Master Schedule (Fixed 41 Months)</h2>
-            <p class="text-sm text-slate-500">Fixed EMI, Base installment, Dividend, and Auction Discounts (All EMIs in multiples of ₹50).</p>
+            <h2 class="text-base sm:text-lg font-bold text-slate-900">Master Schedule</h2>
+            <p class="text-xs text-slate-500">41 Months fixed EMI & auction amounts</p>
           </div>
-          <button onclick="window.print()" class="px-4 py-2 border rounded-xl bg-white text-slate-700 text-sm font-medium hover:bg-slate-50 flex items-center gap-2">
-            <i class="ph ph-printer"></i> Print Schedule
+          <button onclick="window.print()" class="px-3 py-1.5 border border-slate-300 rounded-xl bg-white text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+            <i class="ph ph-printer"></i> Print
           </button>
         </div>
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto" id="printable-area">
-          <table class="w-full text-left text-sm">
+
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
+          <table class="w-full text-left text-xs whitespace-nowrap">
             <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
               <tr>
-                <th class="p-3">Month</th>
-                <th class="p-3">Calendar Month</th>
-                <th class="p-3 text-right">Base Installment</th>
-                <th class="p-3 text-right">Auction Discount</th>
-                <th class="p-3 text-right">Dividend / Member</th>
-                <th class="p-3 text-right">Net EMI Payable</th>
-                <th class="p-3 text-right">Net Prize Money</th>
-                <th class="p-3 text-center">Remark</th>
+                <th class="p-2.5">M</th>
+                <th class="p-2.5">Date</th>
+                <th class="p-2.5 text-right">Net EMI</th>
+                <th class="p-2.5 text-right">Dividend</th>
+                <th class="p-2.5 text-right">Discount</th>
+                <th class="p-2.5 text-right">Prize Payout</th>
+                <th class="p-2.5 text-center">Remark</th>
               </tr>
             </thead>
-            <tbody id="schedule-table-body" class="divide-y divide-slate-100">
-              <!-- Dynamically populated from PDF table -->
-            </tbody>
-            <tfoot class="bg-slate-100 font-bold border-t">
-              <tr>
-                <td class="p-3" colspan="4">TOTAL</td>
-                <td class="p-3 text-right text-emerald-600" id="total-dividend-sum">₹47,500</td>
-                <td class="p-3 text-right text-indigo-900" id="total-emi-sum">₹4,65,000</td>
-                <td class="p-3" colspan="2"></td>
-              </tr>
-            </tfoot>
+            <tbody id="schedule-table-body" class="divide-y divide-slate-100"></tbody>
           </table>
         </div>
       </section>
 
       <!-- 3. MEMBER DIRECTORY -->
-      <section id="view-members" class="space-y-4 hidden">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+      <section id="view-members" class="space-y-3 hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2">
           <div>
-            <h2 class="text-xl font-bold text-slate-900">Member Directory</h2>
-            <p class="text-sm text-slate-500">Manage 40 chit subscribers and verify prize statuses.</p>
+            <h2 class="text-base sm:text-lg font-bold text-slate-900">Member Directory</h2>
+            <p class="text-xs text-slate-500" id="member-count-summary">Subscribers registered: 0 / 40</p>
           </div>
-          <div class="flex gap-2 w-full sm:w-auto">
-            <input type="text" id="member-search" placeholder="Search by name, phone, M-01..." oninput="app.filterMembers(this.value)" class="px-4 py-2 border rounded-xl text-sm w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-indigo-600">
-            <button id="add-member-btn" onclick="app.openMemberModal()" class="px-4 py-2 bg-indigo-900 hover:bg-indigo-800 text-white rounded-xl text-sm font-semibold whitespace-nowrap">
-              + Add Member
+          <div class="flex gap-2">
+            <input type="text" id="member-search" placeholder="Search..." oninput="app.filterMembers(this.value)" class="px-3 py-2 border rounded-xl text-xs w-full sm:w-60 focus:outline-none focus:ring-2 focus:ring-indigo-600 bg-white shadow-sm" />
+            <button id="add-member-btn" onclick="app.openMemberModal()" class="px-4 py-2 bg-indigo-900 hover:bg-indigo-800 text-white rounded-xl text-xs font-bold whitespace-nowrap shadow-sm">
+              + Add
             </button>
           </div>
         </div>
 
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
-          <table class="w-full text-left text-sm">
+        <!-- Mobile View -->
+        <div id="member-mobile-cards" class="sm:hidden space-y-2.5"></div>
+
+        <!-- Desktop View -->
+        <div class="hidden sm:block bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
+          <table class="w-full text-left text-xs">
             <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
               <tr>
-                <th class="p-3">Member ID</th>
-                <th class="p-3">Subscriber Name</th>
-                <th class="p-3">Contact</th>
+                <th class="p-3">ID</th>
+                <th class="p-3">Subscriber</th>
+                <th class="p-3">Phone</th>
                 <th class="p-3 text-center">Prized Month</th>
-                <th class="p-3 text-right">Prize Disbursed</th>
                 <th class="p-3 text-right">Total Paid</th>
-                <th class="p-3 text-center">Status</th>
-                <th class="p-3 text-right">Action</th>
+                <th class="p-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody id="member-table-body" class="divide-y divide-slate-100">
-              <!-- Rendered via JS -->
-            </tbody>
+            <tbody id="member-desktop-tbody" class="divide-y divide-slate-100"></tbody>
           </table>
         </div>
       </section>
 
       <!-- 4. MONTHLY COLLECTIONS -->
-      <section id="view-collections" class="space-y-4 hidden">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-2xl border border-slate-200">
+      <section id="view-collections" class="space-y-3 hidden">
+        <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
-            <h2 class="text-xl font-bold text-slate-900">Monthly Collections</h2>
-            <p class="text-xs text-slate-500">Record subscriber payments. Cutoff: 15th of the month. Past months are locked.</p>
+            <h2 class="text-base sm:text-lg font-bold text-slate-900">Monthly Collections</h2>
+            <p class="text-[11px] text-slate-400">Past months locked. Cut-off: 15th.</p>
           </div>
-          <div class="flex items-center gap-3">
-            <label class="text-xs font-semibold text-slate-500">Select Month:</label>
-            <select id="collection-month-select" onchange="app.loadCollectionsGrid(parseInt(this.value))" class="border rounded-xl px-3 py-1.5 text-sm font-medium bg-slate-50">
-              <!-- 41 Months options -->
+          <div class="w-full sm:w-auto">
+            <select id="collection-month-select" onchange="app.loadCollectionsGrid(parseInt(this.value))" class="w-full border rounded-xl px-3 py-2 text-xs font-semibold bg-slate-50">
             </select>
           </div>
         </div>
 
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
-          <table class="w-full text-left text-sm">
+        <div id="collection-mobile-cards" class="sm:hidden space-y-2.5"></div>
+
+        <div class="hidden sm:block bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
+          <table class="w-full text-left text-xs">
             <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
               <tr>
-                <th class="p-3">Member No</th>
-                <th class="p-3">Member Name</th>
-                <th class="p-3 text-right">Scheduled EMI</th>
-                <th class="p-3 text-right">Amount Paid (₹)</th>
-                <th class="p-3">Payment Mode</th>
-                <th class="p-3">Payment Date</th>
-                <th class="p-3">Reference / Remarks</th>
+                <th class="p-3">ID</th>
+                <th class="p-3">Subscriber Name</th>
+                <th class="p-3 text-right">EMI</th>
+                <th class="p-3 text-right">Paid</th>
+                <th class="p-3">Mode</th>
+                <th class="p-3">Date</th>
                 <th class="p-3 text-right">Action</th>
               </tr>
             </thead>
-            <tbody id="collection-grid-body" class="divide-y divide-slate-100">
-              <!-- Rendered via JS -->
-            </tbody>
+            <tbody id="collection-desktop-tbody" class="divide-y divide-slate-100"></tbody>
           </table>
         </div>
       </section>
 
       <!-- 5. MEMBER PASSBOOK -->
-      <section id="view-passbook" class="space-y-4 hidden">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 no-print">
+      <section id="view-passbook" class="space-y-3 hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 no-print">
           <div>
-            <h2 class="text-xl font-bold text-slate-900">Subscriber Passbook</h2>
-            <p class="text-sm text-slate-500">Month-by-month financial ledger with automatic advance/due carry forward.</p>
+            <h2 class="text-base sm:text-lg font-bold text-slate-900">Subscriber Passbook</h2>
+            <p class="text-xs text-slate-500">Live ledger with carry-forward balance</p>
           </div>
           <div class="flex items-center gap-2">
-            <div id="passbook-picker-container">
-              <select id="passbook-member-select" onchange="app.renderPassbook(this.value)" class="border rounded-xl px-4 py-2 text-sm font-medium bg-white">
-                <!-- Members populated here -->
-              </select>
-            </div>
-            <button onclick="window.print()" class="px-4 py-2 border rounded-xl bg-white text-slate-700 text-sm font-medium hover:bg-slate-50 flex items-center gap-2">
-              <i class="ph ph-printer"></i> Print / PDF
+            <select id="passbook-member-select" onchange="app.renderPassbook(this.value)" class="w-full sm:w-auto border rounded-xl px-3 py-2 text-xs font-semibold bg-white shadow-sm"></select>
+            <button onclick="window.print()" class="px-3 py-2 border rounded-xl bg-white text-xs font-semibold text-slate-700 whitespace-nowrap shadow-sm">
+              <i class="ph ph-printer"></i>
             </button>
           </div>
         </div>
 
-        <div id="printable-passbook" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
-          <div class="border-b pb-4 flex justify-between items-start">
+        <div id="printable-passbook" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-4">
+          <div class="border-b pb-3 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
             <div>
-              <h3 class="text-2xl font-bold text-indigo-900">mis-org Chit Fund Ledger</h3>
-              <p class="text-sm text-slate-500 mt-1">Chit Value: ₹5,00,000 | 41 Months | Base Installment: ₹12,500</p>
-              <div class="mt-4 grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
-                <div><span class="text-slate-400 font-medium">Subscriber:</span> <span id="pb-member-name" class="font-bold text-slate-800">-</span></div>
-                <div><span class="text-slate-400 font-medium">Member ID:</span> <span id="pb-member-id" class="font-bold text-slate-800">-</span></div>
-                <div><span class="text-slate-400 font-medium">Phone:</span> <span id="pb-member-phone" class="text-slate-800">-</span></div>
-                <div><span class="text-slate-400 font-medium">Prize Status:</span> <span id="pb-member-prized" class="font-semibold text-slate-800">Non-Prized</span></div>
-              </div>
+              <span id="pb-member-id" class="text-xs font-mono font-bold bg-indigo-50 text-indigo-900 px-2 py-0.5 rounded">M-01</span>
+              <h3 id="pb-member-name" class="text-lg font-bold text-slate-900 mt-1">-</h3>
+              <p id="pb-member-prized" class="text-xs text-slate-500">Non-Prized</p>
             </div>
-            <div class="text-right">
-              <span class="text-xs font-semibold uppercase text-slate-400">Current Balance Status</span>
-              <div id="pb-balance-pill" class="mt-1 text-lg font-bold px-3 py-1 rounded-xl bg-slate-100 text-slate-700">Settled</div>
+            <div>
+              <span class="text-[10px] font-bold uppercase text-slate-400 block sm:text-right">Balance Status</span>
+              <div id="pb-balance-pill" class="text-sm font-bold px-3 py-1 rounded-xl bg-slate-100 text-slate-700 w-fit sm:ml-auto">Settled</div>
             </div>
           </div>
 
           <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs sm:text-sm">
+            <table class="w-full text-left text-xs whitespace-nowrap">
               <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
                 <tr>
                   <th class="p-2">Month</th>
-                  <th class="p-2">Date</th>
-                  <th class="p-2 text-right">Scheduled EMI</th>
-                  <th class="p-2 text-right">Dividend</th>
-                  <th class="p-2 text-right">Amount Paid</th>
-                  <th class="p-2 text-right">Month Balance</th>
-                  <th class="p-2 text-right">Cumulative Balance</th>
+                  <th class="p-2 text-right">Scheduled</th>
+                  <th class="p-2 text-right">Paid</th>
+                  <th class="p-2 text-right">Month +/-</th>
+                  <th class="p-2 text-right">Balance</th>
                   <th class="p-2 text-center">Status</th>
-                  <th class="p-2">Mode & Ref</th>
                 </tr>
               </thead>
-              <tbody id="passbook-ledger-body" class="divide-y divide-slate-100">
-                <!-- Ledger rows -->
-              </tbody>
+              <tbody id="passbook-ledger-body" class="divide-y divide-slate-100"></tbody>
             </table>
           </div>
         </div>
       </section>
 
       <!-- 6. AUCTIONS -->
-      <section id="view-auctions" class="space-y-4 hidden">
-        <div class="flex justify-between items-center">
-          <div>
-            <h2 class="text-xl font-bold text-slate-900">Chit Auctions</h2>
-            <p class="text-sm text-slate-500">Record winning bids. Winners are permanently marked as prized and cannot bid again.</p>
-          </div>
-        </div>
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
-          <table class="w-full text-left text-sm">
+      <section id="view-auctions" class="space-y-3 hidden">
+        <h2 class="text-base sm:text-lg font-bold text-slate-900">Chit Auctions</h2>
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
+          <table class="w-full text-left text-xs whitespace-nowrap">
             <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
               <tr>
-                <th class="p-3">Month</th>
-                <th class="p-3">Calendar Month</th>
-                <th class="p-3 text-right">Fixed Discount</th>
-                <th class="p-3 text-right">Net Prize Money</th>
-                <th class="p-3">Prized Subscriber</th>
-                <th class="p-3">Auction Date</th>
-                <th class="p-3 text-right">Action</th>
+                <th class="p-2.5">Month</th>
+                <th class="p-2.5 text-right">Net Prize Money</th>
+                <th class="p-2.5">Winning Subscriber</th>
+                <th class="p-2.5">Date</th>
+                <th class="p-2.5 text-right">Action</th>
               </tr>
             </thead>
-            <tbody id="auction-table-body" class="divide-y divide-slate-100">
-              <!-- Auction rows -->
-            </tbody>
+            <tbody id="auction-table-body" class="divide-y divide-slate-100"></tbody>
           </table>
         </div>
       </section>
 
       <!-- 7. REPORTS -->
-      <section id="view-reports" class="space-y-6 hidden">
+      <section id="view-reports" class="space-y-4 hidden">
         <div class="flex justify-between items-center">
-          <div>
-            <h2 class="text-xl font-bold text-slate-900">Financial Reports & Exports</h2>
-            <p class="text-sm text-slate-500">Defaulter auditing, mode-wise breakup, and Excel/CSV exporting.</p>
-          </div>
-          <button onclick="app.exportDefaultersCSV()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-sm font-semibold flex items-center gap-2">
-            <i class="ph ph-file-csv"></i> Export Defaulters to CSV
+          <h2 class="text-base sm:text-lg font-bold text-slate-900">Reports</h2>
+          <button onclick="app.exportDefaultersCSV()" class="px-3 py-1.5 bg-emerald-700 text-white rounded-xl text-xs font-bold">
+            <i class="ph ph-file-csv"></i> Export CSV
           </button>
         </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="bg-white p-5 rounded-2xl border border-slate-200">
-            <h3 class="font-bold text-slate-900 mb-3">Defaulters List (Pending Dues)</h3>
-            <div class="overflow-y-auto max-h-80">
-              <table class="w-full text-left text-sm">
-                <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
-                  <tr>
-                    <th class="p-2">Member</th>
-                    <th class="p-2 text-right">Expected</th>
-                    <th class="p-2 text-right">Paid</th>
-                    <th class="p-2 text-right text-rose-600">Due Amount</th>
-                  </tr>
-                </thead>
-                <tbody id="defaulters-table-body" class="divide-y divide-slate-100"></tbody>
-              </table>
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="bg-white p-4 rounded-2xl border border-slate-200">
+            <h3 class="font-bold text-xs text-slate-500 uppercase tracking-wider mb-2">Defaulters List</h3>
+            <div id="defaulters-container" class="space-y-2 max-h-72 overflow-y-auto"></div>
           </div>
-
-          <div class="bg-white p-5 rounded-2xl border border-slate-200">
-            <h3 class="font-bold text-slate-900 mb-3">Collections by Payment Method</h3>
-            <div class="space-y-4 pt-2" id="payment-mode-stats">
-              <!-- Mode aggregates -->
-            </div>
+          <div class="bg-white p-4 rounded-2xl border border-slate-200">
+            <h3 class="font-bold text-xs text-slate-500 uppercase tracking-wider mb-3">Collections by Mode</h3>
+            <div class="space-y-3" id="payment-mode-stats"></div>
           </div>
         </div>
       </section>
 
-      <!-- 8. AUDIT ACTIVITY LOG -->
-      <section id="view-audit" class="space-y-4 hidden">
-        <div>
-          <h2 class="text-xl font-bold text-slate-900">Immutable Activity Log</h2>
-          <p class="text-sm text-slate-500">Read-only audit log tracking changes made in the system.</p>
-        </div>
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
-          <table class="w-full text-left text-xs sm:text-sm">
+      <!-- 8. ACTIVITY LOG -->
+      <section id="view-audit" class="space-y-3 hidden">
+        <h2 class="text-base sm:text-lg font-bold text-slate-900">Audit Trail (Read Only)</h2>
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
+          <table class="w-full text-left text-xs whitespace-nowrap">
             <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
               <tr>
-                <th class="p-3">Timestamp</th>
-                <th class="p-3">User</th>
-                <th class="p-3">Role</th>
-                <th class="p-3">Screen</th>
-                <th class="p-3">Action</th>
-                <th class="p-3">Details</th>
+                <th class="p-2.5">Date/Time</th>
+                <th class="p-2.5">User</th>
+                <th class="p-2.5">Action</th>
+                <th class="p-2.5">Details</th>
               </tr>
             </thead>
-            <tbody id="audit-table-body" class="divide-y divide-slate-100">
-              <!-- Populated via Firestore -->
-            </tbody>
+            <tbody id="audit-table-body" class="divide-y divide-slate-100"></tbody>
           </table>
         </div>
       </section>
@@ -434,24 +359,31 @@
   </div>
 
   <!-- ================= MODALS ================= -->
-  <!-- Collection Entry Modal -->
-  <div id="collection-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-      <h3 class="text-lg font-bold text-slate-900 mb-1" id="coll-modal-title">Record Collection</h3>
-      <p class="text-xs text-slate-500 mb-4" id="coll-modal-subtitle"></p>
+  <!-- Record Collection Modal -->
+  <div id="collection-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto">
+      <div class="flex justify-between items-start mb-3">
+        <div>
+          <h3 class="text-base font-bold text-slate-900" id="coll-modal-title">Record Payment</h3>
+          <p class="text-xs text-slate-500" id="coll-modal-subtitle"></p>
+        </div>
+        <button onclick="app.closeCollectionModal()" class="p-1 rounded-full text-slate-400 hover:text-slate-600">
+          <i class="ph ph-x text-lg"></i>
+        </button>
+      </div>
       
-      <form id="collection-form" onsubmit="app.saveCollection(event)" class="space-y-4">
+      <form id="collection-form" onsubmit="app.saveCollection(event)" class="space-y-3">
         <input type="hidden" id="coll-member-id" />
         <input type="hidden" id="coll-month" />
 
         <div>
           <label class="block text-xs font-semibold text-slate-500 mb-1">Amount Paid (₹)</label>
-          <input type="number" id="coll-amount" required step="50" class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-600 focus:outline-none" />
+          <input type="number" id="coll-amount" required step="50" class="w-full border rounded-xl px-3 py-2.5 text-sm font-semibold" />
         </div>
 
         <div>
           <label class="block text-xs font-semibold text-slate-500 mb-1">Payment Method</label>
-          <select id="coll-method" class="w-full border rounded-xl px-3 py-2 text-sm bg-white focus:outline-none">
+          <select id="coll-method" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white">
             <option value="UPI">UPI to Foreman</option>
             <option value="Bank Transfer">Bank Transfer</option>
             <option value="Cash">Cash</option>
@@ -459,77 +391,83 @@
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Payment Date (DD-MM-YYYY)</label>
-          <input type="date" id="coll-date" required class="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none" />
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Payment Date</label>
+          <input type="date" id="coll-date" required class="w-full border rounded-xl px-3 py-2.5 text-sm" />
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Transaction Ref / Remarks (Optional)</label>
-          <input type="text" id="coll-remarks" placeholder="UTR, cheque no or remarks" class="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none" />
+          <label class="block text-xs font-semibold text-slate-500 mb-1">UTR / Remarks</label>
+          <input type="text" id="coll-remarks" placeholder="Optional notes or UTR" class="w-full border rounded-xl px-3 py-2.5 text-sm" />
         </div>
 
-        <div class="flex justify-end gap-3 pt-2">
-          <button type="button" onclick="app.closeCollectionModal()" class="px-4 py-2 border rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50">Cancel</button>
-          <button type="submit" class="px-5 py-2 bg-indigo-900 text-white rounded-xl text-sm font-bold hover:bg-indigo-800">Save Entry</button>
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="app.closeCollectionModal()" class="w-1/2 py-2.5 border rounded-xl text-xs font-semibold text-slate-600">Cancel</button>
+          <button type="submit" class="w-1/2 py-2.5 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow">Save</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Member Add/Edit Modal -->
-  <div id="member-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-      <h3 class="text-lg font-bold text-slate-900 mb-4" id="member-modal-title">Subscriber Record</h3>
-      <form id="member-form" onsubmit="app.saveMember(event)" class="space-y-4">
+  <!-- Subscriber Modal (Auto ID) -->
+  <div id="member-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto">
+      <div class="flex justify-between items-start mb-3">
+        <h3 class="text-base font-bold text-slate-900" id="member-modal-title">Subscriber Record</h3>
+        <button onclick="app.closeMemberModal()" class="p-1 rounded-full text-slate-400">
+          <i class="ph ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <form id="member-form" onsubmit="app.saveMember(event)" class="space-y-3">
         <input type="hidden" id="mem-edit-id" />
         
         <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Member Number (e.g. M-01 to M-40)</label>
-          <input type="text" id="mem-number" required placeholder="M-01" class="w-full border rounded-xl px-3 py-2 text-sm uppercase" />
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Member ID (Auto-Generated)</label>
+          <input type="text" id="mem-number" readonly required class="w-full border rounded-xl px-3 py-2 text-sm font-mono font-bold bg-slate-100 text-indigo-950 cursor-not-allowed select-none" />
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Full Name</label>
-          <input type="text" id="mem-name" required class="w-full border rounded-xl px-3 py-2 text-sm" />
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Subscriber Full Name</label>
+          <input type="text" id="mem-name" required placeholder="Full Name" class="w-full border rounded-xl px-3 py-2 text-sm" />
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-500 mb-1">Phone Number</label>
-          <input type="tel" id="mem-phone" required class="w-full border rounded-xl px-3 py-2 text-sm" />
+          <input type="tel" id="mem-phone" required placeholder="Phone Number" class="w-full border rounded-xl px-3 py-2 text-sm" />
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Subscriber Google Account Email (For Member Sign-in)</label>
-          <input type="email" id="mem-email" class="w-full border rounded-xl px-3 py-2 text-sm" placeholder="member@example.com" />
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Google Email (For Passbook Access)</label>
+          <input type="email" id="mem-email" class="w-full border rounded-xl px-3 py-2 text-sm" placeholder="member@gmail.com" />
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-500 mb-1">Address (Optional)</label>
-          <textarea id="mem-address" rows="2" class="w-full border rounded-xl px-3 py-2 text-sm"></textarea>
+          <input type="text" id="mem-address" placeholder="Address" class="w-full border rounded-xl px-3 py-2 text-sm" />
         </div>
 
-        <div class="flex justify-end gap-3 pt-2">
-          <button type="button" onclick="app.closeMemberModal()" class="px-4 py-2 border rounded-xl text-sm font-medium text-slate-600">Cancel</button>
-          <button type="submit" class="px-5 py-2 bg-indigo-900 text-white rounded-xl text-sm font-bold">Save Subscriber</button>
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="app.closeMemberModal()" class="w-1/2 py-2.5 border rounded-xl text-xs font-semibold text-slate-600">Cancel</button>
+          <button type="submit" class="w-1/2 py-2.5 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow">Save Member</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Record Auction Winner Modal -->
-  <div id="auction-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-      <h3 class="text-lg font-bold text-slate-900 mb-1">Record Auction Winner</h3>
-      <p class="text-xs text-slate-500 mb-4" id="auc-modal-month-info"></p>
-      <form id="auction-form" onsubmit="app.saveAuction(event)" class="space-y-4">
+  <!-- Auction Modal -->
+  <div id="auction-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 shadow-2xl">
+      <h3 class="text-base font-bold text-slate-900 mb-1">Award Auction</h3>
+      <p class="text-xs text-slate-500 mb-3" id="auc-modal-month-info"></p>
+      <form id="auction-form" onsubmit="app.saveAuction(event)" class="space-y-3">
         <input type="hidden" id="auc-month" />
         <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Select Non-Prized Subscriber</label>
-          <select id="auc-winner-select" required class="w-full border rounded-xl px-3 py-2 text-sm bg-white"></select>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Select Winner</label>
+          <select id="auc-winner-select" required class="w-full border rounded-xl px-3 py-2.5 text-xs bg-white"></select>
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-500 mb-1">Auction Date</label>
-          <input type="date" id="auc-date" required class="w-full border rounded-xl px-3 py-2 text-sm" />
+          <input type="date" id="auc-date" required class="w-full border rounded-xl px-3 py-2.5 text-xs" />
         </div>
-        <div class="flex justify-end gap-3 pt-2">
-          <button type="button" onclick="document.getElementById('auction-modal').classList.add('hidden')" class="px-4 py-2 border rounded-xl text-sm font-medium">Cancel</button>
-          <button type="submit" class="px-5 py-2 bg-indigo-900 text-white rounded-xl text-sm font-bold">Confirm Winner</button>
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="document.getElementById('auction-modal').classList.add('hidden')" class="w-1/2 py-2.5 border rounded-xl text-xs font-semibold">Cancel</button>
+          <button type="submit" class="w-1/2 py-2.5 bg-indigo-900 text-white rounded-xl text-xs font-bold">Confirm</button>
         </div>
       </form>
     </div>
@@ -550,24 +488,24 @@
       doc, 
       getDoc, 
       setDoc, 
+      deleteDoc,
       addDoc, 
       collection, 
       query, 
       where, 
-      getDocs, 
-      serverTimestamp 
+      getDocs 
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // ------------------------------------------------------------------------
-    // Replace with your Firebase Project Configuration from Firebase Console
-    // ------------------------------------------------------------------------
+    // -------------------------------------------------------------
+    // REPLACE WITH YOUR FIREBASE CONFIG
+    // -------------------------------------------------------------
     const firebaseConfig = {
-      apiKey: "AIzaSyBqdtnXqFNo2IqjurUIUfX3gG1AIAwamAM",
-      authDomain: "mis-org.firebaseapp.com",
-      projectId: "mis-org",
-      storageBucket: "mis-org.firebasestorage.app",
-      messagingSenderId: "263707141220",
-      appId: "1:263707141220:web:51d1430645dad8466aeb71"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
 
     const fbApp = initializeApp(firebaseConfig);
@@ -623,15 +561,12 @@
       constructor() {
         this.currentUser = null;
         this.userRole = null;
-        this.memberRecord = null;
         this.activeChitId = "group_a";
-        this.currentMonthIdx = 1; // Month 1 = Oct 2026
+        this.currentMonthIdx = 1;
         this.startYear = 2026;
         this.startMonth = 10;
-        this.cutoffDay = 15;
         this.navigationStack = [];
 
-        // In-memory collections cache
         this.members = [];
         this.collections = [];
         this.auctions = [];
@@ -646,7 +581,6 @@
         this.calculateActiveMonth();
       }
 
-      // Formatters
       formatINR(val) {
         return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val || 0);
       }
@@ -659,7 +593,6 @@
       }
 
       getMonthLabel(mNum) {
-        // Month 1 = Oct 2026
         const d = new Date(this.startYear, this.startMonth - 1 + (mNum - 1), 1);
         return d.toLocaleString('en-IN', { month: 'short', year: 'numeric' });
       }
@@ -669,48 +602,63 @@
         const start = new Date(this.startYear, this.startMonth - 1, 1);
         const diffMonths = (today.getFullYear() - start.getFullYear()) * 12 + (today.getMonth() - start.getMonth()) + 1;
         this.currentMonthIdx = Math.min(Math.max(diffMonths, 1), 41);
-        document.getElementById('collection-month-select').value = this.currentMonthIdx;
+        const sel = document.getElementById('collection-month-select');
+        if (sel) sel.value = this.currentMonthIdx;
       }
 
-      // Toast Notifications
+      // Auto-assign lowest available Member ID (M-01 to M-40)
+      generateNextMemberId() {
+        const usedNumbers = new Set(
+          this.members
+            .map(m => {
+              const match = m.memberNo?.match(/M-(\d+)/i);
+              return match ? parseInt(match[1], 10) : null;
+            })
+            .filter(n => n !== null)
+        );
+
+        for (let i = 1; i <= 40; i++) {
+          if (!usedNumbers.has(i)) {
+            return `M-${String(i).padStart(2, '0')}`;
+          }
+        }
+        return null;
+      }
+
       notify(msg, isError = false) {
         const toast = document.getElementById('toast');
-        const text = document.getElementById('toast-message');
-        const icon = document.getElementById('toast-icon');
-        text.innerText = msg;
-        icon.className = isError ? "ph ph-warning-circle text-rose-500 text-xl" : "ph ph-check-circle text-emerald-400 text-xl";
+        document.getElementById('toast-message').innerText = msg;
+        document.getElementById('toast-icon').className = isError ? "ph ph-warning-circle text-rose-500 text-xl" : "ph ph-check-circle text-emerald-400 text-xl";
         toast.classList.remove('hidden');
         setTimeout(() => toast.classList.add('hidden'), 3500);
       }
 
-      // Authentication
       setupAuthListener() {
         onAuthStateChanged(auth, async (user) => {
           if (user) {
-            // Verify if user exists in Firestore users collection
             try {
-              const uDoc = await getDoc(doc(db, "users", user.uid));
-              if (!uDoc.exists()) {
-                // Secondary check by email
-                const q = query(collection(db, "users"), where("email", "==", user.email));
+              let uDoc = await getDoc(doc(db, "users", user.uid));
+              let profile = uDoc.exists() ? uDoc.data() : null;
+
+              if (!profile) {
+                const q = query(collection(db, "users"), where("email", "==", user.email.toLowerCase()));
                 const qSnap = await getDocs(q);
-                if (qSnap.empty) {
+                if (!qSnap.empty) {
+                  profile = qSnap.docs[0].data();
+                } else {
                   await signOut(auth);
-                  this.notify("Unauthorized account. Contact Admin to register your email.", true);
+                  this.notify("Unauthorized Google account. Ask Admin to register you.", true);
                   this.showAuthScreen();
                   return;
                 }
               }
 
-              const profile = uDoc.exists() ? uDoc.data() : null;
               this.currentUser = user;
-              this.userRole = profile ? profile.role : "member";
-              this.userProfile = profile;
-
+              this.userRole = (profile.role || "member").toLowerCase();
               this.onUserAuthenticated();
             } catch (err) {
               console.error(err);
-              this.notify("Authentication verification failed", true);
+              this.notify("Auth error", true);
               this.showAuthScreen();
             }
           } else {
@@ -720,9 +668,8 @@
       }
 
       async signInWithGoogle() {
-        const provider = new GoogleAuthProvider();
         try {
-          await signInWithPopup(auth, provider);
+          await signInWithPopup(auth, new GoogleAuthProvider());
         } catch (err) {
           this.notify(err.message, true);
         }
@@ -737,25 +684,20 @@
         document.getElementById('auth-screen').classList.remove('hidden');
         document.getElementById('app-container').classList.add('hidden');
         document.getElementById('user-profile-widget').classList.add('hidden');
-        document.getElementById('chit-select-container').classList.add('hidden');
+        document.getElementById('module-tabs').classList.add('hidden');
       }
 
       async onUserAuthenticated() {
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('app-container').classList.remove('hidden');
         document.getElementById('user-profile-widget').classList.remove('hidden');
-        document.getElementById('chit-select-container').classList.remove('hidden');
-        document.getElementById('user-email-label').innerText = this.currentUser.email;
         document.getElementById('user-role-badge').innerText = this.userRole;
 
-        // Role-based visibility
         if (this.userRole === "member") {
           document.getElementById('module-tabs').classList.add('hidden');
-          document.getElementById('chit-select-container').classList.add('hidden');
-          document.getElementById('passbook-picker-container').classList.add('hidden');
           await this.loadData();
-          // Find this member's ID
-          const me = this.members.find(m => m.email === this.currentUser.email);
+          const currentEmail = (this.currentUser.email || '').trim().toLowerCase();
+          const me = this.members.find(m => (m.email || '').trim().toLowerCase() === currentEmail);
           if (me) {
             this.renderPassbook(me.memberNo);
             this.navigate('passbook', false);
@@ -765,18 +707,18 @@
           return;
         }
 
+        document.getElementById('module-tabs').classList.remove('hidden');
         if (this.userRole === "foreman") {
-          document.getElementById('tab-members').classList.add('hidden');
-          document.getElementById('tab-auctions').classList.add('hidden');
-          document.getElementById('tab-audit').classList.add('hidden');
-          document.getElementById('add-member-btn').classList.add('hidden');
+          document.getElementById('tab-members')?.classList.add('hidden');
+          document.getElementById('tab-auctions')?.classList.add('hidden');
+          document.getElementById('tab-audit')?.classList.add('hidden');
+          document.getElementById('add-member-btn')?.classList.add('hidden');
         }
 
         await this.loadData();
         this.navigate('dashboard', false);
       }
 
-      // Navigation & Back-button tracking
       navigate(tabName, addToHistory = true) {
         if (addToHistory && this.currentView && this.currentView !== tabName) {
           this.navigationStack.push(this.currentView);
@@ -784,25 +726,25 @@
         }
 
         this.currentView = tabName;
-        document.querySelectorAll('main, section[id^="view-"]').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('section[id^="view-"]').forEach(el => el.classList.add('hidden'));
         const targetView = document.getElementById(`view-${tabName}`);
         if (targetView) targetView.classList.remove('hidden');
 
         document.querySelectorAll('.tab-btn').forEach(btn => {
           if (btn.dataset.tab === tabName) {
-            btn.className = "tab-btn px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-900 text-white shadow-sm flex items-center gap-2";
+            btn.className = "tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-indigo-950 shadow-sm flex items-center gap-1.5";
           } else {
-            btn.className = "tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-indigo-900 hover:bg-slate-100 flex items-center gap-2";
+            btn.className = "tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5";
           }
         });
 
-        // Trigger view-specific re-renders
         if (tabName === 'dashboard') this.renderDashboard();
         if (tabName === 'members') this.renderMembers();
         if (tabName === 'collections') this.loadCollectionsGrid(this.currentMonthIdx);
         if (tabName === 'auctions') this.renderAuctions();
         if (tabName === 'reports') this.renderReports();
         if (tabName === 'audit') this.renderAuditLogs();
+        window.scrollTo(0, 0);
       }
 
       goBack() {
@@ -815,7 +757,6 @@
         }
       }
 
-      // Logging (Immutable Audit)
       async logActivity(screen, action, oldVal, newVal) {
         try {
           await addDoc(collection(db, "activity_logs"), {
@@ -825,51 +766,41 @@
             userRole: this.userRole,
             screen: screen,
             action: action,
-            oldVal: oldVal ? JSON.stringify(oldVal) : null,
             newVal: newVal ? JSON.stringify(newVal) : null
           });
         } catch (e) {
-          console.error("Activity log entry failed", e);
+          console.error("Audit log write failed", e);
         }
       }
 
-      // Data Load
       async loadData() {
         try {
-          // Fetch members
           const memSnap = await getDocs(query(collection(db, "members"), where("chitId", "==", this.activeChitId)));
           this.members = memSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-          
-          // Fetch collections
           const colSnap = await getDocs(query(collection(db, "collections"), where("chitId", "==", this.activeChitId)));
           this.collections = colSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-          // Fetch auctions
           const aucSnap = await getDocs(query(collection(db, "auctions"), where("chitId", "==", this.activeChitId)));
           this.auctions = aucSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
           this.populatePassbookSelector();
         } catch (err) {
-          console.error("Data load error:", err);
+          console.error("Data load failed", err);
         }
       }
 
-      // Master Schedule Rendering
       renderSchedule() {
         const tbody = document.getElementById('schedule-table-body');
-        tbody.innerHTML = MASTER_SCHEDULE.map(row => `
-          <tr class="${row.m === 1 || row.m === 10 || row.m === 41 ? 'bg-amber-50/70 font-semibold' : ''}">
-            <td class="p-3 text-slate-900 font-medium">Month ${row.m}</td>
-            <td class="p-3 text-slate-500">${this.getMonthLabel(row.m)}</td>
-            <td class="p-3 text-right text-slate-700">${this.formatINR(12500)}</td>
-            <td class="p-3 text-right text-rose-600">${this.formatINR(row.disc)}</td>
-            <td class="p-3 text-right text-emerald-600">${this.formatINR(row.div)}</td>
-            <td class="p-3 text-right font-bold text-indigo-900">${this.formatINR(row.emi)}</td>
-            <td class="p-3 text-right font-medium text-slate-800">${this.formatINR(row.net)}</td>
-            <td class="p-3 text-center">
-              ${row.note ? `<span class="px-2 py-0.5 rounded text-xs bg-amber-200 text-amber-900 font-bold">${row.note}</span>` : '-'}
-            </td>
+        tbody.innerHTML = MASTER_SCHEDULE.map(r => `
+          <tr class="${r.m === 1 || r.m === 10 || r.m === 41 ? 'bg-amber-50 font-semibold' : ''}">
+            <td class="p-2.5 font-bold text-slate-800">${r.m}</td>
+            <td class="p-2.5 text-slate-500">${this.getMonthLabel(r.m)}</td>
+            <td class="p-2.5 text-right font-bold text-indigo-900">${this.formatINR(r.emi)}</td>
+            <td class="p-2.5 text-right text-emerald-600">${this.formatINR(r.div)}</td>
+            <td class="p-2.5 text-right text-rose-500">${this.formatINR(r.disc)}</td>
+            <td class="p-2.5 text-right font-semibold text-slate-700">${this.formatINR(r.net)}</td>
+            <td class="p-2.5 text-center">${r.note ? `<span class="bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded text-[10px] font-bold">${r.note}</span>` : '-'}</td>
           </tr>
         `).join('');
       }
@@ -877,72 +808,79 @@
       populateMonthDropdowns() {
         const select = document.getElementById('collection-month-select');
         select.innerHTML = MASTER_SCHEDULE.map(r => `
-          <option value="${r.m}">Month ${r.m} (${this.getMonthLabel(r.m)}) - EMI: ${this.formatINR(r.emi)}</option>
+          <option value="${r.m}">Month ${r.m} (${this.getMonthLabel(r.m)}) • EMI: ${this.formatINR(r.emi)}</option>
         `).join('');
       }
 
-      // Dashboard
       renderDashboard() {
         const curM = this.currentMonthIdx;
         const curSchedule = MASTER_SCHEDULE.find(s => s.m === curM);
         const monthCollections = this.collections.filter(c => c.month === curM);
-        const paidSubscribersCount = new Set(monthCollections.filter(c => c.amountPaid >= curSchedule.emi).map(c => c.memberNo)).size;
+        const memberCount = this.members.length;
+        const paidCount = new Set(monthCollections.filter(c => c.amountPaid >= curSchedule.emi).map(c => c.memberNo)).size;
         const totalAmountMonth = monthCollections.reduce((acc, c) => acc + (Number(c.amountPaid) || 0), 0);
         
-        document.getElementById('dash-month-name').innerText = `Month ${curM} (${this.getMonthLabel(curM)})`;
-        document.getElementById('dash-paid-count').innerText = `${paidSubscribersCount} / 40 Paid`;
+        document.getElementById('dash-month-name').innerText = `Month ${curM}`;
+        document.getElementById('dash-paid-count').innerText = `${paidCount} / ${memberCount} Paid`;
         document.getElementById('dash-month-collected').innerText = this.formatINR(totalAmountMonth);
-        document.getElementById('dash-month-expected').innerText = `Expected: ${this.formatINR(curSchedule.emi * 40)}`;
+        document.getElementById('dash-month-expected').innerText = `Target: ${this.formatINR(curSchedule.emi * memberCount)}`;
 
         const prizedCount = this.members.filter(m => m.isPrized).length;
-        document.getElementById('dash-prized-ratio').innerText = `${prizedCount} / 40`;
-        document.getElementById('dash-nonprized-count').innerText = `${40 - prizedCount} Non-prized`;
+        document.getElementById('dash-prized-ratio').innerText = `${prizedCount} / ${memberCount}`;
+        document.getElementById('dash-nonprized-count').innerText = `${Math.max(0, memberCount - prizedCount)} Non-prized`;
 
-        // Calculate pending dues up to current month
-        let totalExpectedAll = 0;
-        for (let m = 1; m <= curM; m++) {
-          const sch = MASTER_SCHEDULE.find(s => s.m === m);
-          totalExpectedAll += sch.emi * 40;
-        }
+        let expectedToDate = 0;
+        for (let m = 1; m <= curM; m++) expectedToDate += MASTER_SCHEDULE.find(s => s.m === m).emi;
         const totalPaidAll = this.collections.reduce((sum, c) => sum + (Number(c.amountPaid) || 0), 0);
-        const totalPending = Math.max(0, totalExpectedAll - totalPaidAll);
+        const totalPending = Math.max(0, (expectedToDate * memberCount) - totalPaidAll);
         document.getElementById('dash-total-pending').innerText = this.formatINR(totalPending);
       }
 
-      // Member Directory
       renderMembers(list = this.members) {
-        const tbody = document.getElementById('member-table-body');
-        tbody.innerHTML = list.map(m => {
-          const totalPaid = this.collections
-            .filter(c => c.memberNo === m.memberNo)
-            .reduce((sum, c) => sum + (Number(c.amountPaid) || 0), 0);
+        document.getElementById('member-count-summary').innerText = `Subscribers registered: ${this.members.length} / 40`;
 
+        // Mobile Cards
+        const mContainer = document.getElementById('member-mobile-cards');
+        mContainer.innerHTML = list.length === 0 ? `<div class="p-6 text-center text-xs text-slate-400 bg-white rounded-2xl">No subscribers found. Click "+ Add" above.</div>` : list.map(m => {
+          const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.amountPaid) || 0), 0);
           return `
-            <tr class="hover:bg-slate-50 transition">
-              <td class="p-3 font-mono font-bold text-indigo-900">${m.memberNo}</td>
-              <td class="p-3">
-                <div class="font-medium text-slate-800">${m.name}</div>
-                <div class="text-xs text-slate-400">${m.email || 'No Google account linked'}</div>
-              </td>
-              <td class="p-3 text-slate-600">${m.phone || '-'}</td>
-              <td class="p-3 text-center">
-                ${m.isPrized ? `<span class="px-2 py-1 bg-amber-100 text-amber-800 rounded-md font-bold text-xs">Month ${m.prizedMonth}</span>` : '<span class="text-slate-400 text-xs">Non-prized</span>'}
-              </td>
-              <td class="p-3 text-right font-medium text-slate-700">${m.prizeMoney ? this.formatINR(m.prizeMoney) : '-'}</td>
-              <td class="p-3 text-right font-bold text-emerald-700">${this.formatINR(totalPaid)}</td>
-              <td class="p-3 text-center">
-                <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${m.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
-                  ${m.isActive ? 'Active' : 'Inactive'}
-                </span>
-              </td>
-              <td class="p-3 text-right space-x-2">
-                <button onclick="app.viewPassbookForMember('${m.memberNo}')" title="View Passbook" class="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100">
-                  <i class="ph ph-book-open text-base"></i>
-                </button>
+            <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+              <div class="space-y-0.5">
+                <div class="flex items-center gap-1.5">
+                  <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-1.5 py-0.5 rounded">${m.memberNo}</span>
+                  <span class="font-bold text-xs text-slate-800">${m.name}</span>
+                </div>
+                <div class="text-[11px] text-slate-500">${m.phone}</div>
+                <div class="text-[11px] text-emerald-600 font-bold">Total Paid: ${this.formatINR(totalPaid)}</div>
+                ${m.isPrized ? `<span class="inline-block bg-amber-100 text-amber-900 text-[10px] font-bold px-1.5 py-0.5 rounded">Prized (M${m.prizedMonth})</span>` : ''}
+              </div>
+              <div class="flex items-center gap-1">
+                <button onclick="app.viewPassbookForMember('${m.memberNo}')" class="p-2 rounded-xl bg-slate-100 text-slate-700 active:scale-90" title="Passbook"><i class="ph ph-book-open"></i></button>
                 ${this.userRole === 'admin' ? `
-                  <button onclick="app.openMemberModal('${m.memberNo}')" title="Edit Member" class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50">
-                    <i class="ph ph-pencil-simple text-base"></i>
-                  </button>
+                  <button onclick="app.openMemberModal('${m.memberNo}')" class="p-2 rounded-xl bg-indigo-50 text-indigo-700 active:scale-90" title="Edit"><i class="ph ph-pencil-simple"></i></button>
+                  <button onclick="app.deleteMember('${m.memberNo}')" class="p-2 rounded-xl bg-rose-50 text-rose-600 active:scale-90" title="Delete"><i class="ph ph-trash"></i></button>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Desktop Table
+        const dBody = document.getElementById('member-desktop-tbody');
+        dBody.innerHTML = list.map(m => {
+          const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.amountPaid) || 0), 0);
+          return `
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 font-mono font-bold text-indigo-900">${m.memberNo}</td>
+              <td class="p-3 font-semibold text-slate-800">${m.name}</td>
+              <td class="p-3 text-slate-600">${m.phone}</td>
+              <td class="p-3 text-center">${m.isPrized ? `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-bold">Month ${m.prizedMonth}</span>` : '<span class="text-slate-400">Non-prized</span>'}</td>
+              <td class="p-3 text-right font-bold text-emerald-600">${this.formatINR(totalPaid)}</td>
+              <td class="p-3 text-right space-x-1">
+                <button onclick="app.viewPassbookForMember('${m.memberNo}')" class="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100"><i class="ph ph-book-open"></i></button>
+                ${this.userRole === 'admin' ? `
+                  <button onclick="app.openMemberModal('${m.memberNo}')" class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50"><i class="ph ph-pencil-simple"></i></button>
+                  <button onclick="app.deleteMember('${m.memberNo}')" class="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50"><i class="ph ph-trash"></i></button>
                 ` : ''}
               </td>
             </tr>
@@ -951,7 +889,7 @@
       }
 
       filterMembers(queryStr) {
-        const q = queryStr.toLowerCase();
+        const q = (queryStr || '').toLowerCase();
         const filtered = this.members.filter(m => 
           m.name.toLowerCase().includes(q) || 
           m.memberNo.toLowerCase().includes(q) || 
@@ -961,26 +899,29 @@
       }
 
       openMemberModal(memberNo = null) {
-        if (this.userRole !== 'admin') {
-          this.notify("Admin role required to manage subscribers", true);
-          return;
-        }
+        if (this.userRole !== 'admin') return;
         document.getElementById('member-form').reset();
         document.getElementById('mem-edit-id').value = "";
         
         if (memberNo) {
+          // Edit existing member
           const m = this.members.find(x => x.memberNo === memberNo);
           document.getElementById('member-modal-title').innerText = `Edit Subscriber ${m.memberNo}`;
           document.getElementById('mem-edit-id').value = m.memberNo;
           document.getElementById('mem-number').value = m.memberNo;
-          document.getElementById('mem-number').readOnly = true;
           document.getElementById('mem-name').value = m.name;
           document.getElementById('mem-phone').value = m.phone;
           document.getElementById('mem-email').value = m.email || '';
           document.getElementById('mem-address').value = m.address || '';
         } else {
-          document.getElementById('member-modal-title').innerText = "Add New Subscriber";
-          document.getElementById('mem-number').readOnly = false;
+          // Auto-generate next ID
+          const nextId = this.generateNextMemberId();
+          if (!nextId) {
+            this.notify("Maximum subscriber limit reached (40 subscribers).", true);
+            return;
+          }
+          document.getElementById('member-modal-title').innerText = `Add New Subscriber (${nextId})`;
+          document.getElementById('mem-number').value = nextId;
         }
         document.getElementById('member-modal').classList.remove('hidden');
       }
@@ -992,24 +933,21 @@
       async saveMember(e) {
         e.preventDefault();
         const editId = document.getElementById('mem-edit-id').value;
-        const num = document.getElementById('mem-number').value.trim().toUpperCase();
-        const data = {
+        const num = document.getElementById('mem-number').value.trim();
+        const payload = {
           chitId: this.activeChitId,
           memberNo: num,
           name: document.getElementById('mem-name').value.trim(),
           phone: document.getElementById('mem-phone').value.trim(),
-          email: document.getElementById('mem-email').value.trim(),
+          email: document.getElementById('mem-email').value.trim().toLowerCase(),
           address: document.getElementById('mem-address').value.trim(),
           isActive: true
         };
 
-        const oldVal = editId ? this.members.find(m => m.memberNo === editId) : null;
         try {
-          const docRef = doc(db, "members", `${this.activeChitId}_${num}`);
-          await setDoc(docRef, data, { merge: true });
-          
-          await this.logActivity("Member Directory", editId ? "UPDATE_MEMBER" : "ADD_MEMBER", oldVal, data);
-          this.notify("Subscriber record saved");
+          await setDoc(doc(db, "members", `${this.activeChitId}_${num}`), payload, { merge: true });
+          await this.logActivity("Members", editId ? "EDIT_MEMBER" : "ADD_MEMBER", null, payload);
+          this.notify(`Subscriber ${num} saved`);
           this.closeMemberModal();
           await this.loadData();
           this.renderMembers();
@@ -1018,40 +956,79 @@
         }
       }
 
-      // Monthly Collections Grid
+      async deleteMember(memberNo) {
+        if (this.userRole !== 'admin') return;
+        if (!confirm(`Permanently delete subscriber ${memberNo}?`)) return;
+
+        try {
+          await deleteDoc(doc(db, "members", `${this.activeChitId}_${memberNo}`));
+          await this.logActivity("Members", "DELETE_MEMBER", { memberNo }, null);
+          this.notify(`Subscriber ${memberNo} removed`);
+          await this.loadData();
+          this.renderMembers();
+        } catch (err) {
+          this.notify(err.message, true);
+        }
+      }
+
       loadCollectionsGrid(monthNum) {
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
-        const tbody = document.getElementById('collection-grid-body');
-        
-        tbody.innerHTML = this.members.map(m => {
+        const isPastMonth = monthNum < this.currentMonthIdx;
+
+        // Mobile Cards
+        const mCards = document.getElementById('collection-mobile-cards');
+        mCards.innerHTML = this.members.map(m => {
           const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
           const isPaid = entry && entry.amountPaid > 0;
-          
-          // Editing permissions check
-          const isPastMonth = monthNum < this.currentMonthIdx;
           const isCreator = entry && entry.recordedByUid === this.currentUser?.uid;
           const canEdit = !isPastMonth && (this.userRole === 'admin' || isCreator || !entry);
 
           return `
-            <tr class="hover:bg-slate-50 transition">
-              <td class="p-3 font-mono font-bold text-indigo-900">${m.memberNo}</td>
-              <td class="p-3 font-medium text-slate-800">${m.name}</td>
-              <td class="p-3 text-right font-semibold text-slate-600">${this.formatINR(sch.emi)}</td>
-              <td class="p-3 text-right font-bold ${isPaid ? 'text-emerald-600' : 'text-slate-400'}">
-                ${entry ? this.formatINR(entry.amountPaid) : '₹0'}
-              </td>
-              <td class="p-3 text-xs text-slate-600">${entry?.paymentMethod || '-'}</td>
-              <td class="p-3 text-xs text-slate-500">${this.formatDate(entry?.paymentDate)}</td>
-              <td class="p-3 text-xs text-slate-400 max-w-xs truncate">${entry?.remarks || entry?.reference || '-'}</td>
-              <td class="p-3 text-right">
+            <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-1.5 py-0.5 rounded">${m.memberNo}</span>
+                  <span class="font-bold text-xs text-slate-800">${m.name}</span>
+                </div>
+                <div class="text-[11px] text-slate-500 mt-0.5">Scheduled EMI: <span class="font-semibold text-slate-700">${this.formatINR(sch.emi)}</span></div>
+                <div class="text-xs font-extrabold ${isPaid ? 'text-emerald-600' : 'text-slate-400'} mt-0.5">
+                  Paid: ${entry ? this.formatINR(entry.amountPaid) : '₹0'}
+                  ${entry?.paymentMethod ? `<span class="text-[10px] font-normal text-slate-400">(${entry.paymentMethod})</span>` : ''}
+                </div>
+              </div>
+              <div>
                 ${canEdit ? `
-                  <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}',${entry?.amountPaid || sch.emi})" 
-                          class="px-3 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg text-xs font-semibold">
+                  <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}',${entry?.amountPaid || sch.emi})" class="px-3.5 py-2 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow-sm">
                     ${entry ? 'Update' : 'Record'}
                   </button>
-                ` : `
-                  <span class="text-xs text-slate-400 italic">Locked</span>
-                `}
+                ` : `<span class="text-[11px] text-slate-400 font-semibold italic">Locked</span>`}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Desktop Table
+        const dBody = document.getElementById('collection-desktop-tbody');
+        dBody.innerHTML = this.members.map(m => {
+          const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
+          const isPaid = entry && entry.amountPaid > 0;
+          const isCreator = entry && entry.recordedByUid === this.currentUser?.uid;
+          const canEdit = !isPastMonth && (this.userRole === 'admin' || isCreator || !entry);
+
+          return `
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 font-mono font-bold text-indigo-900">${m.memberNo}</td>
+              <td class="p-3 font-semibold text-slate-800">${m.name}</td>
+              <td class="p-3 text-right font-medium">${this.formatINR(sch.emi)}</td>
+              <td class="p-3 text-right font-bold ${isPaid ? 'text-emerald-600' : 'text-slate-400'}">${entry ? this.formatINR(entry.amountPaid) : '₹0'}</td>
+              <td class="p-3 text-slate-500">${entry?.paymentMethod || '-'}</td>
+              <td class="p-3 text-slate-500">${this.formatDate(entry?.paymentDate)}</td>
+              <td class="p-3 text-right">
+                ${canEdit ? `
+                  <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}',${entry?.amountPaid || sch.emi})" class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg font-bold text-xs">
+                    ${entry ? 'Update' : 'Record'}
+                  </button>
+                ` : '<span class="text-slate-400 text-xs italic">Locked</span>'}
               </td>
             </tr>
           `;
@@ -1062,14 +1039,14 @@
         const mem = this.members.find(m => m.memberNo === memberNo);
         const existing = this.collections.find(c => c.month === monthNum && c.memberNo === memberNo);
 
-        document.getElementById('coll-modal-title').innerText = `Record Month ${monthNum} Collection`;
-        document.getElementById('coll-modal-subtitle').innerText = `Subscriber: ${memberNo} - ${mem.name}`;
+        document.getElementById('coll-modal-title').innerText = `Month ${monthNum} Collection`;
+        document.getElementById('coll-modal-subtitle').innerText = `${memberNo} - ${mem.name}`;
         document.getElementById('coll-member-id').value = memberNo;
         document.getElementById('coll-month').value = monthNum;
         document.getElementById('coll-amount').value = existing ? existing.amountPaid : defaultAmt;
         document.getElementById('coll-method').value = existing ? existing.paymentMethod : "UPI";
         document.getElementById('coll-date').value = existing?.paymentDate || new Date().toISOString().split('T')[0];
-        document.getElementById('coll-remarks').value = existing?.remarks || existing?.reference || "";
+        document.getElementById('coll-remarks').value = existing?.remarks || "";
 
         document.getElementById('collection-modal').classList.remove('hidden');
       }
@@ -1085,7 +1062,7 @@
         const amount = parseFloat(document.getElementById('coll-amount').value);
 
         if (monthNum < this.currentMonthIdx) {
-          this.notify("Previous months' collections are locked and cannot be edited.", true);
+          this.notify("Past months are locked from editing", true);
           return;
         }
 
@@ -1101,14 +1078,13 @@
           paymentDate: document.getElementById('coll-date').value,
           remarks: document.getElementById('coll-remarks').value,
           recordedByUid: existing ? existing.recordedByUid : this.currentUser.uid,
-          recordedByName: existing ? existing.recordedByName : (this.currentUser.displayName || this.currentUser.email),
           updatedAt: new Date().toISOString()
         };
 
         try {
           await setDoc(doc(db, "collections", docKey), payload, { merge: true });
-          await this.logActivity("Collections", existing ? "UPDATE_COLLECTION" : "RECORD_COLLECTION", existing, payload);
-          this.notify("Collection saved successfully");
+          await this.logActivity("Collections", "UPDATE_COLLECTION", null, payload);
+          this.notify("Payment recorded");
           this.closeCollectionModal();
           await this.loadData();
           this.loadCollectionsGrid(monthNum);
@@ -1117,7 +1093,6 @@
         }
       }
 
-      // Member Passbook & Carry-forward balance ledger
       populatePassbookSelector() {
         const select = document.getElementById('passbook-member-select');
         select.innerHTML = this.members.map(m => `
@@ -1137,60 +1112,48 @@
 
         document.getElementById('pb-member-name').innerText = mem.name;
         document.getElementById('pb-member-id').innerText = mem.memberNo;
-        document.getElementById('pb-member-phone').innerText = mem.phone || "-";
-        document.getElementById('pb-member-prized').innerText = mem.isPrized ? `Prized in Month ${mem.prizedMonth} (Payout: ${this.formatINR(mem.prizeMoney)})` : "Non-Prized";
+        document.getElementById('pb-member-prized').innerText = mem.isPrized ? `Prized in Month ${mem.prizedMonth} (₹${mem.prizeMoney.toLocaleString('en-IN')})` : "Non-Prized";
 
-        let runningBalance = 0; // Positive = Advance (+₹X), Negative = Due (-₹X)
+        let runningBalance = 0;
         const tbody = document.getElementById('passbook-ledger-body');
 
         tbody.innerHTML = MASTER_SCHEDULE.map(sch => {
           const entry = this.collections.find(c => c.memberNo === memberNo && c.month === sch.m);
           const paid = entry ? Number(entry.amountPaid) : 0;
-          const monthExcessShort = paid - sch.emi;
-          runningBalance += monthExcessShort;
-
-          let statusBadge = "";
-          if (runningBalance > 0) {
-            statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">Advance: +${this.formatINR(runningBalance)}</span>`;
-          } else if (runningBalance < 0) {
-            statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-semibold bg-rose-100 text-rose-800">Due: -${this.formatINR(Math.abs(runningBalance))}</span>`;
-          } else {
-            statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">Settled</span>`;
-          }
+          const excessShort = paid - sch.emi;
+          runningBalance += excessShort;
 
           return `
-            <tr class="hover:bg-slate-50 transition">
-              <td class="p-2 font-medium">Month ${sch.m}</td>
-              <td class="p-2 text-slate-500">${this.getMonthLabel(sch.m)}</td>
-              <td class="p-2 text-right font-semibold text-slate-700">${this.formatINR(sch.emi)}</td>
-              <td class="p-2 text-right text-emerald-600">${this.formatINR(sch.div)}</td>
-              <td class="p-2 text-right font-bold text-slate-900">${paid > 0 ? this.formatINR(paid) : '-'}</td>
-              <td class="p-2 text-right font-medium ${monthExcessShort >= 0 ? 'text-emerald-700' : 'text-rose-600'}">
-                ${monthExcessShort !== 0 ? (monthExcessShort > 0 ? `+${this.formatINR(monthExcessShort)}` : this.formatINR(monthExcessShort)) : '₹0'}
+            <tr class="hover:bg-slate-50">
+              <td class="p-2 font-medium">M${sch.m}</td>
+              <td class="p-2 text-right font-medium">${this.formatINR(sch.emi)}</td>
+              <td class="p-2 text-right font-bold text-slate-800">${paid > 0 ? this.formatINR(paid) : '-'}</td>
+              <td class="p-2 text-right font-bold ${excessShort >= 0 ? 'text-emerald-600' : 'text-rose-500'}">
+                ${excessShort > 0 ? `+${this.formatINR(excessShort)}` : (excessShort < 0 ? this.formatINR(excessShort) : '₹0')}
               </td>
-              <td class="p-2 text-right font-bold ${runningBalance >= 0 ? 'text-emerald-700' : 'text-rose-600'}">
+              <td class="p-2 text-right font-extrabold ${runningBalance >= 0 ? 'text-emerald-700' : 'text-rose-600'}">
                 ${runningBalance > 0 ? `+${this.formatINR(runningBalance)}` : (runningBalance < 0 ? `-${this.formatINR(Math.abs(runningBalance))}` : '₹0')}
               </td>
-              <td class="p-2 text-center">${statusBadge}</td>
-              <td class="p-2 text-xs text-slate-500">${entry ? `${entry.paymentMethod}${entry.remarks ? `(${entry.remarks})` : ''}` : '-'}</td>
+              <td class="p-2 text-center">
+                ${runningBalance >= 0 ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Advance</span>` : `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800">Due</span>`}
+              </td>
             </tr>
           `;
         }).join('');
 
         const pill = document.getElementById('pb-balance-pill');
         if (runningBalance > 0) {
-          pill.className = "mt-1 text-lg font-bold px-3 py-1 rounded-xl bg-emerald-100 text-emerald-800";
+          pill.className = "text-xs font-bold px-2.5 py-1 rounded-xl bg-emerald-100 text-emerald-800";
           pill.innerText = `Advance: +${this.formatINR(runningBalance)}`;
         } else if (runningBalance < 0) {
-          pill.className = "mt-1 text-lg font-bold px-3 py-1 rounded-xl bg-rose-100 text-rose-800";
-          pill.innerText = `Pending Due: -${this.formatINR(Math.abs(runningBalance))}`;
+          pill.className = "text-xs font-bold px-2.5 py-1 rounded-xl bg-rose-100 text-rose-800";
+          pill.innerText = `Due: -${this.formatINR(Math.abs(runningBalance))}`;
         } else {
-          pill.className = "mt-1 text-lg font-bold px-3 py-1 rounded-xl bg-slate-100 text-slate-700";
+          pill.className = "text-xs font-bold px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700";
           pill.innerText = "Settled (Nil Due)";
         }
       }
 
-      // Auctions
       renderAuctions() {
         const tbody = document.getElementById('auction-table-body');
         tbody.innerHTML = MASTER_SCHEDULE.map(sch => {
@@ -1198,23 +1161,15 @@
           const winner = auc ? this.members.find(m => m.memberNo === auc.winnerMemberNo) : null;
 
           return `
-            <tr class="hover:bg-slate-50 transition">
-              <td class="p-3 font-semibold text-slate-800">Month ${sch.m}</td>
-              <td class="p-3 text-slate-500">${this.getMonthLabel(sch.m)}</td>
-              <td class="p-3 text-right text-rose-600 font-medium">${this.formatINR(sch.disc)}</td>
-              <td class="p-3 text-right text-indigo-900 font-bold">${this.formatINR(sch.net)}</td>
-              <td class="p-3">
-                ${winner ? `
-                  <span class="font-bold text-slate-800">${winner.memberNo}</span> -${winner.name}
-                ` : '<span class="text-slate-400 italic">Not Awarded</span>'}
-              </td>
-              <td class="p-3 text-slate-500">${this.formatDate(auc?.auctionDate)}</td>
-              <td class="p-3 text-right">
+            <tr class="hover:bg-slate-50">
+              <td class="p-2.5 font-bold">Month ${sch.m}</td>
+              <td class="p-2.5 text-right font-extrabold text-indigo-900">${this.formatINR(sch.net)}</td>
+              <td class="p-2.5 font-semibold">${winner ? `${winner.memberNo} -${winner.name}` : '<span class="text-slate-400 italic">Not Awarded</span>'}</td>
+              <td class="p-2.5 text-slate-500">${this.formatDate(auc?.auctionDate)}</td>
+              <td class="p-2.5 text-right">
                 ${!auc && this.userRole === 'admin' ? `
-                  <button onclick="app.openAuctionModal(${sch.m})" class="px-3 py-1 bg-indigo-900 text-white hover:bg-indigo-800 rounded-lg text-xs font-semibold">
-                    Conduct Auction
-                  </button>
-                ` : (auc ? '<span class="text-xs text-emerald-700 font-bold">Awarded</span>' : '-')}
+                  <button onclick="app.openAuctionModal(${sch.m})" class="px-2.5 py-1 bg-indigo-900 text-white rounded-lg text-xs font-bold">Award</button>
+                ` : (auc ? '<span class="text-emerald-600 font-bold text-xs">Awarded</span>' : '-')}
               </td>
             </tr>
           `;
@@ -1223,16 +1178,13 @@
 
       openAuctionModal(monthNum) {
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
-        document.getElementById('auc-modal-month-info').innerText = `Month ${monthNum} (${this.getMonthLabel(monthNum)}) | Net Prize Money: ${this.formatINR(sch.net)}`;
+        document.getElementById('auc-modal-month-info').innerText = `Month ${monthNum} | Payout: ${this.formatINR(sch.net)}`;
         document.getElementById('auc-month').value = monthNum;
         document.getElementById('auc-date').value = new Date().toISOString().split('T')[0];
 
-        // Non-prized members dropdown
         const select = document.getElementById('auc-winner-select');
         const nonPrized = this.members.filter(m => !m.isPrized);
-        select.innerHTML = nonPrized.map(m => `
-          <option value="${m.memberNo}">${m.memberNo} - ${m.name}</option>
-        `).join('');
+        select.innerHTML = nonPrized.map(m => `<option value="${m.memberNo}">${m.memberNo} - ${m.name}</option>`).join('');
 
         document.getElementById('auction-modal').classList.remove('hidden');
       }
@@ -1244,25 +1196,20 @@
         const date = document.getElementById('auc-date').value;
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
 
-        const auctionData = {
+        const payload = {
           chitId: this.activeChitId,
           month: monthNum,
           winnerMemberNo: winnerNo,
-          auctionDiscount: sch.disc,
           prizeMoney: sch.net,
-          auctionDate: date,
-          recordedBy: this.currentUser.email
+          auctionDate: date
         };
 
         try {
-          await setDoc(doc(db, "auctions", `${this.activeChitId}_M${monthNum}`), auctionData);
-          
-          // Mark member as prized
-          const memRef = doc(db, "members", `${this.activeChitId}_${winnerNo}`);
-          await setDoc(memRef, { isPrized: true, prizedMonth: monthNum, prizeMoney: sch.net }, { merge: true });
+          await setDoc(doc(db, "auctions", `${this.activeChitId}_M${monthNum}`), payload);
+          await setDoc(doc(db, "members", `${this.activeChitId}_${winnerNo}`), { isPrized: true, prizedMonth: monthNum, prizeMoney: sch.net }, { merge: true });
 
-          await this.logActivity("Auctions", "AWARD_AUCTION", null, auctionData);
-          this.notify(`Auction awarded to subscriber ${winnerNo}`);
+          await this.logActivity("Auctions", "AWARD_AUCTION", null, payload);
+          this.notify(`Winner confirmed: ${winnerNo}`);
           document.getElementById('auction-modal').classList.add('hidden');
           await this.loadData();
           this.renderAuctions();
@@ -1271,52 +1218,38 @@
         }
       }
 
-      // Reports & Export
       renderReports() {
         const curM = this.currentMonthIdx;
-        let totalExpectedPerMember = 0;
-        for (let m = 1; m <= curM; m++) {
-          totalExpectedPerMember += MASTER_SCHEDULE.find(s => s.m === m).emi;
-        }
+        let expected = 0;
+        for (let m = 1; m <= curM; m++) expected += MASTER_SCHEDULE.find(s => s.m === m).emi;
 
-        const tbody = document.getElementById('defaulters-table-body');
+        const defContainer = document.getElementById('defaulters-container');
         const defaulters = [];
 
         this.members.forEach(mem => {
-          const totalPaid = this.collections
-            .filter(c => c.memberNo === mem.memberNo && c.month <= curM)
-            .reduce((sum, c) => sum + (Number(c.amountPaid) || 0), 0);
-          
-          const due = totalExpectedPerMember - totalPaid;
-          if (due > 0) {
-            defaulters.push({ memberNo: mem.memberNo, name: mem.name, expected: totalExpectedPerMember, paid: totalPaid, due: due });
-          }
+          const totalPaid = this.collections.filter(c => c.memberNo === mem.memberNo && c.month <= curM).reduce((s, c) => s + (Number(c.amountPaid) || 0), 0);
+          const due = expected - totalPaid;
+          if (due > 0) defaulters.push({ memberNo: mem.memberNo, name: mem.name, due });
         });
 
-        tbody.innerHTML = defaulters.length > 0 ? defaulters.map(d => `
-          <tr>
-            <td class="p-2"><span class="font-bold text-indigo-900">${d.memberNo}</span> ${d.name}</td>
-            <td class="p-2 text-right">${this.formatINR(d.expected)}</td>
-            <td class="p-2 text-right">${this.formatINR(d.paid)}</td>
-            <td class="p-2 text-right font-bold text-rose-600">${this.formatINR(d.due)}</td>
-          </tr>
-        `).join('') : `<tr><td colspan="4" class="p-4 text-center text-slate-400">Nil Defaulters! All subscribers have cleared current dues.</td></tr>`;
+        defContainer.innerHTML = defaulters.length > 0 ? defaulters.map(d => `
+          <div class="flex justify-between items-center text-xs p-2 rounded-xl bg-rose-50/50 border border-rose-100">
+            <div><span class="font-mono font-bold">${d.memberNo}</span> ${d.name}</div>
+            <div class="font-bold text-rose-600">${this.formatINR(d.due)}</div>
+          </div>
+        `).join('') : `<div class="text-xs text-slate-400 p-2 text-center">Nil Defaulters!</div>`;
 
-        // Payment Mode aggregates
         const modes = { 'UPI': 0, 'Bank Transfer': 0, 'Cash': 0 };
-        this.collections.forEach(c => {
-          if (modes[c.paymentMethod] !== undefined) modes[c.paymentMethod] += Number(c.amountPaid) || 0;
-        });
+        this.collections.forEach(c => { if (modes[c.paymentMethod] !== undefined) modes[c.paymentMethod] += Number(c.amountPaid) || 0; });
 
-        const modeContainer = document.getElementById('payment-mode-stats');
-        modeContainer.innerHTML = Object.entries(modes).map(([mode, amt]) => `
+        document.getElementById('payment-mode-stats').innerHTML = Object.entries(modes).map(([mode, amt]) => `
           <div>
-            <div class="flex justify-between text-sm font-semibold mb-1">
+            <div class="flex justify-between text-xs font-semibold mb-1">
               <span>${mode}</span>
               <span class="text-indigo-900">${this.formatINR(amt)}</span>
             </div>
-            <div class="w-full bg-slate-100 rounded-full h-2.5">
-              <div class="bg-indigo-600 h-2.5 rounded-full" style="width: ${this.collections.length > 0 ? Math.min(100, (amt / (this.collections.reduce((a,b)=>a+(Number(b.amountPaid)||0),1)))*100) : 0}%"></div>
+            <div class="w-full bg-slate-100 rounded-full h-2">
+              <div class="bg-indigo-600 h-2 rounded-full" style="width: ${this.collections.length > 0 ? Math.min(100, (amt / (this.collections.reduce((a,b)=>a+(Number(b.amountPaid)||0),1)))*100) : 0}%"></div>
             </div>
           </div>
         `).join('');
@@ -1324,54 +1257,43 @@
 
       exportDefaultersCSV() {
         const curM = this.currentMonthIdx;
-        let totalExpected = 0;
-        for (let m = 1; m <= curM; m++) {
-          totalExpected += MASTER_SCHEDULE.find(s => s.m === m).emi;
-        }
+        let expected = 0;
+        for (let m = 1; m <= curM; m++) expected += MASTER_SCHEDULE.find(s => s.m === m).emi;
 
-        let csv = "Member No,Subscriber Name,Phone,Expected EMI,Amount Paid,Pending Due\n";
+        let csv = "Member No,Subscriber Name,Pending Due\n";
         this.members.forEach(mem => {
-          const totalPaid = this.collections
-            .filter(c => c.memberNo === mem.memberNo && c.month <= curM)
-            .reduce((sum, c) => sum + (Number(c.amountPaid) || 0), 0);
-          const due = totalExpected - totalPaid;
-          if (due > 0) {
-            csv += `"${mem.memberNo}","${mem.name}","${mem.phone || ''}",${totalExpected},${totalPaid},${due}\n`;
-          }
+          const totalPaid = this.collections.filter(c => c.memberNo === mem.memberNo && c.month <= curM).reduce((s, c) => s + (Number(c.amountPaid) || 0), 0);
+          const due = expected - totalPaid;
+          if (due > 0) csv += `"${mem.memberNo}","${mem.name}",${due}\n`;
         });
 
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob([csv], { type: 'text/csv' });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `mis_org_defaulters_month_${curM}.csv`;
+        link.download = `defaulters_month_${curM}.csv`;
         link.click();
       }
 
-      // Activity Audit Log
       async renderAuditLogs() {
         if (this.userRole !== 'admin') return;
         const tbody = document.getElementById('audit-table-body');
         try {
           const snap = await getDocs(query(collection(db, "activity_logs")));
           const logs = snap.docs.map(d => d.data()).sort((a,b) => b.timestamp.localeCompare(a.timestamp));
-          
           tbody.innerHTML = logs.map(l => `
-            <tr class="hover:bg-slate-50 transition">
-              <td class="p-3 text-slate-500 whitespace-nowrap">${new Date(l.timestamp).toLocaleString('en-IN')}</td>
-              <td class="p-3 font-medium text-slate-800">${l.userEmail}</td>
-              <td class="p-3"><span class="px-2 py-0.5 bg-slate-100 rounded text-xs font-semibold uppercase text-slate-600">${l.userRole}</span></td>
-              <td class="p-3 text-slate-600">${l.screen}</td>
-              <td class="p-3 font-semibold text-indigo-900">${l.action}</td>
-              <td class="p-3 text-xs text-slate-500 max-w-sm truncate">${l.newVal || '-'}</td>
+            <tr class="hover:bg-slate-50">
+              <td class="p-2 text-slate-500">${new Date(l.timestamp).toLocaleDateString('en-IN')}</td>
+              <td class="p-2 font-medium">${l.userEmail}</td>
+              <td class="p-2 font-bold text-indigo-900">${l.action}</td>
+              <td class="p-2 text-slate-500 truncate max-w-xs">${l.newVal || '-'}</td>
             </tr>
           `).join('');
-        } catch (err) {
-          console.error(err);
+        } catch (e) {
+          console.error(e);
         }
       }
     }
 
-    // Attach to global window
     window.app = new ChitFundApp();
   </script>
 </body>
