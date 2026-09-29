@@ -40,17 +40,42 @@
         </div>
       </div>
 
-      <div class="flex items-center space-x-2">
-        <div id="user-profile-widget" class="hidden flex items-center gap-2">
-          <span id="user-role-badge" class="px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold uppercase bg-amber-400 text-indigo-950">Admin</span>
-          <button onclick="app.signOut()" title="Sign Out" class="p-2 rounded-xl bg-indigo-800/80 hover:bg-rose-600 active:scale-95 transition text-white">
-            <i class="ph ph-sign-out text-base"></i>
+      <!-- User Profile Widget with Dropdown -->
+      <div class="relative">
+        <div id="user-profile-widget" class="hidden">
+          <button id="profile-menu-btn" onclick="app.toggleProfileDropdown(event)" class="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-indigo-800/80 hover:bg-indigo-700 active:scale-95 transition text-white border border-indigo-700/60 shadow-xs">
+            <div id="user-avatar-initial" class="w-7 h-7 rounded-lg bg-amber-400 text-indigo-950 font-black flex items-center justify-center text-xs uppercase shadow-sm">
+              U
+            </div>
+            <div class="hidden sm:block text-left leading-tight">
+              <span id="profile-display-name" class="text-xs font-bold block max-w-[120px] truncate">User</span>
+              <span id="profile-role-mini" class="text-[10px] text-amber-300 font-semibold uppercase block">Admin</span>
+            </div>
+            <i class="ph ph-caret-down text-xs text-indigo-300"></i>
           </button>
+
+          <!-- Dropdown Card -->
+          <div id="profile-dropdown" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 z-50 text-slate-800 transition">
+            <div class="border-b border-slate-100 pb-3 mb-3">
+              <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Signed in as</span>
+              <div class="font-bold text-sm text-slate-900 truncate mt-0.5" id="dropdown-user-name">User Name</div>
+              <div class="text-[11px] text-slate-500 truncate" id="dropdown-user-email">user@gmail.com</div>
+              
+              <div class="mt-2.5 flex items-center gap-2">
+                <span class="text-[10px] uppercase font-bold text-slate-400">Role:</span>
+                <span id="dropdown-user-role" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-amber-100 text-amber-900 border border-amber-200">Admin</span>
+              </div>
+            </div>
+
+            <button onclick="app.signOut()" class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 active:scale-95 transition">
+              <i class="ph ph-sign-out text-base"></i> Sign Out
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Scrollable Navigation Tabs -->
+    <!-- Navigation Tabs -->
     <nav id="module-tabs" class="bg-indigo-950/70 border-t border-indigo-800/60 overflow-x-auto no-scrollbar flex space-x-1 px-3 py-1.5 no-print hidden">
       <button onclick="app.navigate('dashboard')" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5" data-tab="dashboard">
         <i class="ph ph-chart-pie-slice text-sm"></i> Dashboard
@@ -106,7 +131,7 @@
     </div>
   </main>
 
-  <!-- ================= APP CONTAINER ================= -->
+  <!-- ================= APP INTERFACE ================= -->
   <div id="app-container" class="hidden flex-1 flex flex-col">
     <div class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8">
       
@@ -500,12 +525,12 @@
     // REPLACE WITH YOUR FIREBASE CONFIG
     // -------------------------------------------------------------
     const firebaseConfig = {
-      apiKey: "AIzaSyBqdtnXqFNo2IqjurUIUfX3gG1AIAwamAM",
-      authDomain: "mis-org.firebaseapp.com",
-      projectId: "mis-org",
-      storageBucket: "mis-org.firebasestorage.app",
-      messagingSenderId: "263707141220",
-      appId: "1:263707141220:web:51d1430645dad8466aeb71"
+       apiKey: "AIzaSyBqdtnXqFNo2IqjurUIUfX3gG1AIAwamAM",
+       authDomain: "mis-org.firebaseapp.com",
+       projectId: "mis-org",
+       storageBucket: "mis-org.firebasestorage.app",
+       messagingSenderId: "263707141220",
+       appId: "1:263707141220:web:51d1430645dad8466aeb71"
     };
 
     const fbApp = initializeApp(firebaseConfig);
@@ -579,6 +604,17 @@
         this.renderSchedule();
         this.populateMonthDropdowns();
         this.calculateActiveMonth();
+
+        // Close profile dropdown when clicking outside
+        window.addEventListener('click', (e) => {
+          const dropdown = document.getElementById('profile-dropdown');
+          const btn = document.getElementById('profile-menu-btn');
+          if (dropdown && !dropdown.classList.contains('hidden')) {
+            if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+              dropdown.classList.add('hidden');
+            }
+          }
+        });
       }
 
       formatINR(val) {
@@ -606,7 +642,6 @@
         if (sel) sel.value = this.currentMonthIdx;
       }
 
-      // Auto-assign lowest available Member ID (M-01 to M-40)
       generateNextMemberId() {
         const usedNumbers = new Set(
           this.members
@@ -623,6 +658,12 @@
           }
         }
         return null;
+      }
+
+      toggleProfileDropdown(e) {
+        e.stopPropagation();
+        const dropdown = document.getElementById('profile-dropdown');
+        dropdown.classList.toggle('hidden');
       }
 
       notify(msg, isError = false) {
@@ -655,6 +696,7 @@
 
               this.currentUser = user;
               this.userRole = (profile.role || "member").toLowerCase();
+              this.userProfile = profile;
               this.onUserAuthenticated();
             } catch (err) {
               console.error(err);
@@ -691,7 +733,18 @@
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('app-container').classList.remove('hidden');
         document.getElementById('user-profile-widget').classList.remove('hidden');
-        document.getElementById('user-role-badge').innerText = this.userRole;
+
+        // Populate User Profile Header and Dropdown
+        const displayName = this.userProfile?.displayName || this.currentUser.displayName || this.currentUser.email.split('@')[0];
+        const initial = displayName.charAt(0).toUpperCase();
+
+        document.getElementById('user-avatar-initial').innerText = initial;
+        document.getElementById('profile-display-name').innerText = displayName;
+        document.getElementById('profile-role-mini').innerText = this.userRole;
+
+        document.getElementById('dropdown-user-name').innerText = displayName;
+        document.getElementById('dropdown-user-email').innerText = this.currentUser.email;
+        document.getElementById('dropdown-user-role').innerText = this.userRole;
 
         if (this.userRole === "member") {
           document.getElementById('module-tabs').classList.add('hidden');
@@ -708,11 +761,11 @@
         }
 
         document.getElementById('module-tabs').classList.remove('hidden');
+        
+        // Foremen can access members; only restrict auctions and audit logs
         if (this.userRole === "foreman") {
-          document.getElementById('tab-members')?.classList.add('hidden');
           document.getElementById('tab-auctions')?.classList.add('hidden');
           document.getElementById('tab-audit')?.classList.add('hidden');
-          document.getElementById('add-member-btn')?.classList.add('hidden');
         }
 
         await this.loadData();
@@ -769,7 +822,7 @@
             newVal: newVal ? JSON.stringify(newVal) : null
           });
         } catch (e) {
-          console.error("Audit log write failed", e);
+          console.error("Audit write failed", e);
         }
       }
 
@@ -837,7 +890,26 @@
       }
 
       renderMembers(list = this.members) {
-        document.getElementById('member-count-summary').innerText = `Subscribers registered: ${this.members.length} / 40`;
+        const isFull = this.members.length >= 40;
+        const canManage = this.userRole === 'admin' || this.userRole === 'foreman';
+
+        const countSummary = document.getElementById('member-count-summary');
+        if (isFull) {
+          countSummary.innerHTML = `<span class="text-rose-600 font-bold">Roster Full (40/40) — Adding & Editing are locked</span>`;
+        } else {
+          countSummary.innerText = `Subscribers registered: ${this.members.length} / 40`;
+        }
+
+        const addBtn = document.getElementById('add-member-btn');
+        if (isFull) {
+          addBtn.disabled = true;
+          addBtn.className = "px-3 py-2 bg-slate-300 text-slate-500 rounded-xl text-xs font-bold cursor-not-allowed whitespace-nowrap shadow-none";
+          addBtn.innerText = "Roster Full (40/40)";
+        } else {
+          addBtn.disabled = false;
+          addBtn.className = "px-4 py-2 bg-indigo-900 hover:bg-indigo-800 text-white rounded-xl text-xs font-bold whitespace-nowrap shadow-sm";
+          addBtn.innerText = "+ Add";
+        }
 
         // Mobile Cards
         const mContainer = document.getElementById('member-mobile-cards');
@@ -856,8 +928,10 @@
               </div>
               <div class="flex items-center gap-1">
                 <button onclick="app.viewPassbookForMember('${m.memberNo}')" class="p-2 rounded-xl bg-slate-100 text-slate-700 active:scale-90" title="Passbook"><i class="ph ph-book-open"></i></button>
-                ${this.userRole === 'admin' ? `
-                  <button onclick="app.openMemberModal('${m.memberNo}')" class="p-2 rounded-xl bg-indigo-50 text-indigo-700 active:scale-90" title="Edit"><i class="ph ph-pencil-simple"></i></button>
+                ${canManage ? `
+                  ${!isFull ? `
+                    <button onclick="app.openMemberModal('${m.memberNo}')" class="p-2 rounded-xl bg-indigo-50 text-indigo-700 active:scale-90" title="Edit"><i class="ph ph-pencil-simple"></i></button>
+                  ` : ''}
                   <button onclick="app.deleteMember('${m.memberNo}')" class="p-2 rounded-xl bg-rose-50 text-rose-600 active:scale-90" title="Delete"><i class="ph ph-trash"></i></button>
                 ` : ''}
               </div>
@@ -878,8 +952,10 @@
               <td class="p-3 text-right font-bold text-emerald-600">${this.formatINR(totalPaid)}</td>
               <td class="p-3 text-right space-x-1">
                 <button onclick="app.viewPassbookForMember('${m.memberNo}')" class="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100"><i class="ph ph-book-open"></i></button>
-                ${this.userRole === 'admin' ? `
-                  <button onclick="app.openMemberModal('${m.memberNo}')" class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50"><i class="ph ph-pencil-simple"></i></button>
+                ${canManage ? `
+                  ${!isFull ? `
+                    <button onclick="app.openMemberModal('${m.memberNo}')" class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50"><i class="ph ph-pencil-simple"></i></button>
+                  ` : ''}
                   <button onclick="app.deleteMember('${m.memberNo}')" class="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50"><i class="ph ph-trash"></i></button>
                 ` : ''}
               </td>
@@ -899,12 +975,23 @@
       }
 
       openMemberModal(memberNo = null) {
-        if (this.userRole !== 'admin') return;
+        const canManage = this.userRole === 'admin' || this.userRole === 'foreman';
+        if (!canManage) {
+          this.notify("You do not have permission to manage members.", true);
+          return;
+        }
+
+        const isFull = this.members.length >= 40;
+
+        if (memberNo && isFull) {
+          this.notify("All 40 subscribers are registered. Editing is locked.", true);
+          return;
+        }
+
         document.getElementById('member-form').reset();
         document.getElementById('mem-edit-id').value = "";
         
         if (memberNo) {
-          // Edit existing member
           const m = this.members.find(x => x.memberNo === memberNo);
           document.getElementById('member-modal-title').innerText = `Edit Subscriber ${m.memberNo}`;
           document.getElementById('mem-edit-id').value = m.memberNo;
@@ -914,12 +1001,11 @@
           document.getElementById('mem-email').value = m.email || '';
           document.getElementById('mem-address').value = m.address || '';
         } else {
-          // Auto-generate next ID
-          const nextId = this.generateNextMemberId();
-          if (!nextId) {
-            this.notify("Maximum subscriber limit reached (40 subscribers).", true);
+          if (isFull) {
+            this.notify("Maximum subscriber limit reached (40 subscribers). Adding is locked.", true);
             return;
           }
+          const nextId = this.generateNextMemberId();
           document.getElementById('member-modal-title').innerText = `Add New Subscriber (${nextId})`;
           document.getElementById('mem-number').value = nextId;
         }
@@ -932,7 +1018,17 @@
 
       async saveMember(e) {
         e.preventDefault();
+        const canManage = this.userRole === 'admin' || this.userRole === 'foreman';
+        if (!canManage) return;
+
         const editId = document.getElementById('mem-edit-id').value;
+        const isFull = this.members.length >= 40;
+
+        if (editId && isFull) {
+          this.notify("Roster is full (40/40). Member editing is locked.", true);
+          return;
+        }
+
         const num = document.getElementById('mem-number').value.trim();
         const payload = {
           chitId: this.activeChitId,
@@ -957,8 +1053,10 @@
       }
 
       async deleteMember(memberNo) {
-        if (this.userRole !== 'admin') return;
-        if (!confirm(`Permanently delete subscriber ${memberNo}?`)) return;
+        const canManage = this.userRole === 'admin' || this.userRole === 'foreman';
+        if (!canManage) return;
+
+        if (!confirm(`Permanently delete subscriber ${memberNo}? If 40 were reached, deleting will reopen a slot.`)) return;
 
         try {
           await deleteDoc(doc(db, "members", `${this.activeChitId}_${memberNo}`));
