@@ -49,7 +49,7 @@
             </div>
             <div class="hidden sm:block text-left leading-tight">
               <span id="profile-display-name" class="text-xs font-bold block max-w-[120px] truncate">User</span>
-              <span id="profile-role-mini" class="text-[10px] text-amber-300 font-semibold uppercase block">Admin</span>
+              <span id="profile-role-mini" class="text-[10px] text-amber-300 font-semibold uppercase block">Role</span>
             </div>
             <i class="ph ph-caret-down text-xs text-indigo-300"></i>
           </button>
@@ -58,8 +58,8 @@
           <div id="profile-dropdown" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 z-50 text-slate-800 transition">
             <div class="border-b border-slate-100 pb-3 mb-3">
               <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Signed in as</span>
-              <div class="font-bold text-sm text-slate-900 truncate mt-0.5" id="dropdown-user-name">User Name</div>
-              <div class="text-[11px] text-slate-500 truncate" id="dropdown-user-email">user@gmail.com</div>
+              <div class="font-bold text-sm text-slate-900 truncate mt-0.5" id="dropdown-user-name">-</div>
+              <div class="text-[11px] text-slate-500 truncate" id="dropdown-user-email">-</div>
               
               <div class="mt-2.5 flex items-center gap-2">
                 <span class="text-[10px] uppercase font-bold text-slate-400">Role:</span>
@@ -525,12 +525,12 @@
     // REPLACE WITH YOUR FIREBASE CONFIG
     // -------------------------------------------------------------
     const firebaseConfig = {
-       apiKey: "AIzaSyBqdtnXqFNo2IqjurUIUfX3gG1AIAwamAM",
-       authDomain: "mis-org.firebaseapp.com",
-       projectId: "mis-org",
-       storageBucket: "mis-org.firebasestorage.app",
-       messagingSenderId: "263707141220",
-       appId: "1:263707141220:web:51d1430645dad8466aeb71"
+      apiKey: "AIzaSyBqdtnXqFNo2IqjurUIUfX3gG1AIAwamAM",
+  authDomain: "mis-org.firebaseapp.com",
+  projectId: "mis-org",
+  storageBucket: "mis-org.firebasestorage.app",
+  messagingSenderId: "263707141220",
+  appId: "1:263707141220:web:51d1430645dad8466aeb71"
     };
 
     const fbApp = initializeApp(firebaseConfig);
@@ -580,7 +580,7 @@
       { m: 39, emi: 12400, div: 100,  disc: 4000,  net: 496000, note: "" },
       { m: 40, emi: 12450, div: 50,   disc: 2000,  net: 498000, note: "" },
       { m: 41, emi: 12500, div: 0,    disc: 0,     net: 500000, note: "Final Chit" }
-    ]; //[span_1](start_span)[span_1](end_span)
+    ];[span_1](start_span)[span_1](end_span)
 
     class ChitFundApp {
       constructor() {
@@ -762,7 +762,7 @@
 
         document.getElementById('module-tabs').classList.remove('hidden');
         
-        // Foremen can access members; only restrict auctions and audit logs
+        // Foremen can manage members; restrict auctions and audit log
         if (this.userRole === "foreman") {
           document.getElementById('tab-auctions')?.classList.add('hidden');
           document.getElementById('tab-audit')?.classList.add('hidden');
