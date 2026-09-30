@@ -644,7 +644,7 @@
           </div>
         </div>
         <div class="text-right">
-          <span class="text-[11px] font-mono font-bold text-indigo-900 block" id="rec-number">MIS/REC/2026/M01-01</span>
+          <span class="text-[11px] font-mono font-bold text-indigo-900 block" id="rec-number">MISR/01/01</span>
           <span class="inline-block mt-0.5 text-[9px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">PAID & VERIFIED</span>
         </div>
       </div>
@@ -1643,9 +1643,11 @@
           return;
         }
 
+        // Format: MISR/member/month
         const mFormatted = String(monthNum).padStart(2, '0');
         const memClean = memberNo.replace(/\D/g, '').padStart(2, '0');
-        const recId = `MIS/REC/${this.startYear}/M${mFormatted}-${memClean}`;
+        const recId = `MISR/${memClean}/${mFormatted}`;
+
         const dateStr = this.formatDate(entry.paymentDate);
         const cleanRemarks = (entry.remarks && entry.remarks.trim()) ? entry.remarks.trim() : '-';
 
