@@ -12,10 +12,20 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     input, select, textarea, button { font-size: 16px !important; }
+    
     @media print {
-      body * { visibility: hidden; }
-      #printable-passbook, #printable-passbook * { visibility: visible; }
-      #printable-passbook { position: absolute; left: 0; top: 0; width: 100%; }
+      body * { visibility: hidden !important; }
+      #printable-receipt-modal, #printable-receipt-modal * { visibility: visible !important; }
+      #printable-receipt-modal {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        background: white !important;
+        z-index: 9999 !important;
+        display: block !important;
+        padding: 20px !important;
+      }
       .no-print { display: none !important; }
     }
   </style>
@@ -49,7 +59,7 @@
             </div>
             <div class="hidden sm:block text-left leading-tight">
               <span id="profile-display-name" class="text-xs font-bold block max-w-[120px] truncate">User</span>
-              <span id="profile-role-mini" class="text-[10px] text-amber-300 font-semibold uppercase block">Admin</span>
+              <span id="profile-role-mini" class="text-[10px] text-amber-300 font-semibold uppercase block">Role</span>
             </div>
             <i class="ph ph-caret-down text-xs text-indigo-300"></i>
           </button>
@@ -58,8 +68,8 @@
           <div id="profile-dropdown" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 z-50 text-slate-800 transition">
             <div class="border-b border-slate-100 pb-3 mb-3">
               <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Signed in as</span>
-              <div class="font-bold text-sm text-slate-900 truncate mt-0.5" id="dropdown-user-name">User Name</div>
-              <div class="text-[11px] text-slate-500 truncate" id="dropdown-user-email">user@gmail.com</div>
+              <div class="font-bold text-sm text-slate-900 truncate mt-0.5" id="dropdown-user-name">-</div>
+              <div class="text-[11px] text-slate-500 truncate" id="dropdown-user-email">-</div>
               
               <div class="mt-2.5 flex items-center gap-2">
                 <span class="text-[10px] uppercase font-bold text-slate-400">Role:</span>
@@ -170,7 +180,7 @@
           <div>
             <span class="px-2 py-0.5 rounded bg-indigo-800 text-amber-300 font-bold text-[10px] uppercase">Chit Group A</span>
             <h3 class="text-base sm:text-lg font-bold mt-1">₹5,00,000 • 40 Subscribers • 41 Months</h3>
-            <p class="text-xs text-indigo-200 mt-0.5">Start: Oct 2026. Month 1 (Foreman: ₹5,00,000), Month 10 (Special: ₹5,00,000).</p>
+            <p class="text-xs text-indigo-200 mt-0.5">Start: Oct 2026. Month 1 (Foreman: ₹5,00,000), Month 10 (Special: ₹5,00,000)[span_0](start_span)[span_0](end_span).</p>
           </div>
           <button onclick="app.navigate('collections')" class="w-full sm:w-auto px-5 py-2.5 bg-amber-400 hover:bg-amber-300 active:scale-95 text-indigo-950 font-bold rounded-xl text-xs sm:text-sm shadow-sm transition">
             Record Monthly Collection
@@ -215,18 +225,19 @@
             <h2 class="text-base sm:text-lg font-bold text-slate-900">Member Directory</h2>
             <p class="text-xs text-slate-500" id="member-count-summary">Subscribers registered: 0 / 40</p>
           </div>
-          <div class="flex gap-2">
-            <input type="text" id="member-search" placeholder="Search..." oninput="app.filterMembers(this.value)" class="px-3 py-2 border rounded-xl text-xs w-full sm:w-60 focus:outline-none focus:ring-2 focus:ring-indigo-600 bg-white shadow-sm" />
+          <div class="flex flex-wrap items-center gap-2">
+            <input type="text" id="member-search" placeholder="Search..." oninput="app.filterMembers(this.value)" class="px-3 py-2 border rounded-xl text-xs w-full sm:w-56 focus:outline-none focus:ring-2 focus:ring-indigo-600 bg-white shadow-sm" />
+            <button onclick="app.exportMembersCSV()" class="px-3 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold whitespace-nowrap shadow-sm flex items-center gap-1">
+              <i class="ph ph-file-csv text-base"></i> Export Excel
+            </button>
             <button id="add-member-btn" onclick="app.openMemberModal()" class="px-4 py-2 bg-indigo-900 hover:bg-indigo-800 text-white rounded-xl text-xs font-bold whitespace-nowrap shadow-sm">
               + Add
             </button>
           </div>
         </div>
 
-        <!-- Mobile View -->
         <div id="member-mobile-cards" class="sm:hidden space-y-2.5"></div>
 
-        <!-- Desktop View -->
         <div class="hidden sm:block bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
           <table class="w-full text-left text-xs">
             <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
@@ -267,9 +278,9 @@
                 <th class="p-3">Subscriber Name</th>
                 <th class="p-3 text-right">EMI</th>
                 <th class="p-3 text-right">Paid</th>
-                <th class="p-3">Mode</th>
+                <th class="p-3">Payment Channel</th>
                 <th class="p-3">Date</th>
-                <th class="p-3 text-right">Action</th>
+                <th class="p-3 text-right">Receipt & Action</th>
               </tr>
             </thead>
             <tbody id="collection-desktop-tbody" class="divide-y divide-slate-100"></tbody>
@@ -315,6 +326,7 @@
                   <th class="p-2 text-right">Month +/-</th>
                   <th class="p-2 text-right">Balance</th>
                   <th class="p-2 text-center">Status</th>
+                  <th class="p-2 text-right">Receipt</th>
                 </tr>
               </thead>
               <tbody id="passbook-ledger-body" class="divide-y divide-slate-100"></tbody>
@@ -356,8 +368,8 @@
             <div id="defaulters-container" class="space-y-2 max-h-72 overflow-y-auto"></div>
           </div>
           <div class="bg-white p-4 rounded-2xl border border-slate-200">
-            <h3 class="font-bold text-xs text-slate-500 uppercase tracking-wider mb-3">Collections by Mode</h3>
-            <div class="space-y-3" id="payment-mode-stats"></div>
+            <h3 class="font-bold text-xs text-slate-500 uppercase tracking-wider mb-3">Collections by Payment Channel</h3>
+            <div class="space-y-3.5" id="payment-mode-stats"></div>
           </div>
         </div>
       </section>
@@ -369,8 +381,9 @@
           <table class="w-full text-left text-xs whitespace-nowrap">
             <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
               <tr>
-                <th class="p-2.5">Date/Time</th>
+                <th class="p-2.5">Date & Time</th>
                 <th class="p-2.5">User</th>
+                <th class="p-2.5">Role</th>
                 <th class="p-2.5">Action</th>
                 <th class="p-2.5">Details</th>
               </tr>
@@ -408,10 +421,16 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-500 mb-1">Payment Method</label>
-          <select id="coll-method" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white">
-            <option value="UPI">UPI to Foreman</option>
-            <option value="Bank Transfer">Bank Transfer</option>
-            <option value="Cash">Cash</option>
+          <select id="coll-method" onchange="app.onPaymentMethodChange(this.value)" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white font-medium">
+            <option value="Cash / UPI to Foreman">Cash or UPI to Foreman</option>
+            <option value="Bank Transfer to Main Account">Bank Transfer to Main Account</option>
+          </select>
+        </div>
+
+        <!-- Dynamic Foreman Selection (Visible only for Cash / UPI) -->
+        <div id="coll-foreman-container">
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Received by Foreman</label>
+          <select id="coll-foreman-select" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white font-medium">
           </select>
         </div>
 
@@ -421,7 +440,7 @@
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">UTR / Remarks</label>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">UTR / Cheque No / Remarks</label>
           <input type="text" id="coll-remarks" placeholder="Optional notes or UTR" class="w-full border rounded-xl px-3 py-2.5 text-sm" />
         </div>
 
@@ -498,6 +517,70 @@
     </div>
   </div>
 
+  <!-- Payment Receipt Modal -->
+  <div id="receipt-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4" id="printable-receipt-modal">
+      
+      <div class="border-b border-dashed border-slate-300 pb-3 flex justify-between items-start">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-amber-400 flex items-center justify-center text-indigo-950 font-black">
+            <i class="ph ph-receipt text-xl"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-black text-indigo-900 tracking-tight leading-none">mis-org</h3>
+            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Chit Payment Receipt</span>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="text-[10px] font-bold text-slate-400 block uppercase" id="rec-number">REC-001</span>
+          <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">PAID & VERIFIED</span>
+        </div>
+      </div>
+
+      <!-- Receipt Content Card -->
+      <div class="space-y-3 text-xs">
+        <div class="bg-slate-50 p-3.5 rounded-2xl space-y-1.5 border border-slate-100">
+          <div class="flex justify-between"><span class="text-slate-500 font-medium">Subscriber:</span> <span class="font-bold text-slate-800" id="rec-member-name">-</span></div>
+          <div class="flex justify-between"><span class="text-slate-500 font-medium">Member ID:</span> <span class="font-mono font-bold text-indigo-900" id="rec-member-id">-</span></div>
+          <div class="flex justify-between"><span class="text-slate-500 font-medium">Chit Installment:</span> <span class="font-bold text-slate-800" id="rec-month">-</span></div>
+          <div class="flex justify-between"><span class="text-slate-500 font-medium">Scheduled EMI:</span> <span class="font-semibold text-slate-700" id="rec-scheduled-emi">-</span></div>
+        </div>
+
+        <div class="border border-indigo-100 bg-indigo-50/60 p-3.5 rounded-2xl flex justify-between items-center">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-900/70 block">Amount Received</span>
+            <span class="text-xs text-indigo-800" id="rec-date">-</span>
+          </div>
+          <div class="text-xl font-black text-indigo-950" id="rec-amount">₹0</div>
+        </div>
+
+        <div class="space-y-1 text-[11px] px-1 text-slate-600">
+          <div class="flex justify-between"><span class="text-slate-400">Payment Channel:</span> <span class="font-semibold text-slate-800" id="rec-channel">-</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Collector / Recipient:</span> <span class="font-semibold text-slate-800" id="rec-recipient">-</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Reference / Notes:</span> <span class="font-mono text-slate-700 truncate max-w-[180px]" id="rec-ref">-</span></div>
+        </div>
+
+        <div class="text-[10px] text-center text-slate-400 border-t border-dashed pt-2.5">
+          mis-org Financial Operations • All EMIs rounded in multiples of ₹50
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap gap-2 pt-1 no-print">
+        <button onclick="app.shareReceiptWhatsApp()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95">
+          <i class="ph ph-whatsapp-logo text-base"></i> Share
+        </button>
+        <button onclick="window.print()" class="flex-1 py-2.5 bg-indigo-900 hover:bg-indigo-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95">
+          <i class="ph ph-printer text-base"></i> PDF / Print
+        </button>
+        <button onclick="document.getElementById('receipt-modal').classList.add('hidden')" class="w-full sm:w-auto px-4 py-2.5 border rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50">
+          Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- ================= FIREBASE & APP SCRIPT ================= -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -505,6 +588,8 @@
       getAuth, 
       GoogleAuthProvider, 
       signInWithPopup, 
+      signInWithRedirect,
+      getRedirectResult,
       signOut, 
       onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -537,7 +622,7 @@
     const auth = getAuth(fbApp);
     const db = getFirestore(fbApp);
 
-    // FIXED 41-MONTH MASTER SCHEDULE[span_0](start_span)[span_0](end_span)
+    // FIXED 41-MONTH MASTER SCHEDULE[span_1](start_span)[span_1](end_span)
     const MASTER_SCHEDULE = [
       { m: 1,  emi: 12500, div: 0,    disc: 0,     net: 500000, note: "Foreman's Chit" },
       { m: 2,  emi: 10150, div: 2350, disc: 94000, net: 406000, note: "" },
@@ -580,7 +665,7 @@
       { m: 39, emi: 12400, div: 100,  disc: 4000,  net: 496000, note: "" },
       { m: 40, emi: 12450, div: 50,   disc: 2000,  net: 498000, note: "" },
       { m: 41, emi: 12500, div: 0,    disc: 0,     net: 500000, note: "Final Chit" }
-    ]; //[span_1](start_span)[span_1](end_span)
+    ];[span_2](start_span)[span_2](end_span)
 
     class ChitFundApp {
       constructor() {
@@ -595,6 +680,8 @@
         this.members = [];
         this.collections = [];
         this.auctions = [];
+        this.foremenList = [];
+        this.currentReceiptData = null;
         
         this.init();
       }
@@ -614,6 +701,11 @@
               dropdown.classList.add('hidden');
             }
           }
+        });
+
+        // Handle mobile redirect sign-ins
+        getRedirectResult(auth).catch(err => {
+          if (err) alert(`Redirect error: ${err.message}`);
         });
       }
 
@@ -666,6 +758,15 @@
         dropdown.classList.toggle('hidden');
       }
 
+      onPaymentMethodChange(val) {
+        const foremanContainer = document.getElementById('coll-foreman-container');
+        if (val === 'Bank Transfer to Main Account') {
+          foremanContainer.classList.add('hidden');
+        } else {
+          foremanContainer.classList.remove('hidden');
+        }
+      }
+
       notify(msg, isError = false) {
         const toast = document.getElementById('toast');
         document.getElementById('toast-message').innerText = msg;
@@ -710,10 +811,16 @@
       }
 
       async signInWithGoogle() {
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
         try {
-          await signInWithPopup(auth, new GoogleAuthProvider());
+          await signInWithPopup(auth, provider);
         } catch (err) {
-          this.notify(err.message, true);
+          if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user' || /Mobi|Android/i.test(navigator.userAgent)) {
+            await signInWithRedirect(auth, provider);
+          } else {
+            alert(`Sign-in error: ${err.message}`);
+          }
         }
       }
 
@@ -734,7 +841,6 @@
         document.getElementById('app-container').classList.remove('hidden');
         document.getElementById('user-profile-widget').classList.remove('hidden');
 
-        // Populate User Profile Header and Dropdown
         const displayName = this.userProfile?.displayName || this.currentUser.displayName || this.currentUser.email.split('@')[0];
         const initial = displayName.charAt(0).toUpperCase();
 
@@ -762,7 +868,6 @@
 
         document.getElementById('module-tabs').classList.remove('hidden');
         
-        // Foremen can access members; only restrict auctions and audit logs
         if (this.userRole === "foreman") {
           document.getElementById('tab-auctions')?.classList.add('hidden');
           document.getElementById('tab-audit')?.classList.add('hidden');
@@ -836,6 +941,17 @@
 
           const aucSnap = await getDocs(query(collection(db, "auctions"), where("chitId", "==", this.activeChitId)));
           this.auctions = aucSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+          try {
+            const uSnap = await getDocs(query(collection(db, "users"), where("role", "in", ["foreman", "admin"])));
+            this.foremenList = uSnap.docs.map(d => {
+              const u = d.data();
+              return u.displayName || u.email.split('@')[0];
+            });
+          } catch(e) {}
+          if (!this.foremenList || this.foremenList.length === 0) {
+            this.foremenList = ["Foreman 1", "Foreman 2", "Foreman 3"];
+          }
 
           this.populatePassbookSelector();
         } catch (err) {
@@ -974,6 +1090,26 @@
         this.renderMembers(filtered);
       }
 
+      exportMembersCSV() {
+        if (!this.members || this.members.length === 0) {
+          this.notify("No subscribers to export.", true);
+          return;
+        }
+
+        let csv = "\uFEFFMember ID,Subscriber Name,Phone,Email,Address,Status,Prized Status,Prized Month,Prize Money Received,Total Amount Paid\n";
+        
+        this.members.forEach(m => {
+          const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.amountPaid) || 0), 0);
+          csv += `"${m.memberNo}","${m.name}","${m.phone || ''}","${m.email || ''}","${(m.address || '').replace(/"/g, '""')}","${m.isActive ? 'Active' : 'Inactive'}","${m.isPrized ? 'Prized' : 'Non-Prized'}","${m.prizedMonth || '-'}","${m.prizeMoney || 0}","${totalPaid}"\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `mis_org_subscribers_list_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+      }
+
       openMemberModal(memberNo = null) {
         const canManage = this.userRole === 'admin' || this.userRole === 'foreman';
         if (!canManage) {
@@ -1081,6 +1217,15 @@
           const isCreator = entry && entry.recordedByUid === this.currentUser?.uid;
           const canEdit = !isPastMonth && (this.userRole === 'admin' || isCreator || !entry);
 
+          let channelBadge = "-";
+          if (entry) {
+            if (entry.paymentMethod === 'Bank Transfer to Main Account') {
+              channelBadge = `<span class="text-indigo-600 font-semibold">Bank A/c</span>`;
+            } else {
+              channelBadge = `<span class="text-amber-700 font-semibold">Cash/UPI (${entry.receivedBy || 'Foreman'})</span>`;
+            }
+          }
+
           return `
             <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
               <div>
@@ -1090,13 +1235,17 @@
                 </div>
                 <div class="text-[11px] text-slate-500 mt-0.5">Scheduled EMI: <span class="font-semibold text-slate-700">${this.formatINR(sch.emi)}</span></div>
                 <div class="text-xs font-extrabold ${isPaid ? 'text-emerald-600' : 'text-slate-400'} mt-0.5">
-                  Paid: ${entry ? this.formatINR(entry.amountPaid) : '₹0'}
-                  ${entry?.paymentMethod ? `<span class="text-[10px] font-normal text-slate-400">(${entry.paymentMethod})</span>` : ''}
+                  Paid: ${entry ? this.formatINR(entry.amountPaid) : '₹0'} • ${channelBadge}
                 </div>
               </div>
-              <div>
+              <div class="flex items-center gap-1">
+                ${isPaid ? `
+                  <button onclick="app.viewReceipt(${monthNum}, '${m.memberNo}')" class="p-2 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 active:scale-95 shadow-xs" title="View Receipt">
+                    <i class="ph ph-receipt text-base"></i>
+                  </button>
+                ` : ''}
                 ${canEdit ? `
-                  <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}',${entry?.amountPaid || sch.emi})" class="px-3.5 py-2 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow-sm">
+                  <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}',${entry?.amountPaid || sch.emi})" class="px-3 py-2 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow-sm">
                     ${entry ? 'Update' : 'Record'}
                   </button>
                 ` : `<span class="text-[11px] text-slate-400 font-semibold italic">Locked</span>`}
@@ -1113,15 +1262,27 @@
           const isCreator = entry && entry.recordedByUid === this.currentUser?.uid;
           const canEdit = !isPastMonth && (this.userRole === 'admin' || isCreator || !entry);
 
+          let channelDisplay = "-";
+          if (entry) {
+            channelDisplay = entry.paymentMethod === 'Bank Transfer to Main Account' 
+              ? 'Bank Transfer (Main Account)' 
+              : `Cash/UPI (${entry.receivedBy || 'Foreman'})`;
+          }
+
           return `
             <tr class="hover:bg-slate-50">
               <td class="p-3 font-mono font-bold text-indigo-900">${m.memberNo}</td>
               <td class="p-3 font-semibold text-slate-800">${m.name}</td>
               <td class="p-3 text-right font-medium">${this.formatINR(sch.emi)}</td>
               <td class="p-3 text-right font-bold ${isPaid ? 'text-emerald-600' : 'text-slate-400'}">${entry ? this.formatINR(entry.amountPaid) : '₹0'}</td>
-              <td class="p-3 text-slate-500">${entry?.paymentMethod || '-'}</td>
+              <td class="p-3 text-xs font-medium text-slate-700">${channelDisplay}</td>
               <td class="p-3 text-slate-500">${this.formatDate(entry?.paymentDate)}</td>
-              <td class="p-3 text-right">
+              <td class="p-3 text-right space-x-1">
+                ${isPaid ? `
+                  <button onclick="app.viewReceipt(${monthNum}, '${m.memberNo}')" class="px-2 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg font-bold text-xs inline-flex items-center gap-1" title="View Receipt">
+                    <i class="ph ph-receipt"></i> Receipt
+                  </button>
+                ` : ''}
                 ${canEdit ? `
                   <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}',${entry?.amountPaid || sch.emi})" class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg font-bold text-xs">
                     ${entry ? 'Update' : 'Record'}
@@ -1142,7 +1303,20 @@
         document.getElementById('coll-member-id').value = memberNo;
         document.getElementById('coll-month').value = monthNum;
         document.getElementById('coll-amount').value = existing ? existing.amountPaid : defaultAmt;
-        document.getElementById('coll-method').value = existing ? existing.paymentMethod : "UPI";
+        
+        const fSelect = document.getElementById('coll-foreman-select');
+        fSelect.innerHTML = this.foremenList.map(fn => `<option value="${fn}">${fn}</option>`).join('');
+
+        const currentMethod = existing ? existing.paymentMethod : "Cash / UPI to Foreman";
+        document.getElementById('coll-method').value = currentMethod;
+        this.onPaymentMethodChange(currentMethod);
+
+        if (existing?.receivedBy) {
+          fSelect.value = existing.receivedBy;
+        } else if (this.userProfile?.displayName) {
+          fSelect.value = this.userProfile.displayName;
+        }
+
         document.getElementById('coll-date').value = existing?.paymentDate || new Date().toISOString().split('T')[0];
         document.getElementById('coll-remarks').value = existing?.remarks || "";
 
@@ -1167,15 +1341,22 @@
         const docKey = `${this.activeChitId}_M${monthNum}_${memberNo}`;
         const existing = this.collections.find(c => c.month === monthNum && c.memberNo === memberNo);
 
+        const method = document.getElementById('coll-method').value;
+        const receivedBy = method === 'Bank Transfer to Main Account' 
+          ? 'Main Bank Account' 
+          : document.getElementById('coll-foreman-select').value;
+
         const payload = {
           chitId: this.activeChitId,
           month: monthNum,
           memberNo: memberNo,
           amountPaid: amount,
-          paymentMethod: document.getElementById('coll-method').value,
+          paymentMethod: method,
+          receivedBy: receivedBy,
           paymentDate: document.getElementById('coll-date').value,
           remarks: document.getElementById('coll-remarks').value,
           recordedByUid: existing ? existing.recordedByUid : this.currentUser.uid,
+          recordedByName: this.userProfile?.displayName || this.currentUser.email.split('@')[0],
           updatedAt: new Date().toISOString()
         };
 
@@ -1188,6 +1369,82 @@
           this.loadCollectionsGrid(monthNum);
         } catch (err) {
           this.notify(err.message, true);
+        }
+      }
+
+      // Receipt Viewer & Share
+      viewReceipt(monthNum, memberNo) {
+        const mem = this.members.find(m => m.memberNo === memberNo);
+        const entry = this.collections.find(c => c.month === monthNum && c.memberNo === memberNo);
+        const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
+
+        if (!entry || entry.amountPaid <= 0) {
+          this.notify("No payment recorded for this installment.", true);
+          return;
+        }
+
+        const recId = `REC-M${String(monthNum).padStart(2, '0')}-${memberNo}`;
+        const dateStr = this.formatDate(entry.paymentDate);
+
+        this.currentReceiptData = {
+          recId,
+          memberNo,
+          memberName: mem.name,
+          phone: mem.phone || '',
+          monthNum,
+          monthName: `Month ${monthNum} (${this.getMonthLabel(monthNum)})`,
+          scheduledEmi: this.formatINR(sch.emi),
+          amountPaid: this.formatINR(entry.amountPaid),
+          rawAmount: entry.amountPaid,
+          method: entry.paymentMethod,
+          recipient: entry.receivedBy || entry.recordedByName || 'Foreman',
+          date: dateStr,
+          remarks: entry.remarks || '-'
+        };
+
+        document.getElementById('rec-number').innerText = recId;
+        document.getElementById('rec-member-name').innerText = mem.name;
+        document.getElementById('rec-member-id').innerText = memberNo;
+        document.getElementById('rec-month').innerText = this.currentReceiptData.monthName;
+        document.getElementById('rec-scheduled-emi').innerText = this.currentReceiptData.scheduledEmi;
+        document.getElementById('rec-date').innerText = `Date: ${dateStr}`;
+        document.getElementById('rec-amount').innerText = this.currentReceiptData.amountPaid;
+        document.getElementById('rec-channel').innerText = entry.paymentMethod;
+        document.getElementById('rec-recipient').innerText = this.currentReceiptData.recipient;
+        document.getElementById('rec-ref').innerText = entry.remarks || 'Standard installment payment';
+
+        document.getElementById('receipt-modal').classList.remove('hidden');
+      }
+
+      shareReceiptWhatsApp() {
+        if (!this.currentReceiptData) return;
+        const d = this.currentReceiptData;
+
+        const text = 
+`*mis-org Chit Fund Payment Receipt*
+---------------------------------------
+*Receipt No:* ${d.recId}
+*Subscriber:* ${d.memberNo} - ${d.memberName}
+*Installment:* ${d.monthName}
+*Scheduled EMI:* ${d.scheduledEmi}
+*Amount Paid:* ${d.amountPaid}
+*Payment Channel:* ${d.method}
+*Collector:* ${d.recipient}
+*Payment Date:* ${d.date}
+*Reference/Remarks:* ${d.remarks}
+---------------------------------------
+*Status: Verified & Acknowledged*`;
+
+        if (navigator.share) {
+          navigator.share({
+            title: `Payment Receipt ${d.recId}`,
+            text: text
+          }).catch(() => {});
+        } else {
+          const encoded = encodeURIComponent(text);
+          const phone = (d.phone || '').replace(/\D/g, '');
+          const waUrl = phone ? `https://wa.me/91${phone}?text=${encoded}` : `https://wa.me/?text=${encoded}`;
+          window.open(waUrl, '_blank');
         }
       }
 
@@ -1235,6 +1492,13 @@
               <td class="p-2 text-center">
                 ${runningBalance >= 0 ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Advance</span>` : `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800">Due</span>`}
               </td>
+              <td class="p-2 text-right">
+                ${paid > 0 ? `
+                  <button onclick="app.viewReceipt(${sch.m}, '${memberNo}')" class="p-1 text-emerald-700 hover:text-emerald-900" title="View Receipt">
+                    <i class="ph ph-receipt text-base"></i>
+                  </button>
+                ` : '-'}
+              </td>
             </tr>
           `;
         }).join('');
@@ -1252,11 +1516,9 @@
         }
       }
 
-      
       renderAuctions() {
         const tbody = document.getElementById('auction-table-body');
         tbody.innerHTML = MASTER_SCHEDULE.map(sch => {
-          // Month 1 is reserved exclusively for the Foreman
           if (sch.m === 1) {
             return `
               <tr class="bg-amber-50/60">
@@ -1273,7 +1535,6 @@
             `;
           }
 
-          // Months 2 to 41 are auctioned among the 40 subscribers
           const auc = this.auctions.find(a => a.month === sch.m);
           const winner = auc ? this.members.find(m => m.memberNo === auc.winnerMemberNo) : null;
 
@@ -1291,8 +1552,7 @@
             </tr>
           `;
         }).join('');
-            }
-      
+      }
 
       openAuctionModal(monthNum) {
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
@@ -1357,20 +1617,46 @@
           </div>
         `).join('') : `<div class="text-xs text-slate-400 p-2 text-center">Nil Defaulters!</div>`;
 
-        const modes = { 'UPI': 0, 'Bank Transfer': 0, 'Cash': 0 };
-        this.collections.forEach(c => { if (modes[c.paymentMethod] !== undefined) modes[c.paymentMethod] += Number(c.amountPaid) || 0; });
+        const channelTotals = {};
+        let grandTotal = 0;
 
-        document.getElementById('payment-mode-stats').innerHTML = Object.entries(modes).map(([mode, amt]) => `
-          <div>
-            <div class="flex justify-between text-xs font-semibold mb-1">
-              <span>${mode}</span>
-              <span class="text-indigo-900">${this.formatINR(amt)}</span>
+        this.collections.forEach(c => {
+          const amt = Number(c.amountPaid) || 0;
+          if (amt <= 0) return;
+          grandTotal += amt;
+
+          let channelKey = "";
+          if (c.paymentMethod === 'Bank Transfer to Main Account' || c.paymentMethod === 'Bank Transfer') {
+            channelKey = "Bank Transfer (Main Account)";
+          } else {
+            const foremanName = c.receivedBy || c.recordedByName || 'Foreman (General)';
+            channelKey = `Cash / UPI (${foremanName})`;
+          }
+
+          channelTotals[channelKey] = (channelTotals[channelKey] || 0) + amt;
+        });
+
+        const statsContainer = document.getElementById('payment-mode-stats');
+        if (Object.keys(channelTotals).length === 0) {
+          statsContainer.innerHTML = `<div class="text-xs text-slate-400">No collections recorded yet.</div>`;
+          return;
+        }
+
+        statsContainer.innerHTML = Object.entries(channelTotals).map(([channel, amt]) => {
+          const pct = grandTotal > 0 ? Math.round((amt / grandTotal) * 100) : 0;
+          const isBank = channel.includes('Bank Transfer');
+          return `
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1">
+                <span class="${isBank ? 'text-indigo-900 font-bold' : 'text-slate-700'}">${channel}</span>
+                <span class="font-bold ${isBank ? 'text-indigo-900' : 'text-emerald-700'}">${this.formatINR(amt)} <span class="text-slate-400 font-normal">(${pct}%)</span></span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2.5">
+                <div class="${isBank ? 'bg-indigo-600' : 'bg-emerald-500'} h-2.5 rounded-full" style="width: ${pct}%"></div>
+              </div>
             </div>
-            <div class="w-full bg-slate-100 rounded-full h-2">
-              <div class="bg-indigo-600 h-2 rounded-full" style="width: ${this.collections.length > 0 ? Math.min(100, (amt / (this.collections.reduce((a,b)=>a+(Number(b.amountPaid)||0),1)))*100) : 0}%"></div>
-            </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
       }
 
       exportDefaultersCSV() {
@@ -1378,14 +1664,14 @@
         let expected = 0;
         for (let m = 1; m <= curM; m++) expected += MASTER_SCHEDULE.find(s => s.m === m).emi;
 
-        let csv = "Member No,Subscriber Name,Pending Due\n";
+        let csv = "\uFEFFMember No,Subscriber Name,Pending Due\n";
         this.members.forEach(mem => {
           const totalPaid = this.collections.filter(c => c.memberNo === mem.memberNo && c.month <= curM).reduce((s, c) => s + (Number(c.amountPaid) || 0), 0);
           const due = expected - totalPaid;
           if (due > 0) csv += `"${mem.memberNo}","${mem.name}",${due}\n`;
         });
 
-        const blob = new Blob([csv], { type: 'text/csv' });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
         link.download = `defaulters_month_${curM}.csv`;
@@ -1398,14 +1684,28 @@
         try {
           const snap = await getDocs(query(collection(db, "activity_logs")));
           const logs = snap.docs.map(d => d.data()).sort((a,b) => b.timestamp.localeCompare(a.timestamp));
-          tbody.innerHTML = logs.map(l => `
-            <tr class="hover:bg-slate-50">
-              <td class="p-2 text-slate-500">${new Date(l.timestamp).toLocaleDateString('en-IN')}</td>
-              <td class="p-2 font-medium">${l.userEmail}</td>
-              <td class="p-2 font-bold text-indigo-900">${l.action}</td>
-              <td class="p-2 text-slate-500 truncate max-w-xs">${l.newVal || '-'}</td>
-            </tr>
-          `).join('');
+          
+          tbody.innerHTML = logs.map(l => {
+            const formattedDateTime = new Date(l.timestamp).toLocaleString('en-IN', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: true
+            });
+
+            return `
+              <tr class="hover:bg-slate-50">
+                <td class="p-2.5 text-slate-700 whitespace-nowrap font-medium">${formattedDateTime}</td>
+                <td class="p-2.5 font-medium text-slate-800">${l.userEmail}</td>
+                <td class="p-2.5"><span class="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold uppercase text-slate-600">${l.userRole || 'User'}</span></td>
+                <td class="p-2.5 font-bold text-indigo-900">${l.action}</td>
+                <td class="p-2.5 text-slate-500 truncate max-w-xs">${l.newVal || '-'}</td>
+              </tr>
+            `;
+          }).join('');
         } catch (e) {
           console.error(e);
         }
