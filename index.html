@@ -127,16 +127,29 @@
         <i class="ph ph-shield-check"></i>
       </div>
       <h2 class="text-xl font-bold text-slate-900">Sign in to mis-org</h2>
-      <p class="text-xs text-slate-500 mt-1 mb-6">Enter via your registered Google Account</p>
+      <p class="text-xs text-slate-500 mt-1 mb-5">Subscriber, Foreman & Admin Portal</p>
 
-      <button onclick="app.signInWithGoogle()" class="w-full flex items-center justify-center gap-3 py-3 px-4 border border-slate-300 rounded-xl font-medium text-slate-700 bg-white hover:bg-slate-50 active:scale-95 shadow-sm transition">
-        <svg class="w-5 h-5" viewBox="0 0 24 24">
+      <!-- On-Screen Diagnostic Error Box (Reveals any Firebase blocker) -->
+      <div id="auth-error-box" class="hidden text-left bg-rose-50 border border-rose-200 rounded-2xl p-3.5 mb-4 text-xs text-rose-700 space-y-1">
+        <div class="font-bold flex items-center gap-1.5 text-rose-800">
+          <i class="ph ph-warning-circle text-base"></i> <span id="auth-error-title">Sign-in Blocked</span>
+        </div>
+        <p id="auth-error-desc" class="text-[11px] leading-relaxed break-words"></p>
+      </div>
+
+      <button id="sign-in-btn" onclick="app.signInWithGoogle()" class="w-full flex items-center justify-center gap-3 py-3 px-4 border border-slate-300 rounded-xl font-medium text-slate-700 bg-white hover:bg-slate-50 active:scale-95 shadow-sm transition disabled:opacity-60 disabled:cursor-not-allowed">
+        <svg id="google-logo" class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
           <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
           <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
           <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
         </svg>
-        Sign in with Google
+        <span id="sign-in-btn-text">Sign in with Google</span>
+      </button>
+
+      <!-- Direct Redirect Fallback Button (useful if mobile browser blocks popups) -->
+      <button id="redirect-fallback-btn" onclick="app.signInWithGoogleRedirect()" class="hidden w-full mt-2.5 py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold">
+        Popup not opening? Tap here for Direct Sign-In
       </button>
     </div>
   </main>
@@ -180,7 +193,7 @@
           <div>
             <span class="px-2 py-0.5 rounded bg-indigo-800 text-amber-300 font-bold text-[10px] uppercase">Chit Group A</span>
             <h3 class="text-base sm:text-lg font-bold mt-1">₹5,00,000 • 40 Subscribers • 41 Months</h3>
-            <p class="text-xs text-indigo-200 mt-0.5">Start: Oct 2026. Month 1 (Foreman: ₹5,00,000), Month 10 (Special: ₹5,00,000)[span_0](start_span)[span_0](end_span).</p>
+            <p class="text-xs text-indigo-200 mt-0.5">Start: Oct 2026. Month 1 (Foreman: ₹5,00,000), Month 10 (Special: ₹5,00,000)[span_2](start_span)[span_2](end_span).</p>
           </div>
           <button onclick="app.navigate('collections')" class="w-full sm:w-auto px-5 py-2.5 bg-amber-400 hover:bg-amber-300 active:scale-95 text-indigo-950 font-bold rounded-xl text-xs sm:text-sm shadow-sm transition">
             Record Monthly Collection
@@ -537,7 +550,6 @@
         </div>
       </div>
 
-      <!-- Receipt Content Card -->
       <div class="space-y-3 text-xs">
         <div class="bg-slate-50 p-3.5 rounded-2xl space-y-1.5 border border-slate-100">
           <div class="flex justify-between"><span class="text-slate-500 font-medium">Subscriber:</span> <span class="font-bold text-slate-800" id="rec-member-name">-</span></div>
@@ -565,7 +577,6 @@
         </div>
       </div>
 
-      <!-- Action Buttons -->
       <div class="flex flex-wrap gap-2 pt-1 no-print">
         <button onclick="app.shareReceiptWhatsApp()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95">
           <i class="ph ph-whatsapp-logo text-base"></i> Share
@@ -622,7 +633,7 @@
     const auth = getAuth(fbApp);
     const db = getFirestore(fbApp);
 
-    // FIXED 41-MONTH MASTER SCHEDULE[span_1](start_span)[span_1](end_span)
+    // FIXED 41-MONTH MASTER SCHEDULE[span_3](start_span)[span_3](end_span)
     const MASTER_SCHEDULE = [
       { m: 1,  emi: 12500, div: 0,    disc: 0,     net: 500000, note: "Foreman's Chit" },
       { m: 2,  emi: 10150, div: 2350, disc: 94000, net: 406000, note: "" },
@@ -665,7 +676,7 @@
       { m: 39, emi: 12400, div: 100,  disc: 4000,  net: 496000, note: "" },
       { m: 40, emi: 12450, div: 50,   disc: 2000,  net: 498000, note: "" },
       { m: 41, emi: 12500, div: 0,    disc: 0,     net: 500000, note: "Final Chit" }
-    ];[span_2](start_span)[span_2](end_span)
+    ];[span_4](start_span)[span_4](end_span)
 
     class ChitFundApp {
       constructor() {
@@ -687,6 +698,14 @@
       }
 
       init() {
+        // Diagnostic check: check if default config is still unedited
+        if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+          this.showAuthError(
+            "Firebase Configuration is missing! Please open index.html and paste your actual Firebase credentials into the firebaseConfig object.",
+            "Configuration Required"
+          );
+        }
+
         this.setupAuthListener();
         this.renderSchedule();
         this.populateMonthDropdowns();
@@ -703,9 +722,9 @@
           }
         });
 
-        // Handle mobile redirect sign-ins
+        // Catch redirect results
         getRedirectResult(auth).catch(err => {
-          if (err) alert(`Redirect error: ${err.message}`);
+          if (err) this.showAuthError(err.message, "Redirect Authentication Error");
         });
       }
 
@@ -767,6 +786,31 @@
         }
       }
 
+      // Visual Auth Feedback
+      setAuthLoading(isLoading) {
+        const btn = document.getElementById('sign-in-btn');
+        const text = document.getElementById('sign-in-btn-text');
+        if (isLoading) {
+          btn.disabled = true;
+          text.innerText = "Signing in... please wait";
+        } else {
+          btn.disabled = false;
+          text.innerText = "Sign in with Google";
+        }
+      }
+
+      showAuthError(desc, title = "Sign-in Blocked") {
+        const box = document.getElementById('auth-error-box');
+        document.getElementById('auth-error-title').innerText = title;
+        document.getElementById('auth-error-desc').innerText = desc;
+        box.classList.remove('hidden');
+      }
+
+      clearAuthError() {
+        document.getElementById('auth-error-box').classList.add('hidden');
+        document.getElementById('redirect-fallback-btn').classList.add('hidden');
+      }
+
       notify(msg, isError = false) {
         const toast = document.getElementById('toast');
         document.getElementById('toast-message').innerText = msg;
@@ -778,49 +822,125 @@
       setupAuthListener() {
         onAuthStateChanged(auth, async (user) => {
           if (user) {
+            this.setAuthLoading(true);
             try {
-              let uDoc = await getDoc(doc(db, "users", user.uid));
-              let profile = uDoc.exists() ? uDoc.data() : null;
+              let profile = null;
 
-              if (!profile) {
-                const q = query(collection(db, "users"), where("email", "==", user.email.toLowerCase()));
-                const qSnap = await getDocs(q);
-                if (!qSnap.empty) {
-                  profile = qSnap.docs[0].data();
-                } else {
-                  await signOut(auth);
-                  this.notify("Unauthorized Google account. Ask Admin to register you.", true);
-                  this.showAuthScreen();
-                  return;
+              // 1. Direct UID document lookup
+              try {
+                const uDoc = await getDoc(doc(db, "users", user.uid));
+                if (uDoc.exists()) {
+                  profile = uDoc.data();
                 }
+              } catch(e) {}
+
+              // 2. Email fallback (handles Auto-ID documents in users collection)
+              if (!profile) {
+                const cleanEmail = (user.email || '').trim().toLowerCase();
+                try {
+                  const uSnap = await getDocs(collection(db, "users"));
+                  const matched = uSnap.docs.find(d => (d.data().email || '').trim().toLowerCase() === cleanEmail);
+                  if (matched) {
+                    profile = matched.data();
+                    // Link user.uid document to eliminate query latency next time
+                    try {
+                      await setDoc(doc(db, "users", user.uid), profile, { merge: true });
+                    } catch(err) {}
+                  }
+                } catch(e) {}
+              }
+
+              // 3. Member Directory email match (subscribers don't need a users doc)
+              if (!profile) {
+                const cleanEmail = (user.email || '').trim().toLowerCase();
+                try {
+                  const mSnap = await getDocs(query(collection(db, "members"), where("chitId", "==", this.activeChitId)));
+                  const matchedMember = mSnap.docs.find(d => (d.data().email || '').trim().toLowerCase() === cleanEmail);
+                  if (matchedMember) {
+                    profile = {
+                      role: 'member',
+                      displayName: matchedMember.data().name || user.displayName || 'Subscriber',
+                      email: cleanEmail
+                    };
+                  }
+                } catch(e) {}
+              }
+
+              // 4. Unauthorized rejection with explicit on-screen diagnosis
+              if (!profile) {
+                await signOut(auth);
+                this.setAuthLoading(false);
+                this.showAuthError(
+                  `Signed in with ${user.email}, but this account is not registered. In Firebase Console > Firestore > 'users' collection, add a document with email: '${user.email}' and role: 'admin' or 'foreman'.`,
+                  "Unregistered Account"
+                );
+                this.showAuthScreen();
+                return;
               }
 
               this.currentUser = user;
               this.userRole = (profile.role || "member").toLowerCase();
               this.userProfile = profile;
+              this.setAuthLoading(false);
+              this.clearAuthError();
               this.onUserAuthenticated();
+
             } catch (err) {
               console.error(err);
-              this.notify("Auth error", true);
+              this.setAuthLoading(false);
+              this.showAuthError(
+                `Firestore Database Error: ${err.message}. Verify that your Firestore database is created and security rules are published.`,
+                "Database Error"
+              );
               this.showAuthScreen();
             }
           } else {
+            this.setAuthLoading(false);
             this.showAuthScreen();
           }
         });
       }
 
       async signInWithGoogle() {
+        if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+          this.showAuthError("Please replace 'YOUR_API_KEY' with your actual Firebase config in index.html before signing in.", "Config Missing");
+          return;
+        }
+
+        this.setAuthLoading(true);
+        this.clearAuthError();
+
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
+
         try {
           await signInWithPopup(auth, provider);
         } catch (err) {
-          if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user' || /Mobi|Android/i.test(navigator.userAgent)) {
-            await signInWithRedirect(auth, provider);
+          console.error("Popup Error:", err);
+          this.setAuthLoading(false);
+
+          if (err.code === 'auth/unauthorized-domain') {
+            this.showAuthError(`Domain not authorized! In Firebase Console > Authentication > Settings > Authorized Domains, add:\n\n${window.location.hostname}`, "Domain Not Authorized");
+          } else if (err.code === 'auth/popup-blocked') {
+            this.showAuthError("The sign-in popup was blocked by your browser. Please tap the Direct Sign-In button below.", "Popup Blocked");
+            document.getElementById('redirect-fallback-btn').classList.remove('hidden');
+          } else if (err.code === 'auth/cancelled-popup-request' || err.code === 'auth/popup-closed-by-user') {
+            this.showAuthError("Sign-in cancelled or popup closed. Please tap again.", "Cancelled");
           } else {
-            alert(`Sign-in error: ${err.message}`);
+            this.showAuthError(`${err.message} (${err.code})`, "Authentication Error");
           }
+        }
+      }
+
+      async signInWithGoogleRedirect() {
+        this.setAuthLoading(true);
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        try {
+          await signInWithRedirect(auth, provider);
+        } catch (err) {
+          this.setAuthLoading(false);
+          this.showAuthError(err.message, "Redirect Error");
         }
       }
 
