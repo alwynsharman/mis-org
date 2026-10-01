@@ -856,7 +856,7 @@
           .trim();
       }
 
-      // ================= DIRECT VECTOR A4 PDF GENERATION (NEVER BLANK) =================
+            // ================= DIRECT VECTOR A4 PDF GENERATION =================
       generateReceiptPDF(data) {
         const jsPdfClass = window.jspdf?.jsPDF || window.jsPDF;
         if (!jsPdfClass) {
@@ -865,123 +865,124 @@
 
         const doc = new jsPdfClass({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         const pageWidth = 210;
-        const margin = 20;
-        const contentWidth = pageWidth - (margin * 2); // 170mm
+        const margin = 22;
+        const contentWidth = pageWidth - (margin * 2); // 166mm
+        const cardY = 32;
 
         // Outer Card Container Box
-        doc.setDrawColor(203, 213, 225);
+        doc.setDrawColor(226, 232, 240); // Slate 200
         doc.setFillColor(255, 255, 255);
-        doc.roundedRect(margin, 20, contentWidth, 230, 4, 4, 'FD');
+        doc.roundedRect(margin, cardY, contentWidth, 168, 4, 4, 'FD');
 
-        // Top Accent Strip
-        doc.setFillColor(30, 27, 75);
-        doc.roundedRect(margin, 20, contentWidth, 6, 4, 4, 'F');
-        doc.rect(margin, 23, contentWidth, 3, 'F');
+        // Brand Icon Accent Pill
+        doc.setFillColor(251, 191, 36); // Amber 400
+        doc.roundedRect(margin + 12, cardY + 12, 9, 9, 2, 2, 'F');
 
         // Header Title
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(22);
+        doc.setFontSize(18);
+        doc.setTextColor(30, 27, 75); // Indigo 950
+        doc.text('mis-org', margin + 25, cardY + 18);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(100, 116, 139); // Slate 500
+        doc.text('PAYMENT RECEIPT', margin + 25, cardY + 23);
+
+        // Header Right: Receipt Number Only (Clean & uncluttered)
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184); // Slate 400
+        doc.text('RECEIPT NO', pageWidth - margin - 12, cardY + 16, { align: 'right' });
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
         doc.setTextColor(30, 27, 75);
-        doc.text('mis-org', margin + 12, 42);
+        doc.text(this.cleanAscii(data.recId), pageWidth - margin - 12, cardY + 23, { align: 'right' });
+
+        // Header Divider
+        doc.setDrawColor(241, 245, 249);
+        doc.line(margin + 12, cardY + 29, pageWidth - margin - 12, cardY + 29);
+
+        // Prominent Payment Box with Embedded Date
+        const bannerY = cardY + 35;
+        doc.setFillColor(238, 242, 255); // Indigo 50
+        doc.setDrawColor(199, 210, 254); // Indigo 200
+        doc.roundedRect(margin + 12, bannerY, contentWidth - 24, 25, 3, 3, 'FD');
 
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(9);
-        doc.setTextColor(100, 116, 139);
-        doc.text('CHIT FUND PAYMENT RECEIPT', margin + 12, 48);
-
-        // Header Right: Receipt Identifier & Date
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9);
-        doc.setTextColor(148, 163, 184);
-        doc.text('RECEIPT NO:', pageWidth - margin - 12, 38, { align: 'right' });
-
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(13);
-        doc.setTextColor(30, 27, 75);
-        doc.text(this.cleanAscii(data.recId), pageWidth - margin - 12, 44, { align: 'right' });
+        doc.setTextColor(67, 56, 202); // Indigo 700
+        doc.text('AMOUNT RECEIVED', margin + 18, bannerY + 10);
 
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
-        doc.setTextColor(100, 116, 139);
-        doc.text(`Date: ${this.cleanAscii(data.date)}`, pageWidth - margin - 12, 50, { align: 'right' });
+        doc.setTextColor(30, 27, 75);
+        doc.text(`Date: ${this.cleanAscii(data.date)}`, margin + 18, bannerY + 18);
 
-        // Divider Line
-        doc.setDrawColor(226, 232, 240);
-        doc.line(margin + 12, 56, pageWidth - margin - 12, 56);
-
-        // Payment Banner Box
-        doc.setFillColor(238, 242, 255);
-        doc.setDrawColor(199, 210, 254);
-        doc.roundedRect(margin + 12, 62, contentWidth - 24, 26, 3, 3, 'FD');
-
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(10);
-        doc.setTextColor(67, 56, 202);
-        doc.text('AMOUNT RECEIVED', margin + 18, 73);
-
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(9);
-        doc.setTextColor(99, 102, 241);
-        doc.text('Status: Verified & Acknowledged', margin + 18, 80);
-
+        // Amount Display
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(22);
         doc.setTextColor(30, 27, 75);
-        const amtVal = data.rawAmount ? `Rs. ${Number(data.rawAmount).toLocaleString('en-IN')}` : this.cleanAscii(data.amountPaid);
-        doc.text(amtVal, pageWidth - margin - 18, 79, { align: 'right' });
+        const amtVal = data.rawAmount 
+          ? `Rs. ${Number(data.rawAmount).toLocaleString('en-IN')}` 
+          : this.cleanAscii(data.amountPaid);
+        doc.text(amtVal, pageWidth - margin - 18, bannerY + 16, { align: 'right' });
 
         // Ledger Rows
         const rows = [
-          ['Subscriber Name', this.cleanAscii(data.memberName)],
-          ['Member Identifier', this.cleanAscii(data.memberNo)],
-          ['Installment Period', this.cleanAscii(data.monthName)],
+          ['Subscriber', this.cleanAscii(data.memberName)],
+          ['Member ID', this.cleanAscii(data.memberNo)],
+          ['Installment', this.cleanAscii(data.monthName)],
           ['Scheduled EMI', this.cleanAscii(data.scheduledEmi)],
           ['Payment Mode', this.cleanAscii(data.method)],
           ['Received By', this.cleanAscii(data.recipient)],
           ['Reference / Note', this.cleanAscii(data.remarks)]
         ];
 
-        let startY = 102;
+        let startY = bannerY + 33;
+        const rowHeight = 10.5;
+
+        // Structured Ledger Box
+        doc.setDrawColor(241, 245, 249);
+        doc.roundedRect(margin + 12, startY - 4, contentWidth - 24, (rows.length * rowHeight) + 1, 2, 2, 'D');
+
         rows.forEach(([label, value], idx) => {
           if (idx % 2 === 0) {
-            doc.setFillColor(248, 250, 252);
-            doc.rect(margin + 12, startY - 5, contentWidth - 24, 11, 'F');
+            doc.setFillColor(248, 250, 252); // Slate 50
+            doc.rect(margin + 12.5, startY - 3.5, contentWidth - 25, rowHeight - 0.5, 'F');
           }
 
           doc.setFont('helvetica', 'normal');
-          doc.setFontSize(10);
+          doc.setFontSize(9.5);
           doc.setTextColor(100, 116, 139);
-          doc.text(label, margin + 18, startY + 2);
+          doc.text(label, margin + 18, startY + 3);
 
           doc.setFont('helvetica', 'bold');
-          doc.setTextColor(15, 23, 42);
-          doc.text(value, pageWidth - margin - 18, startY + 2, { align: 'right' });
+          doc.setTextColor(15, 23, 42); // Slate 900
+          doc.text(value, pageWidth - margin - 18, startY + 3, { align: 'right' });
 
-          doc.setDrawColor(241, 245, 249);
-          doc.line(margin + 12, startY + 6, pageWidth - margin - 12, startY + 6);
-          startY += 12;
+          if (idx < rows.length - 1) {
+            doc.setDrawColor(241, 245, 249);
+            doc.line(margin + 12, startY + rowHeight - 4, pageWidth - margin - 12, startY + rowHeight - 4);
+          }
+          startY += rowHeight;
         });
 
-        // Signatures
-        const sigY = 200;
-        doc.setDrawColor(203, 213, 225);
-        doc.line(margin + 18, sigY, margin + 68, sigY);
-        doc.line(pageWidth - margin - 68, sigY, pageWidth - margin - 18, sigY);
+        // Bottom Digital Acknowledgment Footer
+        const footerY = startY + 10;
+        doc.setDrawColor(226, 232, 240);
+        doc.setLineDashPattern([1.5, 1.5], 0);
+        doc.line(margin + 12, footerY, pageWidth - margin - 12, footerY);
+        doc.setLineDashPattern([], 0); // Reset dash
 
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
         doc.setTextColor(148, 163, 184);
-        doc.text('Subscriber Signature', margin + 43, sigY + 5, { align: 'center' });
-        doc.text('Authorized Signatory', pageWidth - margin - 43, sigY + 5, { align: 'center' });
-
-        // Footer
-        doc.setFontSize(8);
-        doc.setTextColor(148, 163, 184);
-        doc.text('mis-org Financial Operations - Official Payment Voucher', pageWidth / 2, 236, { align: 'center' });
+        doc.text('mis-org Financial Operations', pageWidth / 2, footerY + 8, { align: 'center' });
 
         return doc;
       }
-
       async shareReceiptPDF() {
         if (!this.currentReceiptData) return;
         this.notify("Preparing receipt to share...");
