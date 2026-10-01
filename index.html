@@ -847,6 +847,15 @@
         }
       }
 
+      // Strips non-ASCII unicode (prevents PDF byte-stream corruption)
+      cleanAscii(str) {
+        if (!str) return '-';
+        return String(str)
+          .replace(/₹/g, 'Rs. ')
+          .replace(/[^\x00-\x7F]/g, '')
+          .trim();
+      }
+
       // ================= DIRECT VECTOR A4 PDF GENERATION (NEVER BLANK) =================
       generateReceiptPDF(data) {
         const jsPdfClass = window.jspdf?.jsPDF || window.jsPDF;
@@ -860,12 +869,12 @@
         const contentWidth = pageWidth - (margin * 2); // 170mm
 
         // Outer Card Container Box
-        doc.setDrawColor(203, 213, 225); // Slate 300
+        doc.setDrawColor(203, 213, 225);
         doc.setFillColor(255, 255, 255);
         doc.roundedRect(margin, 20, contentWidth, 230, 4, 4, 'FD');
 
         // Top Accent Strip
-        doc.setFillColor(30, 27, 75); // Indigo 950
+        doc.setFillColor(30, 27, 75);
         doc.roundedRect(margin, 20, contentWidth, 6, 4, 4, 'F');
         doc.rect(margin, 23, contentWidth, 3, 'F');
 
@@ -889,25 +898,25 @@
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(13);
         doc.setTextColor(30, 27, 75);
-        doc.text(data.recId, pageWidth - margin - 12, 44, { align: 'right' });
+        doc.text(this.cleanAscii(data.recId), pageWidth - margin - 12, 44, { align: 'right' });
 
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
         doc.setTextColor(100, 116, 139);
-        doc.text(`Date: ${data.date}`, pageWidth - margin - 12, 50, { align: 'right' });
+        doc.text(`Date: ${this.cleanAscii(data.date)}`, pageWidth - margin - 12, 50, { align: 'right' });
 
-        // Divider
+        // Divider Line
         doc.setDrawColor(226, 232, 240);
         doc.line(margin + 12, 56, pageWidth - margin - 12, 56);
 
-        // Prominent Payment Box
-        doc.setFillColor(238, 242, 255); // Indigo 50
-        doc.setDrawColor(199, 210, 254); // Indigo 200
+        // Payment Banner Box
+        doc.setFillColor(238, 242, 255);
+        doc.setDrawColor(199, 210, 254);
         doc.roundedRect(margin + 12, 62, contentWidth - 24, 26, 3, 3, 'FD');
 
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(10);
-        doc.setTextColor(67, 56, 202); // Indigo 700
+        doc.setTextColor(67, 56, 202);
         doc.text('AMOUNT RECEIVED', margin + 18, 73);
 
         doc.setFont('helvetica', 'normal');
@@ -918,18 +927,18 @@
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(22);
         doc.setTextColor(30, 27, 75);
-        const displayAmt = data.rawAmount ? `Rs. ${Number(data.rawAmount).toLocaleString('en-IN')}` : data.amountPaid.replace('₹', 'Rs. ');
-        doc.text(displayAmt, pageWidth - margin - 18, 79, { align: 'right' });
+        const amtVal = data.rawAmount ? `Rs. ${Number(data.rawAmount).toLocaleString('en-IN')}` : this.cleanAscii(data.amountPaid);
+        doc.text(amtVal, pageWidth - margin - 18, 79, { align: 'right' });
 
         // Ledger Rows
         const rows = [
-          ['Subscriber Name', data.memberName],
-          ['Member Identifier', data.memberNo],
-          ['Installment Period', data.monthName],
-          ['Scheduled EMI', (data.scheduledEmi || '').replace('₹', 'Rs. ')],
-          ['Payment Mode', data.method],
-          ['Received By', data.recipient],
-          ['Reference / Note', data.remarks || '-']
+          ['Subscriber Name', this.cleanAscii(data.memberName)],
+          ['Member Identifier', this.cleanAscii(data.memberNo)],
+          ['Installment Period', this.cleanAscii(data.monthName)],
+          ['Scheduled EMI', this.cleanAscii(data.scheduledEmi)],
+          ['Payment Mode', this.cleanAscii(data.method)],
+          ['Received By', this.cleanAscii(data.recipient)],
+          ['Reference / Note', this.cleanAscii(data.remarks)]
         ];
 
         let startY = 102;
@@ -946,7 +955,7 @@
 
           doc.setFont('helvetica', 'bold');
           doc.setTextColor(15, 23, 42);
-          doc.text(String(value), pageWidth - margin - 18, startY + 2, { align: 'right' });
+          doc.text(value, pageWidth - margin - 18, startY + 2, { align: 'right' });
 
           doc.setDrawColor(241, 245, 249);
           doc.line(margin + 12, startY + 6, pageWidth - margin - 12, startY + 6);
@@ -965,10 +974,10 @@
         doc.text('Subscriber Signature', margin + 43, sigY + 5, { align: 'center' });
         doc.text('Authorized Signatory', pageWidth - margin - 43, sigY + 5, { align: 'center' });
 
-        // Bottom Disclaimer
+        // Footer
         doc.setFontSize(8);
         doc.setTextColor(148, 163, 184);
-        doc.text('mis-org Financial Operations • Official Payment Voucher', pageWidth / 2, 236, { align: 'center' });
+        doc.text('mis-org Financial Operations - Official Payment Voucher', pageWidth / 2, 236, { align: 'center' });
 
         return doc;
       }
