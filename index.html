@@ -8,23 +8,22 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Phosphor Icons CDN -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
-  <!-- html2pdf.js for client-side A4 PDF compilation & direct file sharing -->
+  <!-- html2pdf.js for client-side PDF generation & file sharing -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     input, select, textarea, button { font-size: 16px !important; }
 
-    /* ================= STRICT A4 SINGLE-PAGE PRINT RULES ================= */
+    /* ================= PRINT RULES ================= */
     @media print {
       @page {
         size: A4 portrait;
-        margin: 15mm;
+        margin: 12mm;
       }
       html, body {
         background: #ffffff !important;
         height: auto !important;
-        min-height: auto !important;
         margin: 0 !important;
         padding: 0 !important;
         overflow: visible !important;
@@ -32,37 +31,6 @@
 
       header, nav, #auth-screen, #toast, #collection-modal, #member-modal, #auction-modal, .no-print {
         display: none !important;
-      }
-
-      body.printing-receipt #app-container,
-      body:has(#receipt-modal:not(.hidden)) #app-container {
-        display: none !important;
-      }
-
-      body.printing-receipt #receipt-modal,
-      body:has(#receipt-modal:not(.hidden)) #receipt-modal {
-        display: block !important;
-        position: static !important;
-        inset: auto !important;
-        background: transparent !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        width: 100% !important;
-        height: auto !important;
-        overflow: visible !important;
-      }
-
-      body.printing-receipt #printable-receipt-modal,
-      body:has(#receipt-modal:not(.hidden)) #printable-receipt-modal {
-        display: block !important;
-        position: static !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        box-shadow: none !important;
-        border: 1px solid #cbd5e1 !important;
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
       }
 
       body.printing-passbook #receipt-modal,
@@ -553,7 +521,7 @@
     </div>
   </div>
 
-  <!-- Subscriber Modal (Auto ID) -->
+  <!-- Subscriber Modal -->
   <div id="member-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto">
       <div class="flex justify-between items-start mb-3">
@@ -618,99 +586,88 @@
     </div>
   </div>
 
-  <!-- ================= PAYMENT RECEIPT MODAL (A4 READY) ================= -->
-  <div id="receipt-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
-    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-5" id="printable-receipt-modal">
+  <!-- ================= PAYMENT RECEIPT MODAL (REALIGNED) ================= -->
+  <div id="receipt-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 my-auto" id="printable-receipt-modal">
       
       <!-- Receipt Header -->
-      <div class="border-b border-slate-200 pb-4 flex justify-between items-start">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-amber-400 flex items-center justify-center text-indigo-950 font-black shadow-xs">
-            <i class="ph ph-vault text-2xl"></i>
+      <div class="border-b border-slate-200 pb-3 flex justify-between items-start">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-amber-400 flex items-center justify-center text-indigo-950 font-black shadow-xs">
+            <i class="ph ph-vault text-xl"></i>
           </div>
           <div>
-            <h3 class="text-lg font-black text-indigo-950 tracking-tight leading-none">mis-org</h3>
-            <span class="text-[11px] text-slate-500 font-bold uppercase tracking-wider block mt-1">Chit Fund Payment Receipt</span>
+            <h3 class="text-base font-black text-indigo-950 tracking-tight leading-none">mis-org</h3>
+            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mt-1">Payment Receipt</span>
           </div>
         </div>
         <div class="text-right">
           <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Receipt No</span>
-          <span class="text-sm font-mono font-bold text-indigo-950 block" id="rec-number">MISR/01/01</span>
+          <span class="text-xs font-mono font-bold text-indigo-950 block" id="rec-number">MISR/01/01</span>
         </div>
       </div>
 
       <!-- Structured Ledger Alignment -->
-      <div class="space-y-4">
+      <div class="space-y-3">
         
-        <!-- Subscriber & Chit Details Table -->
-        <div class="bg-slate-50/90 rounded-2xl p-4 border border-slate-200/80 text-xs divide-y divide-slate-200/60">
-          <div class="grid grid-cols-3 py-2 items-center">
-            <span class="text-slate-500 font-medium">Subscriber Name</span>
-            <span class="col-span-2 text-right font-bold text-slate-900 truncate" id="rec-member-name">-</span>
-          </div>
-          <div class="grid grid-cols-3 py-2 items-center">
-            <span class="text-slate-500 font-medium">Member Identifier</span>
-            <span class="col-span-2 text-right font-mono font-bold text-indigo-900" id="rec-member-id">-</span>
-          </div>
-          <div class="grid grid-cols-3 py-2 items-center">
-            <span class="text-slate-500 font-medium">Installment Period</span>
-            <span class="col-span-2 text-right font-semibold text-slate-800" id="rec-month">-</span>
-          </div>
-          <div class="grid grid-cols-3 py-2 items-center">
-            <span class="text-slate-500 font-medium">Scheduled EMI</span>
-            <span class="col-span-2 text-right font-semibold text-slate-700" id="rec-scheduled-emi">-</span>
-          </div>
-        </div>
-
         <!-- Prominent Payment Banner -->
-        <div class="border border-indigo-200 bg-indigo-50/80 p-4 rounded-2xl flex justify-between items-center">
+        <div class="border border-indigo-100 bg-indigo-50/80 p-3.5 rounded-2xl flex justify-between items-center">
           <div>
             <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-900/70 block">Amount Received</span>
             <span class="text-xs font-semibold text-indigo-950 mt-0.5 block" id="rec-date">Date: -</span>
           </div>
-          <div class="text-2xl sm:text-3xl font-black text-indigo-950 tracking-tight" id="rec-amount">₹0</div>
+          <div class="text-2xl font-black text-indigo-950 tracking-tight" id="rec-amount">₹0</div>
+        </div>
+
+        <!-- Subscriber & Chit Details Table -->
+        <div class="bg-slate-50/90 rounded-2xl p-3.5 border border-slate-200/80 text-xs divide-y divide-slate-200/60">
+          <div class="flex justify-between items-center py-1.5">
+            <span class="text-slate-500 font-medium">Subscriber</span>
+            <span class="font-bold text-slate-900 text-right" id="rec-member-name">-</span>
+          </div>
+          <div class="flex justify-between items-center py-1.5">
+            <span class="text-slate-500 font-medium">Member ID</span>
+            <span class="font-mono font-bold text-indigo-900 text-right" id="rec-member-id">-</span>
+          </div>
+          <div class="flex justify-between items-center py-1.5">
+            <span class="text-slate-500 font-medium">Installment</span>
+            <span class="font-semibold text-slate-800 text-right" id="rec-month">-</span>
+          </div>
+          <div class="flex justify-between items-center py-1.5">
+            <span class="text-slate-500 font-medium">Scheduled EMI</span>
+            <span class="font-semibold text-slate-700 text-right" id="rec-scheduled-emi">-</span>
+          </div>
         </div>
 
         <!-- Transaction Metadata -->
-        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 text-xs divide-y divide-slate-100">
-          <div class="grid grid-cols-3 py-2 items-center">
+        <div class="bg-white rounded-2xl p-3 border border-slate-200/80 text-xs divide-y divide-slate-100">
+          <div class="flex justify-between items-center py-1.5">
             <span class="text-slate-500 font-medium">Payment Mode</span>
-            <span class="col-span-2 text-right font-semibold text-slate-800 truncate" id="rec-channel">-</span>
+            <span class="font-semibold text-slate-800 text-right" id="rec-channel">-</span>
           </div>
-          <div class="grid grid-cols-3 py-2 items-center">
+          <div class="flex justify-between items-center py-1.5">
             <span class="text-slate-500 font-medium">Received By</span>
-            <span class="col-span-2 text-right font-semibold text-slate-800 truncate" id="rec-recipient">-</span>
+            <span class="font-semibold text-slate-800 text-right" id="rec-recipient">-</span>
           </div>
-          <div class="grid grid-cols-3 py-2 items-center">
+          <div class="flex justify-between items-center py-1.5">
             <span class="text-slate-500 font-medium">Reference / Note</span>
-            <span class="col-span-2 text-right font-mono text-[11px] text-slate-700 truncate" id="rec-ref">-</span>
+            <span class="font-mono text-[11px] text-slate-700 text-right" id="rec-ref">-</span>
           </div>
         </div>
 
-        <!-- Signatory & Footer -->
-        <div class="pt-4 flex justify-between items-end text-[11px] text-slate-500">
-          <div>
-            <span class="block text-[10px] text-slate-400">Generated on</span>
-            <span class="font-medium text-slate-700" id="rec-print-timestamp">-</span>
-          </div>
-          <div class="text-right">
-            <div class="h-8 border-b border-slate-300 w-32 mb-1"></div>
-            <span class="text-[10px] uppercase font-bold text-slate-400">Authorized Signatory</span>
-          </div>
-        </div>
-
-        <div class="text-[10px] text-center text-slate-400 border-t border-dashed border-slate-200 pt-2.5">
-          mis-org Financial Operations • Official Digital Voucher
+        <!-- Footer Note -->
+        <div class="text-[10px] text-center text-slate-400 border-t border-dashed border-slate-200 pt-2">
+          mis-org Financial Operations • Official Digital Acknowledgment
         </div>
       </div>
 
       <!-- Action Buttons -->
-      <div class="flex flex-wrap gap-2 pt-2 no-print">
+      <div class="flex flex-wrap gap-2 pt-1 no-print">
         <button onclick="app.shareReceiptPDF()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition">
           <i class="ph ph-share-network text-base"></i> Share
         </button>
         <button onclick="app.downloadReceiptPDF()" class="flex-1 py-2.5 bg-indigo-900 hover:bg-indigo-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition">
-          <i class="ph ph-file-pdf text-base"></i> Download
+          <i class="ph ph-file-pdf text-base"></i> Download PDF
         </button>
         <button onclick="document.getElementById('receipt-modal').classList.add('hidden')" class="w-full sm:w-auto px-4 py-2.5 border border-slate-300 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">
           Close
@@ -727,8 +684,8 @@
       getAuth, 
       GoogleAuthProvider, 
       signInWithPopup, 
-      signInWithRedirect,
-      getRedirectResult,
+      signInWithRedirect, 
+      getRedirectResult, 
       signOut, 
       onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -737,7 +694,7 @@
       doc, 
       getDoc, 
       setDoc, 
-      deleteDoc,
+      deleteDoc, 
       addDoc, 
       collection, 
       query, 
@@ -910,79 +867,161 @@
         }
       }
 
-      // ================= A4 PDF GENERATION & DIRECT SHARING =================
-      async generateReceiptA4PDFBlob() {
-        const target = document.getElementById('printable-receipt-modal');
-        const actions = target.querySelector('.no-print');
-        if (actions) actions.style.display = 'none';
+      // Standalone clean DOM generator for PDF (Fixes empty/blank page bug)
+      buildReceiptPrintElement(data) {
+        const container = document.createElement('div');
+        container.style.position = 'fixed';
+        container.style.top = '0';
+        container.style.left = '0';
+        container.style.zIndex = '-9999';
+        container.style.width = '680px';
+        container.style.padding = '36px';
+        container.style.backgroundColor = '#ffffff';
+        container.style.color = '#0f172a';
+        container.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        container.style.border = '1px solid #cbd5e1';
+        container.style.borderRadius = '16px';
+        container.style.boxSizing = 'border-box';
 
-        // Precise A4 portrait configuration (210mm x 297mm)
-        const options = {
-          margin: [18, 16, 18, 16], // mm: top, right, bottom, left
-          filename: `${this.currentReceiptData.recId.replace(/\//g, '_')}.pdf`,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, logging: false },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
+        container.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #e2e8f0; padding-bottom:16px; margin-bottom:20px;">
+            <div>
+              <h2 style="margin:0; font-size:24px; font-weight:900; color:#1e1b4b; letter-spacing:-0.5px;">mis-org</h2>
+              <p style="margin:4px 0 0; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Chit Fund Payment Receipt</p>
+            </div>
+            <div style="text-align:right;">
+              <span style="display:block; font-size:10px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:1px;">Receipt No</span>
+              <span style="display:block; font-size:14px; font-weight:800; font-family:monospace; color:#1e1b4b;">${data.recId}</span>
+            </div>
+          </div>
 
-        try {
-          const blob = await html2pdf().set(options).from(target).outputPdf('blob');
-          if (actions) actions.style.display = '';
-          return blob;
-        } catch (err) {
-          if (actions) actions.style.display = '';
-          throw err;
-        }
+          <div style="background-color:#eef2ff; border:1px solid #c7d2fe; border-radius:12px; padding:18px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <span style="display:block; font-size:11px; font-weight:800; color:#4338ca; text-transform:uppercase; letter-spacing:0.5px;">Amount Received</span>
+              <span style="display:block; font-size:13px; font-weight:600; color:#312e81; margin-top:2px;">Date: ${data.date}</span>
+            </div>
+            <div style="font-size:30px; font-weight:900; color:#1e1b4b;">${data.amountPaid}</div>
+          </div>
+
+          <table style="width:100%; border-collapse:collapse; margin-bottom:24px; font-size:13px;">
+            <tbody>
+              <tr style="border-bottom:1px solid #f1f5f9;">
+                <td style="padding:10px 0; color:#64748b; font-weight:500;">Subscriber</td>
+                <td style="padding:10px 0; text-align:right; font-weight:700; color:#0f172a;">${data.memberName}</td>
+              </tr>
+              <tr style="border-bottom:1px solid #f1f5f9;">
+                <td style="padding:10px 0; color:#64748b; font-weight:500;">Member ID</td>
+                <td style="padding:10px 0; text-align:right; font-weight:700; font-family:monospace; color:#312e81;">${data.memberNo}</td>
+              </tr>
+              <tr style="border-bottom:1px solid #f1f5f9;">
+                <td style="padding:10px 0; color:#64748b; font-weight:500;">Installment</td>
+                <td style="padding:10px 0; text-align:right; font-weight:600; color:#1e293b;">${data.monthName}</td>
+              </tr>
+              <tr style="border-bottom:1px solid #f1f5f9;">
+                <td style="padding:10px 0; color:#64748b; font-weight:500;">Scheduled EMI</td>
+                <td style="padding:10px 0; text-align:right; font-weight:600; color:#334155;">${data.scheduledEmi}</td>
+              </tr>
+              <tr style="border-bottom:1px solid #f1f5f9;">
+                <td style="padding:10px 0; color:#64748b; font-weight:500;">Payment Mode</td>
+                <td style="padding:10px 0; text-align:right; font-weight:600; color:#1e293b;">${data.method}</td>
+              </tr>
+              <tr style="border-bottom:1px solid #f1f5f9;">
+                <td style="padding:10px 0; color:#64748b; font-weight:500;">Received By</td>
+                <td style="padding:10px 0; text-align:right; font-weight:600; color:#1e293b;">${data.recipient}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 0; color:#64748b; font-weight:500;">Reference / Note</td>
+                <td style="padding:10px 0; text-align:right; font-family:monospace; color:#475569;">${data.remarks}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="border-top:1px dashed #cbd5e1; padding-top:16px; display:flex; justify-content:space-between; align-items:flex-end; font-size:11px; color:#64748b;">
+            <div>
+              <span style="display:block; color:#94a3b8; font-size:10px;">Generated Date</span>
+              <span style="font-weight:600;">${new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })}</span>
+            </div>
+            <div style="text-align:right;">
+              <div style="width:130px; border-bottom:1px solid #94a3b8; margin-bottom:4px;"></div>
+              <span style="font-size:10px; font-weight:700; text-transform:uppercase; color:#94a3b8;">Authorized Signatory</span>
+            </div>
+          </div>
+          <div style="text-align:center; font-size:10px; color:#94a3b8; margin-top:20px;">
+            mis-org Financial Operations • Official Digital Acknowledgment
+          </div>
+        `;
+        return container;
       }
 
       async shareReceiptPDF() {
         if (!this.currentReceiptData) return;
-        this.notify("Generating A4 PDF...");
+        this.notify("Preparing receipt to share...");
+        const el = this.buildReceiptPrintElement(this.currentReceiptData);
+        document.body.appendChild(el);
+
+        const fileName = `${this.currentReceiptData.recId.replace(/\//g, '_')}.pdf`;
+        const opt = {
+          margin: [15, 15, 15, 15],
+          filename: fileName,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, scrollX: 0, scrollY: 0, useCORS: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
         try {
-          const blob = await this.generateReceiptA4PDFBlob();
-          const fileName = `${this.currentReceiptData.recId.replace(/\//g, '_')}.pdf`;
+          const worker = html2pdf().set(opt).from(el);
+          const pdf = await worker.toPdf().get('pdf');
+          const blob = pdf.output('blob');
+          if (document.body.contains(el)) document.body.removeChild(el);
+
           const pdfFile = new File([blob], fileName, { type: 'application/pdf' });
 
-          // Direct file sharing via native OS sheet (WhatsApp, Email, Drive)
           if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
             await navigator.share({
-              title: `Payment Receipt ${this.currentReceiptData.recId}`,
+              title: `Receipt ${this.currentReceiptData.recId}`,
               text: `Payment Receipt: ${this.currentReceiptData.memberName} (${this.currentReceiptData.recId})`,
               files: [pdfFile]
             });
-            this.notify("Receipt PDF shared");
+            this.notify("Receipt shared");
           } else {
-            // Direct download fallback for desktop or unsupported browsers
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = fileName;
             a.click();
             URL.revokeObjectURL(url);
-            this.notify("Direct share unsupported on this browser. A4 PDF downloaded.");
+            this.notify("Receipt downloaded");
           }
         } catch (err) {
+          if (document.body.contains(el)) document.body.removeChild(el);
           console.error("PDF share error:", err);
-          this.notify("Failed to share PDF", true);
+          this.notify("Failed to share receipt", true);
         }
       }
 
       async downloadReceiptPDF() {
         if (!this.currentReceiptData) return;
-        this.notify("Compiling A4 PDF...");
+        this.notify("Downloading receipt...");
+        const el = this.buildReceiptPrintElement(this.currentReceiptData);
+        document.body.appendChild(el);
+
+        const fileName = `${this.currentReceiptData.recId.replace(/\//g, '_')}.pdf`;
+        const opt = {
+          margin: [15, 15, 15, 15],
+          filename: fileName,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, scrollX: 0, scrollY: 0, useCORS: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
         try {
-          const blob = await this.generateReceiptA4PDFBlob();
-          const fileName = `${this.currentReceiptData.recId.replace(/\//g, '_')}.pdf`;
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = fileName;
-          a.click();
-          URL.revokeObjectURL(url);
-          this.notify(`Downloaded ${fileName}`);
+          await html2pdf().set(opt).from(el).save();
+          if (document.body.contains(el)) document.body.removeChild(el);
+          this.notify("Receipt downloaded");
         } catch (err) {
+          if (document.body.contains(el)) document.body.removeChild(el);
           console.error("PDF download error:", err);
-          this.notify("Failed to generate A4 PDF", true);
+          this.notify("Failed to download receipt", true);
         }
       }
 
@@ -1169,7 +1208,7 @@
         document.getElementById('dropdown-user-email').innerText = this.currentUser.email;
         document.getElementById('dropdown-user-role').innerText = this.userRole;
 
-        // Subscriber Security Fix: Restrict Passbook View & Lock Selector
+        // Subscriber Security Fix
         if (this.userRole === "member") {
           document.getElementById('module-tabs').classList.add('hidden');
           await this.loadData();
@@ -1355,7 +1394,6 @@
           }
         }
 
-        // Mobile Cards
         const mContainer = document.getElementById('member-mobile-cards');
         mContainer.innerHTML = list.length === 0 ? `<div class="p-6 text-center text-xs text-slate-400 bg-white rounded-2xl">No subscribers found.</div>` : list.map(m => {
           const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.amountPaid) || 0), 0);
@@ -1381,7 +1419,6 @@
           `;
         }).join('');
 
-        // Desktop Table
         const dBody = document.getElementById('member-desktop-tbody');
         dBody.innerHTML = list.map(m => {
           const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.amountPaid) || 0), 0);
@@ -1736,7 +1773,6 @@
         document.getElementById('rec-channel').innerText = entry.paymentMethod;
         document.getElementById('rec-recipient').innerText = this.currentReceiptData.recipient;
         document.getElementById('rec-ref').innerText = cleanRemarks;
-        document.getElementById('rec-print-timestamp').innerText = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 
         document.getElementById('receipt-modal').classList.remove('hidden');
       }
