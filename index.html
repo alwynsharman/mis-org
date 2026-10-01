@@ -574,7 +574,7 @@
   <div id="receipt-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
     <div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 my-auto">
       
-      <!-- Receipt Header -->
+      <!-- Receipt Header (Date removed, only Receipt No) -->
       <div class="border-b border-slate-200 pb-3 flex justify-between items-center">
         <div class="flex items-center gap-2.5">
           <div class="w-9 h-9 rounded-xl bg-amber-400 flex items-center justify-center text-indigo-950 font-black shadow-xs">
@@ -594,7 +594,7 @@
       <!-- Structured Ledger Alignment -->
       <div class="space-y-3">
         
-        <!-- Prominent Payment Banner -->
+        <!-- Prominent Payment Banner with Embedded Date -->
         <div class="border border-indigo-100 bg-indigo-50/80 p-3.5 rounded-2xl flex justify-between items-center">
           <div>
             <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-900/70 block">Amount Received</span>
@@ -865,94 +865,6 @@
 
         // Centered compact card dimensions
         const cardWidth = 136;
-        const cardHeight = 164;
-        const cardX = (pageWidth - cardWidth) / 2; // 37mm
-        const cardY = 40; // Balanced top margin
-
-        // Outer Voucher Card Box with subtle border
-        doc.setDrawColor(203, 213, 225); // Slate 300
-        doc.setFillColor(255, 255, 255);
-        doc.roundedRect(cardX, cardY, cardWidth, cardHeight, 3, 3, 'FD');
-
-        // Top Header Accent Bar
-        doc.setFillColor(30, 27, 75); // Indigo 950
-        doc.roundedRect(cardX, cardY, cardWidth, 5, 3, 3, 'F');
-        doc.rect(cardX, cardY + 2.5, cardWidth, 2.5, 'F');
-
-        // Organization & Voucher Title
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(16);
-        doc.setTextColor(30, 27, 75);
-        doc.text('mis-org', cardX + 10, cardY + 16);
-
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7.5);
-        doc.setTextColor(100, 116, 139);
-        doc.text('CHIT FUND PAYMENT RECEIPT', cardX + 10, cardY + 21);
-
-        // Header Right: Receipt Number & Date
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7.5);
-        doc.setTextColor(148, 163, 184);
-        doc.text('RECEIPT NO', cardX + cardWidth - 10, cardY + 14, { align: 'right' });
-
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11);
-        doc.setTextColor(30, 27, 75);
-        doc.text(this.cleanAscii(data.recId), cardX + cardWidth - 10, cardY + 19, { align: 'right' });
-
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(7.5);
-        doc.setTextColor(100, 116, 139);
-        doc.text(`Date: ${this.cleanAscii(data.date)}`, cardX + cardWidth - 10, cardY + 24, { align: 'right' });
-
-        // Header Divider
-        doc.setDrawColor(226, 232, 240);
-        doc.line(cardX + 10, cardY + 28, cardX + cardWidth - 10, cardY + 28);
-
-        // Highlighted Amount Banner
-        const bannerY = cardY + 33;
-        const bannerHeight = 22;
-        doc.setFillColor(238, 242, 255); // Indigo 50
-        doc.setDrawColor(199, 210, 254); // Indigo 200
-        doc.roundedRect(cardX + 10, bannerY, cardWidth - 20, bannerHeight, 2.5, 2.5, 'FD');
-
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(8.5);
-        doc.setTextColor(67, 56, 202); // Indigo 700
-        doc.text('AMOUNT RECEIVED', cardX + 16, bannerY + 9);
-
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(7.5);
-        doc.setTextColor(99, 102, 241);
-        doc.text('Verified Digital Acknowledgment', cardX + 16, bannerY + 16);
-
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(18);
-        doc.setTextColor(30, 27, 75);
-        const displayAmt = data.rawAmount ? `Rs. ${Number(data.rawAmount).toLocaleString('en-IN')}` : this.cleanAscii(data.amountPaid);
-        doc.text(displayAmt, cardX + cardWidth - 16, bannerY + 14, { align: 'right' });
-
-        // Ledger Rows (Reference / Note Removed)
-        const rows = [
-          ['Subscriber Name', this.cleanAscii(data.memberName)],
-          ['Member Identifier', this.cleanAscii(data.memberNo)],
-          ['Installment Period', this.cleanAscii(data.monthName)],
-          ['Scheduled EMI', this.cleanAscii(data.scheduledEmi)],
-          ['Payment Mode', this.cleanAscii(data.method)],
-      // ================= COMPACT, PROPORTIONAL A4 PDF VOUCHER =================
-      generateReceiptPDF(data) {
-        const jsPdfClass = window.jspdf?.jsPDF || window.jsPDF;
-        if (!jsPdfClass) {
-          throw new Error("jsPDF library not loaded");
-        }
-
-        // Standard A4 portrait (210mm x 297mm)
-        const doc = new jsPdfClass({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-        const pageWidth = 210;
-
-        // Centered compact card dimensions
-        const cardWidth = 136;
         const cardHeight = 160;
         const cardX = (pageWidth - cardWidth) / 2; // 37mm
         const cardY = 42;
@@ -978,7 +890,7 @@
         doc.setTextColor(100, 116, 139);
         doc.text('CHIT FUND PAYMENT RECEIPT', cardX + 10, cardY + 21);
 
-        // Header Right: Receipt Number Only
+        // Header Right: Receipt Number Only (No Date in header)
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(7.5);
         doc.setTextColor(148, 163, 184);
@@ -995,7 +907,7 @@
 
         // Highlighted Amount Banner with Embedded Date
         const bannerY = cardY + 32;
-        const bannerHeight = 22;
+        const bannerHeight = 24;
         doc.setFillColor(238, 242, 255); // Indigo 50
         doc.setDrawColor(199, 210, 254); // Indigo 200
         doc.roundedRect(cardX + 10, bannerY, cardWidth - 20, bannerHeight, 2.5, 2.5, 'FD');
@@ -1003,18 +915,18 @@
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(8.5);
         doc.setTextColor(67, 56, 202); // Indigo 700
-        doc.text('AMOUNT RECEIVED', cardX + 16, bannerY + 8.5);
+        doc.text('AMOUNT RECEIVED', cardX + 16, bannerY + 9);
 
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
         doc.setTextColor(30, 27, 75); // Indigo 950
-        doc.text(`Date: ${this.cleanAscii(data.date)}`, cardX + 16, bannerY + 16);
+        doc.text(`Date: ${this.cleanAscii(data.date)}`, cardX + 16, bannerY + 17);
 
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(18);
         doc.setTextColor(30, 27, 75);
         const displayAmt = data.rawAmount ? `Rs. ${Number(data.rawAmount).toLocaleString('en-IN')}` : this.cleanAscii(data.amountPaid);
-        doc.text(displayAmt, cardX + cardWidth - 16, bannerY + 14, { align: 'right' });
+        doc.text(displayAmt, cardX + cardWidth - 16, bannerY + 15, { align: 'right' });
 
         // Ledger Rows (Clean 6-row ledger without reference/notes)
         const rows = [
@@ -1026,7 +938,7 @@
           ['Received By', this.cleanAscii(data.recipient)]
         ];
 
-        let startY = bannerY + bannerHeight + 7;
+        let startY = bannerY + bannerHeight + 6;
         const rowHeight = 9.5;
 
         // Structured Ledger Box
