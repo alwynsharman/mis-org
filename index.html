@@ -8,16 +8,18 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Phosphor Icons CDN -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- html2pdf.js for client-side A4 PDF compilation & direct file sharing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     input, select, textarea, button { font-size: 16px !important; }
 
-    /* ================= STRICT SINGLE-PAGE PRINT RULES ================= */
+    /* ================= STRICT A4 SINGLE-PAGE PRINT RULES ================= */
     @media print {
       @page {
         size: A4 portrait;
-        margin: 10mm;
+        margin: 15mm;
       }
       html, body {
         background: #ffffff !important;
@@ -28,12 +30,10 @@
         overflow: visible !important;
       }
 
-      /* Always hide navigation, modals & non-printable elements */
       header, nav, #auth-screen, #toast, #collection-modal, #member-modal, #auction-modal, .no-print {
         display: none !important;
       }
 
-      /* 1. RECEIPT PRINT MODE (Strictly 1 Page) */
       body.printing-receipt #app-container,
       body:has(#receipt-modal:not(.hidden)) #app-container {
         display: none !important;
@@ -57,17 +57,14 @@
         display: block !important;
         position: static !important;
         width: 100% !important;
-        max-width: 440px !important;
-        margin: 15mm auto !important;
+        max-width: 100% !important;
+        margin: 0 !important;
         box-shadow: none !important;
-        border: 1px solid #94a3b8 !important;
+        border: 1px solid #cbd5e1 !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
-        page-break-after: avoid !important;
-        break-after: avoid !important;
       }
 
-      /* 2. PASSBOOK PRINT MODE */
       body.printing-passbook #receipt-modal,
       body:not(:has(#receipt-modal:not(.hidden))) #receipt-modal {
         display: none !important;
@@ -291,9 +288,8 @@
         </div>
       </section>
 
-      <!-- 3. MEMBER DIRECTORY (Clean Toolbar Layout) -->
+      <!-- 3. MEMBER DIRECTORY -->
       <section id="view-members" class="space-y-3 hidden">
-        <!-- Re-positioned Member Directory Bar -->
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
             <div class="flex items-center gap-2">
@@ -371,9 +367,8 @@
         </div>
       </section>
 
-      <!-- 5. MEMBER PASSBOOK (Realigned Ledger & Banking Card Design) -->
+      <!-- 5. MEMBER PASSBOOK -->
       <section id="view-passbook" class="space-y-3 hidden">
-        <!-- Passbook Control Bar -->
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 no-print">
           <div>
             <h2 class="text-base sm:text-lg font-bold text-slate-900">Subscriber Passbook</h2>
@@ -387,10 +382,7 @@
           </div>
         </div>
 
-        <!-- Printable Passbook Card -->
         <div id="printable-passbook" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-5">
-          
-          <!-- Header Passbook Summary Bar -->
           <div class="border-b border-slate-200 pb-5">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
@@ -405,7 +397,6 @@
                 </div>
               </div>
 
-              <!-- Passbook Metric Overview (3 Cards) -->
               <div class="grid grid-cols-3 gap-2 w-full md:w-auto">
                 <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 text-center min-w-[90px]">
                   <span class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Scheduled</span>
@@ -423,7 +414,6 @@
             </div>
           </div>
 
-          <!-- Ledger Table -->
           <div class="overflow-x-auto rounded-xl border border-slate-100">
             <table class="w-full text-left text-xs whitespace-nowrap">
               <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
@@ -628,88 +618,99 @@
     </div>
   </div>
 
-  <!-- ================= PAYMENT RECEIPT MODAL ================= -->
+  <!-- ================= PAYMENT RECEIPT MODAL (A4 READY) ================= -->
   <div id="receipt-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4" id="printable-receipt-modal">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-5" id="printable-receipt-modal">
       
       <!-- Receipt Header -->
-      <div class="border-b border-slate-200 pb-3 flex justify-between items-start">
-        <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-amber-400 flex items-center justify-center text-indigo-950 font-black shadow-xs">
-            <i class="ph ph-vault text-xl"></i>
+      <div class="border-b border-slate-200 pb-4 flex justify-between items-start">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-400 flex items-center justify-center text-indigo-950 font-black shadow-xs">
+            <i class="ph ph-vault text-2xl"></i>
           </div>
           <div>
-            <h3 class="text-base font-black text-indigo-950 tracking-tight leading-none">mis-org</h3>
-            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mt-1">Payment Acknowledgment</span>
+            <h3 class="text-lg font-black text-indigo-950 tracking-tight leading-none">mis-org</h3>
+            <span class="text-[11px] text-slate-500 font-bold uppercase tracking-wider block mt-1">Chit Fund Payment Receipt</span>
           </div>
         </div>
         <div class="text-right">
-            <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Receipt No</span>
-            <span class="text-xs font-mono font-bold text-indigo-950 block" id="rec-number">MISR/01/01</span>
+          <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Receipt No</span>
+          <span class="text-sm font-mono font-bold text-indigo-950 block" id="rec-number">MISR/01/01</span>
         </div>
       </div>
 
       <!-- Structured Ledger Alignment -->
-      <div class="space-y-3">
+      <div class="space-y-4">
         
         <!-- Subscriber & Chit Details Table -->
-        <div class="bg-slate-50/80 rounded-2xl p-3.5 border border-slate-200/70 text-xs divide-y divide-slate-100">
-          <div class="grid grid-cols-3 py-1.5 items-center">
-            <span class="text-slate-500 font-medium">Subscriber</span>
+        <div class="bg-slate-50/90 rounded-2xl p-4 border border-slate-200/80 text-xs divide-y divide-slate-200/60">
+          <div class="grid grid-cols-3 py-2 items-center">
+            <span class="text-slate-500 font-medium">Subscriber Name</span>
             <span class="col-span-2 text-right font-bold text-slate-900 truncate" id="rec-member-name">-</span>
           </div>
-          <div class="grid grid-cols-3 py-1.5 items-center">
-            <span class="text-slate-500 font-medium">Member ID</span>
+          <div class="grid grid-cols-3 py-2 items-center">
+            <span class="text-slate-500 font-medium">Member Identifier</span>
             <span class="col-span-2 text-right font-mono font-bold text-indigo-900" id="rec-member-id">-</span>
           </div>
-          <div class="grid grid-cols-3 py-1.5 items-center">
-            <span class="text-slate-500 font-medium">Installment</span>
+          <div class="grid grid-cols-3 py-2 items-center">
+            <span class="text-slate-500 font-medium">Installment Period</span>
             <span class="col-span-2 text-right font-semibold text-slate-800" id="rec-month">-</span>
           </div>
-          <div class="grid grid-cols-3 py-1.5 items-center">
+          <div class="grid grid-cols-3 py-2 items-center">
             <span class="text-slate-500 font-medium">Scheduled EMI</span>
             <span class="col-span-2 text-right font-semibold text-slate-700" id="rec-scheduled-emi">-</span>
           </div>
         </div>
 
         <!-- Prominent Payment Banner -->
-        <div class="border border-indigo-100 bg-indigo-50/70 p-3.5 rounded-2xl flex justify-between items-center">
+        <div class="border border-indigo-200 bg-indigo-50/80 p-4 rounded-2xl flex justify-between items-center">
           <div>
             <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-900/70 block">Amount Received</span>
-            <span class="text-xs font-medium text-indigo-950 mt-0.5 block" id="rec-date">Date: -</span>
+            <span class="text-xs font-semibold text-indigo-950 mt-0.5 block" id="rec-date">Date: -</span>
           </div>
-          <div class="text-2xl font-black text-indigo-950 tracking-tight" id="rec-amount">₹0</div>
+          <div class="text-2xl sm:text-3xl font-black text-indigo-950 tracking-tight" id="rec-amount">₹0</div>
         </div>
 
         <!-- Transaction Metadata -->
-        <div class="bg-white rounded-2xl p-3 border border-slate-200/70 text-xs divide-y divide-slate-100">
-          <div class="grid grid-cols-3 py-1.5 items-center">
+        <div class="bg-white rounded-2xl p-4 border border-slate-200/80 text-xs divide-y divide-slate-100">
+          <div class="grid grid-cols-3 py-2 items-center">
             <span class="text-slate-500 font-medium">Payment Mode</span>
             <span class="col-span-2 text-right font-semibold text-slate-800 truncate" id="rec-channel">-</span>
           </div>
-          <div class="grid grid-cols-3 py-1.5 items-center">
-            <span class="text-slate-500 font-medium">Recipient</span>
+          <div class="grid grid-cols-3 py-2 items-center">
+            <span class="text-slate-500 font-medium">Received By</span>
             <span class="col-span-2 text-right font-semibold text-slate-800 truncate" id="rec-recipient">-</span>
           </div>
-          <div class="grid grid-cols-3 py-1.5 items-center">
+          <div class="grid grid-cols-3 py-2 items-center">
             <span class="text-slate-500 font-medium">Reference / Note</span>
             <span class="col-span-2 text-right font-mono text-[11px] text-slate-700 truncate" id="rec-ref">-</span>
           </div>
         </div>
 
-        <!-- Footer Note -->
+        <!-- Signatory & Footer -->
+        <div class="pt-4 flex justify-between items-end text-[11px] text-slate-500">
+          <div>
+            <span class="block text-[10px] text-slate-400">Generated on</span>
+            <span class="font-medium text-slate-700" id="rec-print-timestamp">-</span>
+          </div>
+          <div class="text-right">
+            <div class="h-8 border-b border-slate-300 w-32 mb-1"></div>
+            <span class="text-[10px] uppercase font-bold text-slate-400">Authorized Signatory</span>
+          </div>
+        </div>
+
         <div class="text-[10px] text-center text-slate-400 border-t border-dashed border-slate-200 pt-2.5">
-          mis-org Financial Operations • Official Digital Acknowledgment
+          mis-org Financial Operations • Official Digital Voucher
         </div>
       </div>
 
       <!-- Action Buttons -->
-      <div class="flex flex-wrap gap-2 pt-1 no-print">
-        <button onclick="app.shareReceiptWhatsApp()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition">
-          <i class="ph ph-whatsapp-logo text-base"></i> Share
+      <div class="flex flex-wrap gap-2 pt-2 no-print">
+        <button onclick="app.shareReceiptPDF()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition">
+          <i class="ph ph-share-network text-base"></i> Share
         </button>
-        <button onclick="app.printReceipt()" class="flex-1 py-2.5 bg-indigo-900 hover:bg-indigo-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition">
-          <i class="ph ph-printer text-base"></i> PDF / Print
+        <button onclick="app.downloadReceiptPDF()" class="flex-1 py-2.5 bg-indigo-900 hover:bg-indigo-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition">
+          <i class="ph ph-file-pdf text-base"></i> Download
         </button>
         <button onclick="document.getElementById('receipt-modal').classList.add('hidden')" class="w-full sm:w-auto px-4 py-2.5 border border-slate-300 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">
           Close
@@ -745,14 +746,14 @@
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     // -------------------------------------------------------------
-    // REPLACE WITH YOUR FIREBASE CONFIG
+    // FIREBASE CONFIGURATION
     // -------------------------------------------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyBqdtnXqFNo2IqjurUIUfX3gG1AIAwamAM",
-      authDomain: "mis-org.firebaseapp.com",
-      projectId: "mis-org",
-      storageBucket: "mis-org.firebasestorage.app",
-      messagingSenderId: "263707141220",
+      authDomain: "mis-org.firebaseapp.com",
+      projectId: "mis-org",
+      storageBucket: "mis-org.firebasestorage.app",
+      messagingSenderId: "263707141220",
       appId: "1:263707141220:web:51d1430645dad8466aeb71"
     };
 
@@ -830,13 +831,6 @@
 
         const refBtn = document.getElementById('redirect-fallback-btn');
         if (refBtn) refBtn.onclick = () => this.signInWithGoogleRedirect();
-
-        if (firebaseConfig.apiKey === "YOUR_API_KEY") {
-          this.showAuthError(
-            "Firebase Configuration missing. Open index.html and paste your actual Firebase credentials into the firebaseConfig object.",
-            "Configuration Required"
-          );
-        }
 
         this.setupAuthListener();
         this.renderSchedule();
@@ -916,13 +910,80 @@
         }
       }
 
-      // Safe Print Triggers that isolate layout to prevent extra pages
-      printReceipt() {
-        document.body.classList.add('printing-receipt');
-        window.print();
-        setTimeout(() => {
-          document.body.classList.remove('printing-receipt');
-        }, 1000);
+      // ================= A4 PDF GENERATION & DIRECT SHARING =================
+      async generateReceiptA4PDFBlob() {
+        const target = document.getElementById('printable-receipt-modal');
+        const actions = target.querySelector('.no-print');
+        if (actions) actions.style.display = 'none';
+
+        // Precise A4 portrait configuration (210mm x 297mm)
+        const options = {
+          margin: [18, 16, 18, 16], // mm: top, right, bottom, left
+          filename: `${this.currentReceiptData.recId.replace(/\//g, '_')}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, logging: false },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        try {
+          const blob = await html2pdf().set(options).from(target).outputPdf('blob');
+          if (actions) actions.style.display = '';
+          return blob;
+        } catch (err) {
+          if (actions) actions.style.display = '';
+          throw err;
+        }
+      }
+
+      async shareReceiptPDF() {
+        if (!this.currentReceiptData) return;
+        this.notify("Generating A4 PDF...");
+        try {
+          const blob = await this.generateReceiptA4PDFBlob();
+          const fileName = `${this.currentReceiptData.recId.replace(/\//g, '_')}.pdf`;
+          const pdfFile = new File([blob], fileName, { type: 'application/pdf' });
+
+          // Direct file sharing via native OS sheet (WhatsApp, Email, Drive)
+          if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+            await navigator.share({
+              title: `Payment Receipt ${this.currentReceiptData.recId}`,
+              text: `Payment Receipt: ${this.currentReceiptData.memberName} (${this.currentReceiptData.recId})`,
+              files: [pdfFile]
+            });
+            this.notify("Receipt PDF shared");
+          } else {
+            // Direct download fallback for desktop or unsupported browsers
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+            this.notify("Direct share unsupported on this browser. A4 PDF downloaded.");
+          }
+        } catch (err) {
+          console.error("PDF share error:", err);
+          this.notify("Failed to share PDF", true);
+        }
+      }
+
+      async downloadReceiptPDF() {
+        if (!this.currentReceiptData) return;
+        this.notify("Compiling A4 PDF...");
+        try {
+          const blob = await this.generateReceiptA4PDFBlob();
+          const fileName = `${this.currentReceiptData.recId.replace(/\//g, '_')}.pdf`;
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = fileName;
+          a.click();
+          URL.revokeObjectURL(url);
+          this.notify(`Downloaded ${fileName}`);
+        } catch (err) {
+          console.error("PDF download error:", err);
+          this.notify("Failed to generate A4 PDF", true);
+        }
       }
 
       printPassbook() {
@@ -1043,11 +1104,6 @@
       }
 
       async signInWithGoogle() {
-        if (firebaseConfig.apiKey === "YOUR_API_KEY") {
-          this.showAuthError("Please replace 'YOUR_API_KEY' with your actual Firebase config in index.html.", "Config Missing");
-          return;
-        }
-
         this.setAuthLoading(true);
         this.clearAuthError();
 
@@ -1113,14 +1169,20 @@
         document.getElementById('dropdown-user-email').innerText = this.currentUser.email;
         document.getElementById('dropdown-user-role').innerText = this.userRole;
 
+        // Subscriber Security Fix: Restrict Passbook View & Lock Selector
         if (this.userRole === "member") {
           document.getElementById('module-tabs').classList.add('hidden');
           await this.loadData();
           const currentEmail = (this.currentUser.email || '').trim().toLowerCase();
           const me = this.members.find(m => (m.email || '').trim().toLowerCase() === currentEmail);
           if (me) {
-            this.renderPassbook(me.memberNo);
+            const pbSelect = document.getElementById('passbook-member-select');
+            if (pbSelect) {
+              pbSelect.value = me.memberNo;
+              pbSelect.classList.add('hidden');
+            }
             this.navigate('passbook', false);
+            this.renderPassbook(me.memberNo);
           } else {
             this.notify("No subscriber profile associated with this Google email.", true);
           }
@@ -1272,7 +1334,6 @@
         const isAdmin = this.userRole === 'admin';
         const isFull = this.members.length >= 40;
 
-        // Clean pill update
         const countPill = document.getElementById('member-count-pill');
         if (countPill) countPill.innerText = `${this.members.length} / 40`;
 
@@ -1632,7 +1693,6 @@
         }
       }
 
-      // Standard Receipt Viewer
       viewReceipt(monthNum, memberNo) {
         const mem = this.members.find(m => m.memberNo === memberNo);
         const entry = this.collections.find(c => c.month === monthNum && c.memberNo === memberNo);
@@ -1643,7 +1703,6 @@
           return;
         }
 
-        // Format: MISR/member/month
         const mFormatted = String(monthNum).padStart(2, '0');
         const memClean = memberNo.replace(/\D/g, '').padStart(2, '0');
         const recId = `MISR/${memClean}/${mFormatted}`;
@@ -1677,40 +1736,9 @@
         document.getElementById('rec-channel').innerText = entry.paymentMethod;
         document.getElementById('rec-recipient').innerText = this.currentReceiptData.recipient;
         document.getElementById('rec-ref').innerText = cleanRemarks;
+        document.getElementById('rec-print-timestamp').innerText = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 
         document.getElementById('receipt-modal').classList.remove('hidden');
-      }
-
-      shareReceiptWhatsApp() {
-        if (!this.currentReceiptData) return;
-        const d = this.currentReceiptData;
-
-        const text = 
-`*mis-org Chit Fund Payment Receipt*
----------------------------------------
-*Receipt No:* ${d.recId}
-*Subscriber:* ${d.memberNo} - ${d.memberName}
-*Installment:* ${d.monthName}
-*Scheduled EMI:* ${d.scheduledEmi}
-*Amount Paid:* ${d.amountPaid}
-*Payment Channel:* ${d.method}
-*Recipient:* ${d.recipient}
-*Payment Date:* ${d.date}
-*Reference/Note:* ${d.remarks}
----------------------------------------
-*Status: Verified & Acknowledged*`;
-
-        if (navigator.share) {
-          navigator.share({
-            title: `Payment Receipt ${d.recId}`,
-            text: text
-          }).catch(() => {});
-        } else {
-          const encoded = encodeURIComponent(text);
-          const phone = (d.phone || '').replace(/\D/g, '');
-          const waUrl = phone ? `https://wa.me/91${phone}?text=${encoded}` : `https://wa.me/?text=${encoded}`;
-          window.open(waUrl, '_blank');
-        }
       }
 
       populatePassbookSelector() {
@@ -1726,7 +1754,6 @@
         this.navigate('passbook');
       }
 
-      // Realigned Passbook Ledger & Metrics
       renderPassbook(memberNo) {
         const mem = this.members.find(m => m.memberNo === memberNo);
         if (!mem) return;
@@ -1793,7 +1820,6 @@
           `;
         }).join('');
 
-        // Populate top cards
         document.getElementById('pb-stat-scheduled').innerText = this.formatINR(totalScheduledToDate);
         document.getElementById('pb-stat-paid').innerText = this.formatINR(totalPaidAll);
 
