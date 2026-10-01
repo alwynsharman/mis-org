@@ -940,6 +940,89 @@
           ['Installment Period', this.cleanAscii(data.monthName)],
           ['Scheduled EMI', this.cleanAscii(data.scheduledEmi)],
           ['Payment Mode', this.cleanAscii(data.method)],
+      // ================= COMPACT, PROPORTIONAL A4 PDF VOUCHER =================
+      generateReceiptPDF(data) {
+        const jsPdfClass = window.jspdf?.jsPDF || window.jsPDF;
+        if (!jsPdfClass) {
+          throw new Error("jsPDF library not loaded");
+        }
+
+        // Standard A4 portrait (210mm x 297mm)
+        const doc = new jsPdfClass({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pageWidth = 210;
+
+        // Centered compact card dimensions
+        const cardWidth = 136;
+        const cardHeight = 160;
+        const cardX = (pageWidth - cardWidth) / 2; // 37mm
+        const cardY = 42;
+
+        // Outer Voucher Card Box
+        doc.setDrawColor(203, 213, 225); // Slate 300
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(cardX, cardY, cardWidth, cardHeight, 3, 3, 'FD');
+
+        // Top Header Accent Bar
+        doc.setFillColor(30, 27, 75); // Indigo 950
+        doc.roundedRect(cardX, cardY, cardWidth, 5, 3, 3, 'F');
+        doc.rect(cardX, cardY + 2.5, cardWidth, 2.5, 'F');
+
+        // Organization & Voucher Title
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(16);
+        doc.setTextColor(30, 27, 75);
+        doc.text('mis-org', cardX + 10, cardY + 16);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.5);
+        doc.setTextColor(100, 116, 139);
+        doc.text('CHIT FUND PAYMENT RECEIPT', cardX + 10, cardY + 21);
+
+        // Header Right: Receipt Number Only
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.5);
+        doc.setTextColor(148, 163, 184);
+        doc.text('RECEIPT NO', cardX + cardWidth - 10, cardY + 15, { align: 'right' });
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.setTextColor(30, 27, 75);
+        doc.text(this.cleanAscii(data.recId), cardX + cardWidth - 10, cardY + 21, { align: 'right' });
+
+        // Header Divider
+        doc.setDrawColor(226, 232, 240);
+        doc.line(cardX + 10, cardY + 27, cardX + cardWidth - 10, cardY + 27);
+
+        // Highlighted Amount Banner with Embedded Date
+        const bannerY = cardY + 32;
+        const bannerHeight = 22;
+        doc.setFillColor(238, 242, 255); // Indigo 50
+        doc.setDrawColor(199, 210, 254); // Indigo 200
+        doc.roundedRect(cardX + 10, bannerY, cardWidth - 20, bannerHeight, 2.5, 2.5, 'FD');
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8.5);
+        doc.setTextColor(67, 56, 202); // Indigo 700
+        doc.text('AMOUNT RECEIVED', cardX + 16, bannerY + 8.5);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(30, 27, 75); // Indigo 950
+        doc.text(`Date: ${this.cleanAscii(data.date)}`, cardX + 16, bannerY + 16);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(18);
+        doc.setTextColor(30, 27, 75);
+        const displayAmt = data.rawAmount ? `Rs. ${Number(data.rawAmount).toLocaleString('en-IN')}` : this.cleanAscii(data.amountPaid);
+        doc.text(displayAmt, cardX + cardWidth - 16, bannerY + 14, { align: 'right' });
+
+        // Ledger Rows (Clean 6-row ledger without reference/notes)
+        const rows = [
+          ['Subscriber Name', this.cleanAscii(data.memberName)],
+          ['Member Identifier', this.cleanAscii(data.memberNo)],
+          ['Installment Period', this.cleanAscii(data.monthName)],
+          ['Scheduled EMI', this.cleanAscii(data.scheduledEmi)],
+          ['Payment Mode', this.cleanAscii(data.method)],
           ['Received By', this.cleanAscii(data.recipient)]
         ];
 
@@ -975,13 +1058,13 @@
         // Bottom Footer
         doc.setDrawColor(226, 232, 240);
         doc.setLineDashPattern([1.5, 1.5], 0);
-        doc.line(cardX + 10, cardY + cardHeight - 16, cardX + cardWidth - 10, cardY + cardHeight - 16);
+        doc.line(cardX + 10, cardY + cardHeight - 15, cardX + cardWidth - 10, cardY + cardHeight - 15);
         doc.setLineDashPattern([], 0);
 
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(7.5);
         doc.setTextColor(148, 163, 184);
-        doc.text('mis-org Financial Operations • Official Digital Acknowledgment', cardX + (cardWidth / 2), cardY + cardHeight - 9, { align: 'center' });
+        doc.text('mis-org Financial Operations • Official Digital Acknowledgment', cardX + (cardWidth / 2), cardY + cardHeight - 8, { align: 'center' });
 
         return doc;
       }
