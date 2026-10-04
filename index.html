@@ -418,21 +418,96 @@
         </div>
       </section>
 
-      <!-- 7. REPORTS -->
+      <!-- 7. FINANCIAL REPORTS & STATEMENTS -->
       <section id="view-reports" class="space-y-4 hidden">
-        <div class="flex justify-between items-center">
-          <h2 class="text-base sm:text-lg font-bold text-slate-900">Reports</h2>
-          <button onclick="app.exportDefaultersCSV()" class="px-3 py-1.5 bg-emerald-700 text-white rounded-xl text-xs font-bold">
-            <i class="ph ph-file-csv"></i> Export CSV
-          </button>
+        <!-- Monthly Collection Statement Card -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-4">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+            <div>
+              <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                <i class="ph ph-receipt text-indigo-900 text-xl"></i>
+                Monthly Collection Statement
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">Audit paid subscribers, payment dates, and collection channels per month</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <select id="report-month-select" onchange="app.onReportMonthChange(parseInt(this.value))" class="border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold bg-slate-50 text-slate-800 focus:ring-2 focus:ring-indigo-600 focus:outline-none shadow-xs">
+              </select>
+              <button onclick="app.exportMonthlyReportCSV()" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition">
+                <i class="ph ph-file-csv text-base"></i> Export Statement
+              </button>
+            </div>
+          </div>
+
+          <!-- Monthly Metric Strip -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Month Target</span>
+              <span id="rep-stat-target" class="text-sm sm:text-base font-extrabold text-slate-900 mt-0.5 block">₹0</span>
+            </div>
+            <div class="bg-emerald-50/60 p-3 rounded-xl border border-emerald-100">
+              <span class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">Total Realized</span>
+              <span id="rep-stat-collected" class="text-sm sm:text-base font-extrabold text-emerald-800 mt-0.5 block">₹0</span>
+            </div>
+            <div class="bg-indigo-50/60 p-3 rounded-xl border border-indigo-100">
+              <span class="text-[10px] font-bold text-indigo-700 uppercase tracking-wider block">Paid Ratio</span>
+              <span id="rep-stat-paid-count" class="text-sm sm:text-base font-extrabold text-indigo-950 mt-0.5 block">0 / 40</span>
+            </div>
+            <div class="bg-rose-50/60 p-3 rounded-xl border border-rose-100">
+              <span class="text-[10px] font-bold text-rose-700 uppercase tracking-wider block">Pending Deficit</span>
+              <span id="rep-stat-deficit" class="text-sm sm:text-base font-extrabold text-rose-700 mt-0.5 block">₹0</span>
+            </div>
+          </div>
+
+          <!-- Filter Chips -->
+          <div class="flex items-center gap-1.5 pt-1">
+            <span class="text-xs font-semibold text-slate-400 mr-1">Filter:</span>
+            <button id="rep-filter-all" onclick="app.setReportFilter('all')" class="px-3 py-1 rounded-lg text-xs font-bold bg-indigo-900 text-white shadow-xs">
+              All (<span id="rep-cnt-all">0</span>)
+            </button>
+            <button id="rep-filter-paid" onclick="app.setReportFilter('paid')" class="px-3 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">
+              Paid (<span id="rep-cnt-paid">0</span>)
+            </button>
+            <button id="rep-filter-pending" onclick="app.setReportFilter('pending')" class="px-3 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">
+              Pending (<span id="rep-cnt-pending">0</span>)
+            </button>
+          </div>
+
+          <!-- Statement Table -->
+          <div class="overflow-x-auto rounded-xl border border-slate-100">
+            <table class="w-full text-left text-xs whitespace-nowrap">
+              <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="p-2.5">ID</th>
+                  <th class="p-2.5">Subscriber</th>
+                  <th class="p-2.5 text-right">Scheduled EMI</th>
+                  <th class="p-2.5 text-right">Amount Paid</th>
+                  <th class="p-2.5">Payment Date</th>
+                  <th class="p-2.5">Payment Method</th>
+                  <th class="p-2.5">Received By</th>
+                  <th class="p-2.5 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody id="report-statement-tbody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div class="bg-white p-4 rounded-2xl border border-slate-200">
-            <h3 class="font-bold text-xs text-slate-500 uppercase tracking-wider mb-2">Defaulters List</h3>
+
+        <!-- Macro Analytics: Cumulative Defaulters & Collections by Channel -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex justify-between items-center mb-2">
+              <h3 class="font-bold text-xs text-slate-500 uppercase tracking-wider">Cumulative Defaulters (All Months)</h3>
+              <button onclick="app.exportDefaultersCSV()" class="px-2.5 py-1 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-lg text-xs font-bold border border-rose-200/60 flex items-center gap-1">
+                <i class="ph ph-file-csv"></i> Export Defaulters
+              </button>
+            </div>
             <div id="defaulters-container" class="space-y-2 max-h-72 overflow-y-auto"></div>
           </div>
-          <div class="bg-white p-4 rounded-2xl border border-slate-200">
-            <h3 class="font-bold text-xs text-slate-500 uppercase tracking-wider mb-3">Collections by Payment Channel</h3>
+
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-xs text-slate-500 uppercase tracking-wider mb-3">Overall Collections by Channel</h3>
             <div class="space-y-3.5" id="payment-mode-stats"></div>
           </div>
         </div>
@@ -755,6 +830,8 @@
         this.userRole = null;
         this.activeChitId = "group_a";
         this.currentMonthIdx = 1;
+        this.reportSelectedMonth = 1;
+        this.reportFilter = 'all';
         this.startYear = 2026;
         this.startMonth = 10;
         this.navigationStack = [];
@@ -769,7 +846,7 @@
       }
 
       init() {
-        // Direct Service Worker registration for PWA (executes reliably within ES module)
+        // Direct Service Worker registration for PWA
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.register('./sw.js')
             .then(reg => console.log('PWA ServiceWorker active:', reg.scope))
@@ -823,8 +900,12 @@
         const start = new Date(this.startYear, this.startMonth - 1, 1);
         const diffMonths = (today.getFullYear() - start.getFullYear()) * 12 + (today.getMonth() - start.getMonth()) + 1;
         this.currentMonthIdx = Math.min(Math.max(diffMonths, 1), 41);
+        this.reportSelectedMonth = this.currentMonthIdx;
+
         const sel = document.getElementById('collection-month-select');
         if (sel) sel.value = this.currentMonthIdx;
+        const repSel = document.getElementById('report-month-select');
+        if (repSel) repSel.value = this.currentMonthIdx;
       }
 
       generateNextMemberId() {
@@ -876,27 +957,22 @@
           throw new Error("jsPDF library not loaded");
         }
 
-        // Standard A4 portrait (210mm x 297mm)
         const doc = new jsPdfClass({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         const pageWidth = 210;
 
-        // Centered compact card dimensions
         const cardWidth = 136;
         const cardHeight = 160;
-        const cardX = (pageWidth - cardWidth) / 2; // 37mm
+        const cardX = (pageWidth - cardWidth) / 2;
         const cardY = 42;
 
-        // Outer Voucher Card Box
-        doc.setDrawColor(203, 213, 225); // Slate 300
+        doc.setDrawColor(203, 213, 225);
         doc.setFillColor(255, 255, 255);
         doc.roundedRect(cardX, cardY, cardWidth, cardHeight, 3, 3, 'FD');
 
-        // Top Header Accent Bar
-        doc.setFillColor(30, 27, 75); // Indigo 950
+        doc.setFillColor(30, 27, 75);
         doc.roundedRect(cardX, cardY, cardWidth, 5, 3, 3, 'F');
         doc.rect(cardX, cardY + 2.5, cardWidth, 2.5, 'F');
 
-        // Organization & Voucher Title
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(16);
         doc.setTextColor(30, 27, 75);
@@ -907,7 +983,6 @@
         doc.setTextColor(100, 116, 139);
         doc.text('CHIT FUND PAYMENT RECEIPT', cardX + 10, cardY + 21);
 
-        // Header Right: Receipt Number Only (No Date in header)
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(7.5);
         doc.setTextColor(148, 163, 184);
@@ -918,25 +993,23 @@
         doc.setTextColor(30, 27, 75);
         doc.text(this.cleanAscii(data.recId), cardX + cardWidth - 10, cardY + 21, { align: 'right' });
 
-        // Header Divider
         doc.setDrawColor(226, 232, 240);
         doc.line(cardX + 10, cardY + 27, cardX + cardWidth - 10, cardY + 27);
 
-        // Highlighted Amount Banner with Embedded Date
         const bannerY = cardY + 32;
         const bannerHeight = 24;
-        doc.setFillColor(238, 242, 255); // Indigo 50
-        doc.setDrawColor(199, 210, 254); // Indigo 200
+        doc.setFillColor(238, 242, 255);
+        doc.setDrawColor(199, 210, 254);
         doc.roundedRect(cardX + 10, bannerY, cardWidth - 20, bannerHeight, 2.5, 2.5, 'FD');
 
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(8.5);
-        doc.setTextColor(67, 56, 202); // Indigo 700
+        doc.setTextColor(67, 56, 202);
         doc.text('AMOUNT RECEIVED', cardX + 16, bannerY + 9);
 
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
-        doc.setTextColor(30, 27, 75); // Indigo 950
+        doc.setTextColor(30, 27, 75);
         doc.text(`Date: ${this.cleanAscii(data.date)}`, cardX + 16, bannerY + 17);
 
         doc.setFont('helvetica', 'bold');
@@ -945,7 +1018,6 @@
         const displayAmt = data.rawAmount ? `Rs. ${Number(data.rawAmount).toLocaleString('en-IN')}` : this.cleanAscii(data.amountPaid);
         doc.text(displayAmt, cardX + cardWidth - 16, bannerY + 15, { align: 'right' });
 
-        // Ledger Rows (Clean 6-row ledger without reference/notes)
         const rows = [
           ['Subscriber Name', this.cleanAscii(data.memberName)],
           ['Member Identifier', this.cleanAscii(data.memberNo)],
@@ -958,7 +1030,6 @@
         let startY = bannerY + bannerHeight + 6;
         const rowHeight = 9.5;
 
-        // Structured Ledger Box
         doc.setDrawColor(241, 245, 249);
         doc.roundedRect(cardX + 10, startY - 2, cardWidth - 20, (rows.length * rowHeight) + 2, 2, 2, 'D');
 
@@ -984,7 +1055,6 @@
           startY += rowHeight;
         });
 
-        // Bottom Footer
         doc.setDrawColor(226, 232, 240);
         doc.setLineDashPattern([1.5, 1.5], 0);
         doc.line(cardX + 10, cardY + cardHeight - 15, cardX + cardWidth - 10, cardY + cardHeight - 15);
@@ -1353,9 +1423,13 @@
 
       populateMonthDropdowns() {
         const select = document.getElementById('collection-month-select');
-        select.innerHTML = MASTER_SCHEDULE.map(r => `
+        const reportSelect = document.getElementById('report-month-select');
+        const optionsHtml = MASTER_SCHEDULE.map(r => `
           <option value="${r.m}">Month ${r.m} (${this.getMonthLabel(r.m)}) • EMI: ${this.formatINR(r.emi)}</option>
         `).join('');
+
+        if (select) select.innerHTML = optionsHtml;
+        if (reportSelect) reportSelect.innerHTML = optionsHtml;
       }
 
       renderDashboard() {
@@ -1417,7 +1491,7 @@
                   <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-1.5 py-0.5 rounded">${m.memberNo}</span>
                   <span class="font-bold text-xs text-slate-800">${m.name}</span>
                 </div>
-                <div class="text-[11px] text-slate-500 mt-0.5">${m.phone}</div>
+                <div class="text-[11px] text-slate-500">${m.phone}</div>
                 <div class="text-[11px] text-emerald-600 font-bold">Total Paid: ${this.formatINR(totalPaid)}</div>
                 ${m.isPrized ? `<span class="inline-block bg-amber-100 text-amber-900 text-[10px] font-bold px-1.5 py-0.5 rounded">Prized (M${m.prizedMonth})</span>` : ''}
               </div>
@@ -1908,7 +1982,7 @@
             <tr class="hover:bg-slate-50">
               <td class="p-2.5 font-bold">Month ${sch.m}</td>
               <td class="p-2.5 text-right font-extrabold text-indigo-900">${this.formatINR(sch.net)}</td>
-              <td class="p-2.5 font-semibold">${winner ? `${winner.memberNo} -${winner.name}` : '<span class="text-slate-400 italic">Not Awarded</span>'}</td>
+              <td class="p-2.5 font-semibold">${winner ? `${winner.memberNo} - ${winner.name}` : '<span class="text-slate-400 italic">Not Awarded</span>'}</td>
               <td class="p-2.5 text-slate-500">${this.formatDate(auc?.auctionDate)}</td>
               <td class="p-2.5 text-right">
                 ${!auc && this.userRole === 'admin' ? `
@@ -1972,7 +2046,141 @@
         }
       }
 
+      // ================= FINANCIAL AUDIT & MONTHLY REPORTS =================
+      onReportMonthChange(monthNum) {
+        this.reportSelectedMonth = monthNum;
+        this.renderMonthlyReport();
+      }
+
+      setReportFilter(filterType) {
+        this.reportFilter = filterType;
+        ['all', 'paid', 'pending'].forEach(f => {
+          const btn = document.getElementById(`rep-filter-${f}`);
+          if (btn) {
+            btn.className = f === filterType 
+              ? "px-3 py-1 rounded-lg text-xs font-bold bg-indigo-900 text-white shadow-xs" 
+              : "px-3 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200";
+          }
+        });
+        this.renderMonthlyReport();
+      }
+
+      renderMonthlyReport() {
+        const monthNum = this.reportSelectedMonth;
+        const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
+        const totalMembers = this.members.length;
+        const expectedTarget = (sch?.emi || 0) * totalMembers;
+
+        const monthCols = this.collections.filter(c => c.month === monthNum);
+        const totalRealized = monthCols.reduce((sum, c) => sum + (Number(c.amountPaid) || 0), 0);
+
+        let paidCount = 0;
+        let pendingCount = 0;
+        const reportData = [];
+
+        this.members.forEach(m => {
+          const entry = monthCols.find(c => c.memberNo === m.memberNo);
+          const paid = entry ? Number(entry.amountPaid) : 0;
+          let statusText = "Pending";
+          let statusClass = "bg-rose-100 text-rose-800";
+
+          if (paid >= (sch?.emi || 0)) {
+            statusText = "Cleared";
+            statusClass = "bg-emerald-100 text-emerald-800";
+            paidCount++;
+          } else if (paid > 0) {
+            statusText = "Partial";
+            statusClass = "bg-amber-100 text-amber-800";
+            paidCount++;
+          } else {
+            pendingCount++;
+          }
+
+          reportData.push({
+            member: m,
+            entry: entry,
+            paid: paid,
+            statusText: statusText,
+            statusClass: statusClass
+          });
+        });
+
+        // Update Summary Cards
+        document.getElementById('rep-stat-target').innerText = this.formatINR(expectedTarget);
+        document.getElementById('rep-stat-collected').innerText = this.formatINR(totalRealized);
+        document.getElementById('rep-stat-paid-count').innerText = `${paidCount} / ${totalMembers}`;
+        document.getElementById('rep-stat-deficit').innerText = this.formatINR(Math.max(0, expectedTarget - totalRealized));
+
+        // Update Filter Badge Counters
+        document.getElementById('rep-cnt-all').innerText = totalMembers;
+        document.getElementById('rep-cnt-paid').innerText = paidCount;
+        document.getElementById('rep-cnt-pending').innerText = pendingCount;
+
+        // Apply Active Filter Chip
+        let displayList = reportData;
+        if (this.reportFilter === 'paid') {
+          displayList = reportData.filter(item => item.paid > 0);
+        } else if (this.reportFilter === 'pending') {
+          displayList = reportData.filter(item => item.paid === 0);
+        }
+
+        const tbody = document.getElementById('report-statement-tbody');
+        if (displayList.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-xs text-slate-400">No subscribers match this filter for Month ${monthNum}.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = displayList.map(item => `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-2.5 font-mono font-bold text-indigo-900">${item.member.memberNo}</td>
+            <td class="p-2.5 font-semibold text-slate-800">${item.member.name}</td>
+            <td class="p-2.5 text-right font-medium text-slate-600">${this.formatINR(sch.emi)}</td>
+            <td class="p-2.5 text-right font-extrabold ${item.paid > 0 ? 'text-emerald-600' : 'text-slate-300'}">
+              ${item.paid > 0 ? this.formatINR(item.paid) : '₹0'}
+            </td>
+            <td class="p-2.5 text-slate-600">${this.formatDate(item.entry?.paymentDate)}</td>
+            <td class="p-2.5 text-slate-700">${item.entry?.paymentMethod || '-'}</td>
+            <td class="p-2.5 text-slate-700 font-medium">${item.entry?.receivedBy || '-'}</td>
+            <td class="p-2.5 text-center">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.statusClass}">${item.statusText}</span>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      exportMonthlyReportCSV() {
+        const monthNum = this.reportSelectedMonth;
+        const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
+
+        let csv = "\uFEFFMember ID,Subscriber Name,Phone,Scheduled EMI,Amount Paid,Payment Date,Payment Method,Received By,Status\n";
+        
+        this.members.forEach(m => {
+          const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
+          const paid = entry ? Number(entry.amountPaid) : 0;
+          let statusText = "Pending";
+          if (paid >= (sch?.emi || 0)) statusText = "Cleared";
+          else if (paid > 0) statusText = "Partial";
+
+          csv += `"${m.memberNo}","${m.name}","${m.phone || ''}","${sch.emi}","${paid}","${entry?.paymentDate || ''}","${entry?.paymentMethod || ''}","${entry?.receivedBy || ''}","${statusText}"\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `mis_org_month_${monthNum}_statement.csv`;
+        link.click();
+      }
+
       renderReports() {
+        const repSel = document.getElementById('report-month-select');
+        if (repSel && repSel.children.length === 0) {
+          this.populateMonthDropdowns();
+        }
+        if (repSel) repSel.value = this.reportSelectedMonth;
+
+        this.renderMonthlyReport();
+
+        // Macro Report: Cumulative Defaulters
         const curM = this.currentMonthIdx;
         let expected = 0;
         for (let m = 1; m <= curM; m++) expected += MASTER_SCHEDULE.find(s => s.m === m).emi;
@@ -1993,6 +2201,7 @@
           </div>
         `).join('') : `<div class="text-xs text-slate-400 p-2 text-center">Nil Defaulters!</div>`;
 
+        // Macro Report: Payment Mode Totals
         const channelTotals = {};
         let grandTotal = 0;
 
