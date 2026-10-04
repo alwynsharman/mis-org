@@ -4,6 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>mis-org | Chit Fund Management</title>
+  
+  <!-- PWA & Mobile Web Capabilities -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#312e81" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="mis-org" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Phosphor Icons CDN -->
@@ -759,6 +769,15 @@
       }
 
       init() {
+        // Register Service Worker for Progressive Web App (PWA)
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+              .then(reg => console.log('ServiceWorker registered with scope:', reg.scope))
+              .catch(err => console.error('ServiceWorker registration error:', err));
+          });
+        }
+
         const btn = document.getElementById('sign-in-btn');
         if (btn) btn.onclick = () => this.signInWithGoogle();
 
@@ -1204,7 +1223,7 @@
         document.getElementById('dropdown-user-email').innerText = this.currentUser.email;
         document.getElementById('dropdown-user-role').innerText = this.userRole;
 
-        // Subscriber Security Fix
+        // Subscriber Security: Restrict Passbook View & Lock Selector
         if (this.userRole === "member") {
           document.getElementById('module-tabs').classList.add('hidden');
           await this.loadData();
@@ -1226,8 +1245,8 @@
 
         document.getElementById('module-tabs').classList.remove('hidden');
         
+        // Role Restrictions: Foreman views auctions read-only, but cannot manage members or view audit
         if (this.userRole === "foreman") {
-          document.getElementById('tab-auctions')?.classList.add('hidden');
           document.getElementById('tab-audit')?.classList.add('hidden');
           document.getElementById('add-member-btn')?.classList.add('hidden');
         }
@@ -1600,7 +1619,7 @@
                   </button>
                 ` : ''}
                 ${canEdit ? `
-                  <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}',${entry?.amountPaid || sch.emi})" class="px-3 py-2 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow-sm">
+                  <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}', ${entry?.amountPaid || sch.emi})" class="px-3 py-2 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow-sm">
                     ${entry ? 'Update' : 'Record'}
                   </button>
                 ` : `<span class="text-[11px] text-slate-400 font-semibold italic">Locked</span>`}
@@ -1638,7 +1657,7 @@
                   </button>
                 ` : ''}
                 ${canEdit ? `
-                  <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}',${entry?.amountPaid || sch.emi})" class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg font-bold text-xs">
+                  <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}', ${entry?.amountPaid || sch.emi})" class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg font-bold text-xs">
                     ${entry ? 'Update' : 'Record'}
                   </button>
                 ` : '<span class="text-slate-400 text-xs italic">Locked</span>'}
@@ -1894,9 +1913,9 @@
               <td class="p-2.5 font-semibold">${winner ? `${winner.memberNo} -${winner.name}` : '<span class="text-slate-400 italic">Not Awarded</span>'}</td>
               <td class="p-2.5 text-slate-500">${this.formatDate(auc?.auctionDate)}</td>
               <td class="p-2.5 text-right">
-                ${!auc && (this.userRole === 'admin' || this.userRole === 'foreman') ? `
+                ${!auc && this.userRole === 'admin' ? `
                   <button onclick="app.openAuctionModal(${sch.m})" class="px-2.5 py-1 bg-indigo-900 text-white rounded-lg text-xs font-bold">Award</button>
-                ` : (auc ? '<span class="text-emerald-600 font-bold text-xs">Awarded</span>' : '-')}
+                ` : (auc ? '<span class="text-emerald-600 font-bold text-xs">Awarded</span>' : '<span class="text-slate-400 text-xs italic">Pending</span>')}
               </td>
             </tr>
           `;
@@ -1904,6 +1923,11 @@
       }
 
       openAuctionModal(monthNum) {
+        if (this.userRole !== 'admin') {
+          this.notify("Unauthorized: Only Admin can award auctions.", true);
+          return;
+        }
+
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
         document.getElementById('auc-modal-month-info').innerText = `Month ${monthNum} | Payout: ${this.formatINR(sch.net)}`;
         document.getElementById('auc-month').value = monthNum;
@@ -1918,6 +1942,11 @@
 
       async saveAuction(e) {
         e.preventDefault();
+        if (this.userRole !== 'admin') {
+          this.notify("Unauthorized: Only Admin can award auctions.", true);
+          return;
+        }
+
         const monthNum = parseInt(document.getElementById('auc-month').value);
         const winnerNo = document.getElementById('auc-winner-select').value;
         const date = document.getElementById('auc-date').value;
