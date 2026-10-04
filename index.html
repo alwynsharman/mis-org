@@ -424,17 +424,20 @@
       <section id="view-reports" class="space-y-4 hidden">
         <!-- Monthly Collection Statement Card -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-3.5">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-3">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-              <i class="ph ph-receipt text-indigo-900 text-lg"></i>
-              Monthly Collection Statement
+              <i class="ph ph-receipt text-indigo-900 text-lg shrink-0"></i>
+              <span id="report-heading-title">Monthly Collection Statement</span>
             </h3>
 
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
               <select id="report-month-select" onchange="app.onReportMonthChange(parseInt(this.value))" class="border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold bg-slate-50 text-slate-800 focus:ring-2 focus:ring-indigo-600 focus:outline-none shadow-xs">
               </select>
-              <button onclick="app.exportMonthlyReportCSV()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition">
-                <i class="ph ph-file-csv text-base"></i> Export
+              <button onclick="app.exportMonthlyReportCSV()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition" title="Export Full Statement CSV">
+                <i class="ph ph-file-csv text-base"></i> Export Statement
+              </button>
+              <button onclick="app.exportMonthlyPendingCSV()" class="px-3 py-1.5 bg-rose-700 hover:bg-rose-800 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition" title="Export Pending Defaulters CSV">
+                <i class="ph ph-file-csv text-base"></i> Export Pending
               </button>
             </div>
           </div>
@@ -579,7 +582,7 @@
     </div>
   </div>
 
-  <!-- Subscriber Modal -->
+  <!-- Subscriber Modal (Default India +91) -->
   <div id="member-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto">
       <div class="flex justify-between items-start mb-3">
@@ -600,10 +603,16 @@
           <label class="block text-xs font-semibold text-slate-500 mb-1">Subscriber Full Name</label>
           <input type="text" id="mem-name" required placeholder="Full Name" class="w-full border rounded-xl px-3 py-2 text-sm" />
         </div>
+        
+        <!-- Phone Number with Fixed +91 Prefix -->
         <div>
           <label class="block text-xs font-semibold text-slate-500 mb-1">Phone Number</label>
-          <input type="tel" id="mem-phone" required placeholder="Phone Number" class="w-full border rounded-xl px-3 py-2 text-sm" />
+          <div class="flex rounded-xl shadow-xs">
+            <span class="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-slate-300 bg-slate-100 text-slate-600 text-xs font-bold select-none">+91</span>
+            <input type="tel" id="mem-phone" required maxlength="10" placeholder="9876543210" class="w-full border border-slate-300 rounded-r-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+          </div>
         </div>
+
         <div>
           <label class="block text-xs font-semibold text-slate-500 mb-1">Google Email (For Passbook Access)</label>
           <input type="email" id="mem-email" class="w-full border rounded-xl px-3 py-2 text-sm" placeholder="member@gmail.com" />
@@ -1257,7 +1266,6 @@
         document.getElementById('app-container').classList.remove('hidden');
         document.getElementById('user-profile-widget').classList.remove('hidden');
 
-        // Prefer Firestore displayName, then Google displayName, then email prefix
         const displayName = this.userProfile?.displayName || this.currentUser.displayName || this.currentUser.email.split('@')[0];
         const initial = displayName.charAt(0).toUpperCase();
 
@@ -1385,7 +1393,7 @@
           const aucSnap = await getDocs(query(collection(db, "auctions"), where("chitId", "==", this.activeChitId)));
           this.auctions = aucSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-          // Extract display names directly from the 'users' collection
+          // Extract formal display names from Firestore users collection
           try {
             const uSnap = await getDocs(query(collection(db, "users"), where("role", "in", ["foreman", "admin"])));
             this.foremenList = uSnap.docs
@@ -1550,7 +1558,9 @@
           return;
         }
 
-        let csv = "\uFEFFMember ID,Subscriber Name,Phone,Email,Address,Status,Prized Status,Prized Month,Prize Money Received,Total Amount Paid\n";
+        let csv = `\uFEFFmis-org Chit Fund Management - Subscriber Directory & Master Ledger\n`;
+        csv += `Chit Group: Group A (Rs. 5,00,000 • 40 Subscribers • 41 Months), Export Date: ${new Date().toLocaleDateString('en-IN')}\n\n`;
+        csv += "Member ID,Subscriber Name,Phone,Email,Address,Status,Prized Status,Prized Month,Prize Money Received,Total Amount Paid\n";
         
         this.members.forEach(m => {
           const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.amountPaid) || 0), 0);
@@ -1562,6 +1572,7 @@
         link.href = URL.createObjectURL(blob);
         link.download = `mis_org_subscribers_${new Date().toISOString().split('T')[0]}.csv`;
         link.click();
+        this.notify("Downloaded subscribers directory");
       }
 
       openMemberModal(memberNo = null) {
@@ -1584,7 +1595,11 @@
           document.getElementById('mem-edit-id').value = m.memberNo;
           document.getElementById('mem-number').value = m.memberNo;
           document.getElementById('mem-name').value = m.name;
-          document.getElementById('mem-phone').value = m.phone;
+          
+          // Extracts last 10 digits cleanly without duplicating +91 in UI
+          const tenDigits = (m.phone || '').replace(/\D/g, '').slice(-10);
+          document.getElementById('mem-phone').value = tenDigits;
+
           document.getElementById('mem-email').value = m.email || '';
           document.getElementById('mem-address').value = m.address || '';
         } else {
@@ -1595,6 +1610,7 @@
           }
           document.getElementById('member-modal-title').innerText = `Add New Subscriber (${nextId})`;
           document.getElementById('mem-number').value = nextId;
+          document.getElementById('mem-phone').value = "";
         }
         document.getElementById('member-modal').classList.remove('hidden');
       }
@@ -1617,11 +1633,21 @@
         }
 
         const num = document.getElementById('mem-number').value.trim();
+
+        // Standardize phone input to Indian +91 format
+        let rawPhone = document.getElementById('mem-phone').value.trim().replace(/\D/g, '');
+        if (rawPhone.length > 10 && rawPhone.startsWith('91')) {
+          rawPhone = rawPhone.slice(2);
+        }
+        const standardizedPhone = rawPhone.length === 10 
+          ? `+91 ${rawPhone.slice(0, 5)} ${rawPhone.slice(5)}` 
+          : (rawPhone ? `+91 ${rawPhone}` : '');
+
         const payload = {
           chitId: this.activeChitId,
           memberNo: num,
           name: document.getElementById('mem-name').value.trim(),
-          phone: document.getElementById('mem-phone').value.trim(),
+          phone: standardizedPhone,
           email: document.getElementById('mem-email').value.trim().toLowerCase(),
           address: document.getElementById('mem-address').value.trim(),
           isActive: true
@@ -1995,7 +2021,7 @@
             <tr class="hover:bg-slate-50">
               <td class="p-2.5 font-bold">Month ${sch.m}</td>
               <td class="p-2.5 text-right font-extrabold text-indigo-900">${this.formatINR(sch.net)}</td>
-              <td class="p-2.5 font-semibold">${winner ? `${winner.memberNo} -${winner.name}` : '<span class="text-slate-400 italic">Not Awarded</span>'}</td>
+              <td class="p-2.5 font-semibold">${winner ? `${winner.memberNo} - ${winner.name}` : '<span class="text-slate-400 italic">Not Awarded</span>'}</td>
               <td class="p-2.5 text-slate-500">${this.formatDate(auc?.auctionDate)}</td>
               <td class="p-2.5 text-right">
                 ${!auc && this.userRole === 'admin' ? `
@@ -2084,6 +2110,12 @@
         const totalMembers = this.members.length;
         const expectedTarget = (sch?.emi || 0) * totalMembers;
 
+        // Dynamic Card Title with Month Name & Chit Number
+        const headingEl = document.getElementById('report-heading-title');
+        if (headingEl) {
+          headingEl.innerText = `Monthly Collection Statement - Month ${monthNum} (${this.getMonthLabel(monthNum)})`;
+        }
+
         const monthCols = this.collections.filter(c => c.month === monthNum);
         const totalRealized = monthCols.reduce((sum, c) => sum + (Number(c.amountPaid) || 0), 0);
 
@@ -2158,11 +2190,15 @@
         `).join('');
       }
 
+      // Exports full monthly statement with no phone number and clean title heading
       exportMonthlyReportCSV() {
         const monthNum = this.reportSelectedMonth;
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
+        const monthLabel = this.getMonthLabel(monthNum);
 
-        let csv = "\uFEFFMember ID,Subscriber Name,Phone,Scheduled EMI,Amount Paid,Payment Date,Payment Method,Received By,Status\n";
+        let csv = `\uFEFFmis-org Chit Fund Management - Monthly Collection Statement\n`;
+        csv += `Installment: Month ${monthNum} (${monthLabel}), Scheduled EMI: Rs. ${sch.emi}, Group: Group A (Rs. 5,00,000), Export Date: ${new Date().toLocaleDateString('en-IN')}\n\n`;
+        csv += "Member ID,Subscriber Name,Scheduled EMI,Amount Paid,Payment Date,Payment Method,Received By,Status\n";
         
         this.members.forEach(m => {
           const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
@@ -2171,14 +2207,57 @@
           if (paid >= (sch?.emi || 0)) statusText = "Cleared";
           else if (paid > 0) statusText = "Partial";
 
-          csv += `"${m.memberNo}","${m.name}","${m.phone || ''}","${sch.emi}","${paid}","${entry?.paymentDate || ''}","${entry?.paymentMethod || ''}","${entry?.receivedBy || ''}","${statusText}"\n`;
+          csv += `"${m.memberNo}","${m.name}","${sch.emi}","${paid}","${entry?.paymentDate ? this.formatDate(entry.paymentDate) : '-'}","${entry?.paymentMethod || '-'}","${entry?.receivedBy || '-'}","${statusText}"\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `mis_org_month_${monthNum}_statement.csv`;
+        link.download = `mis_org_month_${monthNum}_collection_statement.csv`;
         link.click();
+        this.notify(`Downloaded Month ${monthNum} collection statement`);
+      }
+
+      // Exports members with pending / unpaid balances for the selected month
+      exportMonthlyPendingCSV() {
+        const monthNum = this.reportSelectedMonth;
+        const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
+        const monthLabel = this.getMonthLabel(monthNum);
+
+        const pendingList = [];
+        this.members.forEach(m => {
+          const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
+          const paid = entry ? Number(entry.amountPaid) : 0;
+          const due = (sch?.emi || 0) - paid;
+          if (due > 0) {
+            pendingList.push({
+              member: m,
+              paid: paid,
+              due: due,
+              status: paid > 0 ? "Partial" : "Pending"
+            });
+          }
+        });
+
+        if (pendingList.length === 0) {
+          this.notify(`All subscribers have cleared payments for Month ${monthNum}!`, false);
+          return;
+        }
+
+        let csv = `\uFEFFmis-org Chit Fund Management - Pending Installments Statement\n`;
+        csv += `Installment: Month ${monthNum} (${monthLabel}), Scheduled EMI: Rs. ${sch.emi}, Pending Members: ${pendingList.length}, Export Date: ${new Date().toLocaleDateString('en-IN')}\n\n`;
+        csv += "Member ID,Subscriber Name,Phone,Scheduled EMI,Amount Paid,Pending Due,Status\n";
+
+        pendingList.forEach(item => {
+          csv += `"${item.member.memberNo}","${item.member.name}","${item.member.phone || '-'}","${sch.emi}","${item.paid}","${item.due}","${item.status}"\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `mis_org_month_${monthNum}_pending_statement.csv`;
+        link.click();
+        this.notify(`Downloaded Month ${monthNum} pending statement`);
       }
 
       renderReports() {
