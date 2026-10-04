@@ -424,20 +424,18 @@
       <section id="view-reports" class="space-y-4 hidden">
         <!-- Monthly Collection Statement Card -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-3.5">
-          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-3">
             <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
               <i class="ph ph-receipt text-indigo-900 text-lg shrink-0"></i>
               <span id="report-heading-title">Monthly Collection Statement</span>
             </h3>
 
-            <div class="flex flex-wrap items-center gap-2">
+            <!-- Top Action Controls: Month selector & Primary Statement Export -->
+            <div class="flex items-center gap-2">
               <select id="report-month-select" onchange="app.onReportMonthChange(parseInt(this.value))" class="border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold bg-slate-50 text-slate-800 focus:ring-2 focus:ring-indigo-600 focus:outline-none shadow-xs">
               </select>
-              <button onclick="app.exportMonthlyReportCSV()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition" title="Export Full Statement CSV">
+              <button onclick="app.exportMonthlyReportCSV()" class="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition" title="Export Full Statement CSV">
                 <i class="ph ph-file-csv text-base"></i> Export Statement
-              </button>
-              <button onclick="app.exportMonthlyPendingCSV()" class="px-3 py-1.5 bg-rose-700 hover:bg-rose-800 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition" title="Export Pending Defaulters CSV">
-                <i class="ph ph-file-csv text-base"></i> Export Pending
               </button>
             </div>
           </div>
@@ -462,16 +460,23 @@
             </div>
           </div>
 
-          <!-- Integrated Filter Chips -->
-          <div class="flex items-center gap-1.5 pt-0.5">
-            <button id="rep-filter-all" onclick="app.setReportFilter('all')" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-900 text-white shadow-xs">
-              All (<span id="rep-cnt-all">0</span>)
-            </button>
-            <button id="rep-filter-paid" onclick="app.setReportFilter('paid')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">
-              Paid (<span id="rep-cnt-paid">0</span>)
-            </button>
-            <button id="rep-filter-pending" onclick="app.setReportFilter('pending')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">
-              Pending (<span id="rep-cnt-pending">0</span>)
+          <!-- Integrated Filter Chips & Contextual Pending Export -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+            <div class="flex items-center gap-1.5">
+              <button id="rep-filter-all" onclick="app.setReportFilter('all')" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-900 text-white shadow-xs">
+                All (<span id="rep-cnt-all">0</span>)
+              </button>
+              <button id="rep-filter-paid" onclick="app.setReportFilter('paid')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">
+                Paid (<span id="rep-cnt-paid">0</span>)
+              </button>
+              <button id="rep-filter-pending" onclick="app.setReportFilter('pending')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">
+                Pending (<span id="rep-cnt-pending">0</span>)
+              </button>
+            </div>
+
+            <!-- Contextual Export Pending: only visible when Pending tab is clicked -->
+            <button id="rep-export-pending-btn" onclick="app.exportMonthlyPendingCSV()" class="hidden px-3 py-1 bg-rose-700 hover:bg-rose-800 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition" title="Export Pending List CSV">
+              <i class="ph ph-file-csv text-base"></i> Export Pending List
             </button>
           </div>
 
@@ -1558,8 +1563,11 @@
           return;
         }
 
-        let csv = `\uFEFFmis-org Chit Fund Management - Subscriber Directory & Master Ledger\n`;
-        csv += `Chit Group: Group A (Rs. 5,00,000 • 40 Subscribers • 41 Months), Export Date: ${new Date().toLocaleDateString('en-IN')}\n\n`;
+        const exportDate = new Date().toLocaleDateString('en-IN');
+        // Centered title headers across 10 table columns (Column E: 4 leading commas, 5 trailing commas)
+        let csv = `\uFEFF,,,,"mis-org Chit Fund Management - Subscriber Master Directory",,,,,\n`;
+        csv += `,,,,"Group A (Rs. 5,00,000 • 40 Subscribers • 41 Months) | Export Date: ${exportDate}",,,,,\n`;
+        csv += `,,,,,\n\n`;
         csv += "Member ID,Subscriber Name,Phone,Email,Address,Status,Prized Status,Prized Month,Prize Money Received,Total Amount Paid\n";
         
         this.members.forEach(m => {
@@ -2101,6 +2109,17 @@
               : "px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200";
           }
         });
+
+        // Toggle Export Pending button: only show when Pending filter is active
+        const pendingExportBtn = document.getElementById('rep-export-pending-btn');
+        if (pendingExportBtn) {
+          if (filterType === 'pending') {
+            pendingExportBtn.classList.remove('hidden');
+          } else {
+            pendingExportBtn.classList.add('hidden');
+          }
+        }
+
         this.renderMonthlyReport();
       }
 
@@ -2110,7 +2129,7 @@
         const totalMembers = this.members.length;
         const expectedTarget = (sch?.emi || 0) * totalMembers;
 
-        // Dynamic Card Title with Month Name & Chit Number
+        // Dynamic Header Title indicating installment and calendar month
         const headingEl = document.getElementById('report-heading-title');
         if (headingEl) {
           headingEl.innerText = `Monthly Collection Statement - Month ${monthNum} (${this.getMonthLabel(monthNum)})`;
@@ -2190,14 +2209,17 @@
         `).join('');
       }
 
-      // Exports full monthly statement with no phone number and clean title heading
+      // Exports full monthly statement with centered headings and without phone numbers
       exportMonthlyReportCSV() {
         const monthNum = this.reportSelectedMonth;
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
         const monthLabel = this.getMonthLabel(monthNum);
+        const exportDate = new Date().toLocaleDateString('en-IN');
 
-        let csv = `\uFEFFmis-org Chit Fund Management - Monthly Collection Statement\n`;
-        csv += `Installment: Month ${monthNum} (${monthLabel}), Scheduled EMI: Rs. ${sch.emi}, Group: Group A (Rs. 5,00,000), Export Date: ${new Date().toLocaleDateString('en-IN')}\n\n`;
+        // Total 8 columns -> Center in Column D (3 leading commas, 4 trailing commas)
+        let csv = `\uFEFF,,,"mis-org Chit Fund Management - Monthly Collection Statement",,,,\n`;
+        csv += `,,,"Installment: Month ${monthNum} (${monthLabel}) | Scheduled EMI: Rs. ${sch.emi} | Group: Group A (Rs. 5,00,000) | Date: ${exportDate}",,,,\n`;
+        csv += `,,,,\n\n`;
         csv += "Member ID,Subscriber Name,Scheduled EMI,Amount Paid,Payment Date,Payment Method,Received By,Status\n";
         
         this.members.forEach(m => {
@@ -2218,11 +2240,12 @@
         this.notify(`Downloaded Month ${monthNum} collection statement`);
       }
 
-      // Exports members with pending / unpaid balances for the selected month
+      // Exports pending defaulters list with centered headings (visible from the Pending tab)
       exportMonthlyPendingCSV() {
         const monthNum = this.reportSelectedMonth;
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
         const monthLabel = this.getMonthLabel(monthNum);
+        const exportDate = new Date().toLocaleDateString('en-IN');
 
         const pendingList = [];
         this.members.forEach(m => {
@@ -2244,8 +2267,10 @@
           return;
         }
 
-        let csv = `\uFEFFmis-org Chit Fund Management - Pending Installments Statement\n`;
-        csv += `Installment: Month ${monthNum} (${monthLabel}), Scheduled EMI: Rs. ${sch.emi}, Pending Members: ${pendingList.length}, Export Date: ${new Date().toLocaleDateString('en-IN')}\n\n`;
+        // Total 7 columns -> Center in Column D (3 leading commas, 3 trailing commas)
+        let csv = `\uFEFF,,,"mis-org Chit Fund Management - Pending Installments Statement",,,\n`;
+        csv += `,,,"Installment: Month ${monthNum} (${monthLabel}) | Scheduled EMI: Rs. ${sch.emi} | Pending: ${pendingList.length} Members | Date: ${exportDate}",,,\n`;
+        csv += `,,,\n\n`;
         csv += "Member ID,Subscriber Name,Phone,Scheduled EMI,Amount Paid,Pending Due,Status\n";
 
         pendingList.forEach(item => {
