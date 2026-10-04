@@ -1,22 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Locker Icon Generator</title>
+  <title>mis-org Locker Icon Generator</title>
+  <!-- Phosphor Icons for 1:1 Icon Parity -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <style>
-    body { font-family: sans-serif; background: #1e1b4b; color: white; text-align: center; padding: 40px 16px; }
-    canvas { border-radius: 24px; margin: 20px auto; display: block; border: 2px solid #fbbf24; }
-    button { background: #fbbf24; color: #1e1b4b; border: none; padding: 14px 20px; font-weight: bold; border-radius: 12px; font-size: 15px; margin: 8px auto; width: 100%; max-width: 300px; display: block; }
+    body { font-family: sans-serif; background: #1e1b4b; color: white; text-align: center; padding: 24px 16px; margin: 0; }
+    .badge {
+      width: 100px; height: 100px; background: #fbbf24; border-radius: 24px;
+      margin: 12px auto; display: flex; align-items: center; justify-content: center;
+      color: #1e1b4b; font-size: 60px; box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    }
+    canvas { border-radius: 24px; margin: 12px auto; display: block; border: 2px solid #fbbf24; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+    button { background: #fbbf24; color: #1e1b4b; border: none; padding: 14px 20px; font-weight: 800; border-radius: 12px; font-size: 15px; margin: 8px auto; width: 100%; max-width: 320px; display: block; cursor: pointer; }
+    button:active { transform: scale(0.97); }
   </style>
 </head>
 <body>
-  <h2 style="margin: 0;">mis-org Icon Generator</h2>
-  <p style="color: #cbd5e1; font-size: 13px;">Tap both buttons below to save the locker icons to your phone:</p>
+  <h2 style="margin: 0; font-size: 18px;">Locker Icon Generator</h2>
+  <p style="color: #94a3b8; font-size: 12px; margin: 4px 0 16px;">Matches the in-app single lever vault logo</p>
 
+  <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">1. In-App Logo:</div>
+  <div class="badge">
+    <i class="ph ph-vault" id="source-icon"></i>
+  </div>
+
+  <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; margin-top: 12px;">2. Generated PWA Icon Preview:</div>
   <canvas id="preview" width="160" height="160"></canvas>
 
-  <button onclick="downloadIcon(192)">1. Download icon-192.png</button>
-  <button onclick="downloadIcon(512)">2. Download icon-512.png</button>
+  <button onclick="downloadIcon(192)">Download icon-192.png</button>
+  <button onclick="downloadIcon(512)">Download icon-512.png</button>
 
   <script>
     function drawLocker(ctx, size) {
@@ -24,59 +39,73 @@
       ctx.fillStyle = '#1e1b4b';
       ctx.fillRect(0, 0, size, size);
 
-      // 2. Amber Locker Body
+      // 2. Amber Rounded Vault Badge
       const pad = size * 0.12;
-      const w = size - (pad * 2);
-      const h = size - (pad * 2);
-      const r = size * 0.16;
+      const bW = size - (pad * 2);
+      const bH = size - (pad * 2);
+      const bR = size * 0.18;
 
       ctx.fillStyle = '#fbbf24';
       ctx.beginPath();
-      ctx.roundRect(pad, pad, w, h, r);
+      ctx.roundRect(pad, pad, bW, bH, bR);
       ctx.fill();
 
-      // 3. Vault Frame
-      ctx.fillStyle = '#1e1b4b';
+      // 3. Locker Door Body in Indigo
       ctx.strokeStyle = '#1e1b4b';
+      ctx.fillStyle = '#1e1b4b';
       ctx.lineWidth = size * 0.038;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
-      const innerPad = size * 0.22;
-      const innerW = size - (innerPad * 2);
-      const innerH = size - (innerPad * 2);
-      ctx.strokeRect(innerPad, innerPad, innerW, innerH);
+      const doorPad = size * 0.25;
+      const doorW = size - (doorPad * 2);
+      const doorH = size - (doorPad * 2);
+      const doorR = size * 0.045;
 
-      // Hinges
-      const hingeW = size * 0.04;
-      const hingeH = size * 0.085;
-      ctx.fillRect(innerPad - (hingeW / 2), size * 0.33, hingeW, hingeH);
-      ctx.fillRect(innerPad - (hingeW / 2), size * 0.59, hingeW, hingeH);
+      ctx.beginPath();
+      ctx.roundRect(doorPad, doorPad, doorW, doorH, doorR);
+      ctx.stroke();
 
-      // 4. Dial & Spokes
-      const cx = size * 0.52;
+      // 4. Left Door Hinges
+      const hingeLen = size * 0.045;
+      const h1Y = doorPad + (doorH * 0.25);
+      const h2Y = doorPad + (doorH * 0.75);
+
+      ctx.beginPath();
+      ctx.moveTo(doorPad, h1Y);
+      ctx.lineTo(doorPad - hingeLen, h1Y);
+      ctx.moveTo(doorPad, h2Y);
+      ctx.lineTo(doorPad - hingeLen, h2Y);
+      ctx.stroke();
+
+      // 5. Center Dial
+      const cx = doorPad + (doorW * 0.42);
       const cy = size * 0.50;
-      const dialR = size * 0.145;
+      const dialR = size * 0.105;
 
       ctx.beginPath();
       ctx.arc(cx, cy, dialR, 0, Math.PI * 2);
       ctx.stroke();
 
-      for (let i = 0; i < 4; i++) {
-        const angle = (i * Math.PI) / 2;
-        ctx.beginPath();
-        ctx.moveTo(cx + Math.cos(angle) * (dialR * 0.4), cy + Math.sin(angle) * (dialR * 0.4));
-        ctx.lineTo(cx + Math.cos(angle) * (dialR * 1.35), cy + Math.sin(angle) * (dialR * 1.35));
-        ctx.stroke();
-      }
+      // 6. Single Lever Handle (extending right, then down)
+      const leverEndX = cx + (size * 0.155);
+      const leverEndY = cy + (size * 0.115);
 
       ctx.beginPath();
-      ctx.arc(cx, cy, dialR * 0.38, 0, Math.PI * 2);
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(leverEndX, cy);
+      ctx.lineTo(leverEndX, leverEndY);
+      ctx.stroke();
+
+      // Center Pivot Pin
+      ctx.beginPath();
+      ctx.arc(cx, cy, size * 0.024, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // Render preview
-    drawLocker(document.getElementById('preview').getContext('2d'), 160);
+    // Render preview canvas
+    const pCanvas = document.getElementById('preview');
+    drawLocker(pCanvas.getContext('2d'), 160);
 
     function downloadIcon(size) {
       const c = document.createElement('canvas');
@@ -85,7 +114,7 @@
       drawLocker(c.getContext('2d'), size);
 
       const a = document.createElement('a');
-      a.download = 'icon-' + size + '.png';
+      a.download = `icon-${size}.png`;
       a.href = c.toDataURL('image/png');
       a.click();
     }
