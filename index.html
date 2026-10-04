@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="mis-org" />
-  <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=M&size=192&background=1e1b4b&color=fbbf24&bold=true&format=png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -420,7 +420,7 @@
         </div>
       </section>
 
-      <!-- 7. STREAMLINED REPORTS & STATEMENTS -->
+      <!-- 7. RESTRUCTURED & CLEAN REPORTS -->
       <section id="view-reports" class="space-y-4 hidden">
         <!-- Monthly Collection Statement Card -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-3.5">
@@ -492,22 +492,13 @@
           </div>
         </div>
 
-        <!-- Macro Analytics: Cumulative Defaulters & Collections by Channel -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-            <div class="flex justify-between items-center mb-2">
-              <h3 class="font-bold text-xs text-slate-500 uppercase tracking-wider">Cumulative Defaulters (All Months)</h3>
-              <button onclick="app.exportDefaultersCSV()" class="px-2.5 py-1 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-lg text-xs font-bold border border-rose-200/60 flex items-center gap-1">
-                <i class="ph ph-file-csv"></i> Export Defaulters
-              </button>
-            </div>
-            <div id="defaulters-container" class="space-y-2 max-h-72 overflow-y-auto"></div>
-          </div>
-
-          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-            <h3 class="font-bold text-xs text-slate-500 uppercase tracking-wider mb-3">Overall Collections by Channel</h3>
-            <div class="space-y-3.5" id="payment-mode-stats"></div>
-          </div>
+        <!-- Collections by Channel Card -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 class="font-bold text-xs text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <i class="ph ph-wallet text-indigo-900 text-base"></i>
+            Overall Collections by Channel
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="payment-mode-stats"></div>
         </div>
       </section>
 
@@ -519,7 +510,7 @@
             <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
               <tr>
                 <th class="p-2.5">Date & Time</th>
-                <th class="p-2.5">User</th>
+                <th class="p-2.5">User Email</th>
                 <th class="p-2.5">Role</th>
                 <th class="p-2.5">Action</th>
                 <th class="p-2.5">Details</th>
@@ -820,6 +811,7 @@
       constructor() {
         this.currentUser = null;
         this.userRole = null;
+        this.userProfile = null;
         this.activeChitId = "group_a";
         this.currentMonthIdx = 1;
         this.reportSelectedMonth = 1;
@@ -1180,7 +1172,7 @@
                 await signOut(auth);
                 this.setAuthLoading(false);
                 this.showAuthError(
-                  `Signed in with ${user.email}, but this account is not registered. In Firebase Console > Firestore Database > 'users' collection, create a document named with your User UID: '${user.uid}' with fields email: '${user.email}' and role: 'admin'.`,
+                  `Signed in with ${user.email}, but this account is not registered. In Firebase Console > Firestore Database > 'users' collection, create a document named with your User UID: '${user.uid}' with fields email: '${user.email}', role: 'admin' and displayName: 'Your Name'.`,
                   "Unregistered Account"
                 );
                 this.showAuthScreen();
@@ -1265,6 +1257,7 @@
         document.getElementById('app-container').classList.remove('hidden');
         document.getElementById('user-profile-widget').classList.remove('hidden');
 
+        // Prefer Firestore displayName, then Google displayName, then email prefix
         const displayName = this.userProfile?.displayName || this.currentUser.displayName || this.currentUser.email.split('@')[0];
         const initial = displayName.charAt(0).toUpperCase();
 
@@ -1392,13 +1385,19 @@
           const aucSnap = await getDocs(query(collection(db, "auctions"), where("chitId", "==", this.activeChitId)));
           this.auctions = aucSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
+          // Extract display names directly from the 'users' collection
           try {
             const uSnap = await getDocs(query(collection(db, "users"), where("role", "in", ["foreman", "admin"])));
-            this.foremenList = uSnap.docs.map(d => {
-              const u = d.data();
-              return u.displayName || u.email.split('@')[0];
-            });
-          } catch(e) {}
+            this.foremenList = uSnap.docs
+              .map(d => {
+                const u = d.data();
+                return (u.displayName || u.name || '').trim();
+              })
+              .filter(name => name.length > 0);
+          } catch(e) {
+            console.warn("Could not fetch foremen display names:", e);
+          }
+
           if (!this.foremenList || this.foremenList.length === 0) {
             this.foremenList = ["Foreman 1", "Foreman 2", "Foreman 3"];
           }
@@ -1756,6 +1755,7 @@
         document.getElementById('coll-month').value = monthNum;
         document.getElementById('coll-amount').value = existing ? existing.amountPaid : defaultAmt;
         
+        // Populate foreman selector with formal display names from Firestore
         const fSelect = document.getElementById('coll-foreman-select');
         fSelect.innerHTML = this.foremenList.map(fn => `<option value="${fn}">${fn}</option>`).join('');
 
@@ -1763,10 +1763,14 @@
         document.getElementById('coll-method').value = currentMethod;
         this.onPaymentMethodChange(currentMethod);
 
-        if (existing?.receivedBy) {
+        if (existing?.receivedBy && existing.receivedBy !== 'Main Bank Account') {
           fSelect.value = existing.receivedBy;
-        } else if (this.userProfile?.displayName) {
-          fSelect.value = this.userProfile.displayName;
+        } else {
+          // Pre-select current logged in user's display name if present in list
+          const myDisplayName = (this.userProfile?.displayName || '').trim();
+          if (myDisplayName && Array.from(fSelect.options).some(opt => opt.value === myDisplayName)) {
+            fSelect.value = myDisplayName;
+          }
         }
 
         document.getElementById('coll-date').value = existing?.paymentDate || new Date().toISOString().split('T')[0];
@@ -1798,6 +1802,9 @@
           ? 'Main Bank Account' 
           : document.getElementById('coll-foreman-select').value;
 
+        // Use Firestore displayName for audit and collection tracking
+        const recorderDisplayName = this.userProfile?.displayName || this.currentUser.displayName || this.currentUser.email.split('@')[0];
+
         const payload = {
           chitId: this.activeChitId,
           month: monthNum,
@@ -1808,7 +1815,7 @@
           paymentDate: document.getElementById('coll-date').value,
           remarks: document.getElementById('coll-remarks').value,
           recordedByUid: existing ? existing.recordedByUid : this.currentUser.uid,
-          recordedByName: this.userProfile?.displayName || this.currentUser.email.split('@')[0],
+          recordedByName: recorderDisplayName,
           updatedAt: new Date().toISOString()
         };
 
@@ -1988,7 +1995,7 @@
             <tr class="hover:bg-slate-50">
               <td class="p-2.5 font-bold">Month ${sch.m}</td>
               <td class="p-2.5 text-right font-extrabold text-indigo-900">${this.formatINR(sch.net)}</td>
-              <td class="p-2.5 font-semibold">${winner ? `${winner.memberNo} - ${winner.name}` : '<span class="text-slate-400 italic">Not Awarded</span>'}</td>
+              <td class="p-2.5 font-semibold">${winner ? `${winner.memberNo} -${winner.name}` : '<span class="text-slate-400 italic">Not Awarded</span>'}</td>
               <td class="p-2.5 text-slate-500">${this.formatDate(auc?.auctionDate)}</td>
               <td class="p-2.5 text-right">
                 ${!auc && this.userRole === 'admin' ? `
@@ -2052,7 +2059,7 @@
         }
       }
 
-      // ================= FINANCIAL AUDIT & STREAMLINED REPORTS =================
+      // ================= FINANCIAL AUDIT & RESTRUCTURED REPORTS =================
       onReportMonthChange(monthNum) {
         this.reportSelectedMonth = monthNum;
         this.renderMonthlyReport();
@@ -2183,26 +2190,7 @@
 
         this.renderMonthlyReport();
 
-        const curM = this.currentMonthIdx;
-        let expected = 0;
-        for (let m = 1; m <= curM; m++) expected += MASTER_SCHEDULE.find(s => s.m === m).emi;
-
-        const defContainer = document.getElementById('defaulters-container');
-        const defaulters = [];
-
-        this.members.forEach(mem => {
-          const totalPaid = this.collections.filter(c => c.memberNo === mem.memberNo && c.month <= curM).reduce((s, c) => s + (Number(c.amountPaid) || 0), 0);
-          const due = expected - totalPaid;
-          if (due > 0) defaulters.push({ memberNo: mem.memberNo, name: mem.name, due });
-        });
-
-        defContainer.innerHTML = defaulters.length > 0 ? defaulters.map(d => `
-          <div class="flex justify-between items-center text-xs p-2 rounded-xl bg-rose-50/50 border border-rose-100">
-            <div><span class="font-mono font-bold">${d.memberNo}</span> ${d.name}</div>
-            <div class="font-bold text-rose-600">${this.formatINR(d.due)}</div>
-          </div>
-        `).join('') : `<div class="text-xs text-slate-400 p-2 text-center">Nil Defaulters!</div>`;
-
+        // Macro Report: Payment Mode Totals
         const channelTotals = {};
         let grandTotal = 0;
 
@@ -2232,36 +2220,17 @@
           const pct = grandTotal > 0 ? Math.round((amt / grandTotal) * 100) : 0;
           const isBank = channel.includes('Bank Transfer');
           return `
-            <div>
-              <div class="flex justify-between text-xs font-semibold mb-1">
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <div class="flex justify-between text-xs font-semibold mb-1.5">
                 <span class="${isBank ? 'text-indigo-900 font-bold' : 'text-slate-700'}">${channel}</span>
                 <span class="font-bold ${isBank ? 'text-indigo-900' : 'text-emerald-700'}">${this.formatINR(amt)} <span class="text-slate-400 font-normal">(${pct}%)</span></span>
               </div>
-              <div class="w-full bg-slate-100 rounded-full h-2.5">
-                <div class="${isBank ? 'bg-indigo-600' : 'bg-emerald-500'} h-2.5 rounded-full" style="width: ${pct}%"></div>
+              <div class="w-full bg-slate-200 rounded-full h-2">
+                <div class="${isBank ? 'bg-indigo-600' : 'bg-emerald-500'} h-2 rounded-full" style="width: ${pct}%"></div>
               </div>
             </div>
           `;
         }).join('');
-      }
-
-      exportDefaultersCSV() {
-        const curM = this.currentMonthIdx;
-        let expected = 0;
-        for (let m = 1; m <= curM; m++) expected += MASTER_SCHEDULE.find(s => s.m === m).emi;
-
-        let csv = "\uFEFFMember No,Subscriber Name,Pending Due\n";
-        this.members.forEach(mem => {
-          const totalPaid = this.collections.filter(c => c.memberNo === mem.memberNo && c.month <= curM).reduce((s, c) => s + (Number(c.amountPaid) || 0), 0);
-          const due = expected - totalPaid;
-          if (due > 0) csv += `"${mem.memberNo}","${mem.name}",${due}\n`;
-        });
-
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `defaulters_month_${curM}.csv`;
-        link.click();
       }
 
       async renderAuditLogs() {
