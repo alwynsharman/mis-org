@@ -425,17 +425,17 @@
         <!-- Monthly Collection Statement Card -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-3.5">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-3">
-            <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2 min-w-0">
               <i class="ph ph-receipt text-indigo-900 text-lg shrink-0"></i>
-              <span id="report-heading-title">Monthly Collection Statement</span>
+              <span id="report-heading-title" class="truncate">Monthly Collection Statement</span>
             </h3>
 
-            <!-- Top Action Controls: Month selector & Primary Statement Export -->
-            <div class="flex items-center gap-2">
-              <select id="report-month-select" onchange="app.onReportMonthChange(parseInt(this.value))" class="border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold bg-slate-50 text-slate-800 focus:ring-2 focus:ring-indigo-600 focus:outline-none shadow-xs">
+            <!-- Compact Dropdown + Export Icon Button -->
+            <div class="flex items-center gap-2 self-end sm:self-auto shrink-0">
+              <select id="report-month-select" onchange="app.onReportMonthChange(parseInt(this.value))" class="border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold bg-slate-50 text-slate-800 focus:ring-2 focus:ring-indigo-600 focus:outline-none shadow-xs">
               </select>
-              <button onclick="app.exportMonthlyReportCSV()" class="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition" title="Export Full Statement CSV">
-                <i class="ph ph-file-csv text-base"></i> Export Statement
+              <button onclick="app.exportMonthlyReportCSV()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition whitespace-nowrap" title="Export Monthly Statement CSV">
+                <i class="ph ph-file-csv text-base"></i> Export
               </button>
             </div>
           </div>
@@ -460,23 +460,21 @@
             </div>
           </div>
 
-          <!-- Integrated Filter Chips & Contextual Pending Export -->
-          <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5">
-            <div class="flex items-center gap-1.5">
-              <button id="rep-filter-all" onclick="app.setReportFilter('all')" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-900 text-white shadow-xs">
-                All (<span id="rep-cnt-all">0</span>)
-              </button>
-              <button id="rep-filter-paid" onclick="app.setReportFilter('paid')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">
-                Paid (<span id="rep-cnt-paid">0</span>)
-              </button>
-              <button id="rep-filter-pending" onclick="app.setReportFilter('pending')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">
-                Pending (<span id="rep-cnt-pending">0</span>)
-              </button>
-            </div>
-
-            <!-- Contextual Export Pending: only visible when Pending tab is clicked -->
-            <button id="rep-export-pending-btn" onclick="app.exportMonthlyPendingCSV()" class="hidden px-3 py-1 bg-rose-700 hover:bg-rose-800 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition" title="Export Pending List CSV">
-              <i class="ph ph-file-csv text-base"></i> Export Pending List
+          <!-- Filter Chips with Integrated Icon-Only Pending Export -->
+          <div class="flex items-center gap-1.5 pt-0.5">
+            <button id="rep-filter-all" onclick="app.setReportFilter('all')" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-900 text-white shadow-xs">
+              All (<span id="rep-cnt-all">0</span>)
+            </button>
+            <button id="rep-filter-paid" onclick="app.setReportFilter('paid')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">
+              Paid (<span id="rep-cnt-paid">0</span>)
+            </button>
+            <button id="rep-filter-pending" onclick="app.setReportFilter('pending')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">
+              Pending (<span id="rep-cnt-pending">0</span>)
+            </button>
+            
+            <!-- Compact Icon-Only Button: Visible Only on Pending -->
+            <button id="rep-export-pending-btn" onclick="app.exportMonthlyPendingCSV()" class="hidden p-1.5 bg-rose-700 hover:bg-rose-800 active:scale-95 text-white rounded-lg text-xs shadow-xs transition items-center justify-center" title="Export Pending List CSV" aria-label="Export Pending List">
+              <i class="ph ph-file-csv text-base"></i>
             </button>
           </div>
 
@@ -1271,6 +1269,7 @@
         document.getElementById('app-container').classList.remove('hidden');
         document.getElementById('user-profile-widget').classList.remove('hidden');
 
+        // Prefer Firestore displayName, then Google displayName, then email prefix
         const displayName = this.userProfile?.displayName || this.currentUser.displayName || this.currentUser.email.split('@')[0];
         const initial = displayName.charAt(0).toUpperCase();
 
@@ -2110,13 +2109,15 @@
           }
         });
 
-        // Toggle Export Pending button: only show when Pending filter is active
+        // Toggle Icon-only Export Pending button: strictly visible when Pending filter is active
         const pendingExportBtn = document.getElementById('rep-export-pending-btn');
         if (pendingExportBtn) {
           if (filterType === 'pending') {
             pendingExportBtn.classList.remove('hidden');
+            pendingExportBtn.classList.add('inline-flex');
           } else {
             pendingExportBtn.classList.add('hidden');
+            pendingExportBtn.classList.remove('inline-flex');
           }
         }
 
@@ -2240,7 +2241,7 @@
         this.notify(`Downloaded Month ${monthNum} collection statement`);
       }
 
-      // Exports pending defaulters list with centered headings (visible from the Pending tab)
+      // Exports pending defaulters list with centered headings (triggered via inline icon button)
       exportMonthlyPendingCSV() {
         const monthNum = this.reportSelectedMonth;
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
