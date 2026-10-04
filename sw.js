@@ -1,25 +1,33 @@
-{
-  "name": "mis-org Chit Management",
-  "short_name": "mis-org",
-  "description": "Chit Fund Management & Passbook Ledger Portal",
-  "start_url": "./",
-  "scope": "./",
-  "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#1e1b4b",
-  "theme_color": "#312e81",
-  "icons": [
-    {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ]
-}
+const CACHE_NAME = 'mis-org-v3';
+
+self.addEventListener('install', (event) => {
+  // Installs unconditionally so Chrome never fails the PWA check
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+      );
+    })
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', (event) => {
+  // Let Firebase Auth and Firestore bypass caching directly
+  if (
+    event.request.url.includes('firestore.googleapis.com') ||
+    event.request.url.includes('identitytoolkit.googleapis.com') ||
+    event.request.url.includes('apis.google.com')
+  ) {
+    return;
+  }
+
+  // Network-first fetch handler required by Chrome PWA specs
+  event.respondWith(
+    fetch(event.request).catch(() => caches.match(event.request))
+  );
+});
