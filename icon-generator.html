@@ -3,121 +3,106 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>mis-org Locker Icon Generator</title>
-  <!-- Phosphor Icons for 1:1 Icon Parity -->
+  <title>mis-org Vault Icon Generator</title>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <style>
-    body { font-family: sans-serif; background: #1e1b4b; color: white; text-align: center; padding: 24px 16px; margin: 0; }
+    body { font-family: sans-serif; background: #0f172a; color: white; text-align: center; padding: 24px 16px; margin: 0; }
+    .preview-box { display: flex; justify-content: center; align-items: center; gap: 20px; margin: 20px 0; }
     .badge {
-      width: 100px; height: 100px; background: #fbbf24; border-radius: 24px;
-      margin: 12px auto; display: flex; align-items: center; justify-content: center;
-      color: #1e1b4b; font-size: 60px; box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      width: 110px; height: 110px; background: #fbbf24; border-radius: 28px;
+      display: flex; align-items: center; justify-content: center;
+      color: #1e1b4b; font-size: 64px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
-    canvas { border-radius: 24px; margin: 12px auto; display: block; border: 2px solid #fbbf24; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
-    button { background: #fbbf24; color: #1e1b4b; border: none; padding: 14px 20px; font-weight: 800; border-radius: 12px; font-size: 15px; margin: 8px auto; width: 100%; max-width: 320px; display: block; cursor: pointer; }
-    button:active { transform: scale(0.97); }
+    canvas { border-radius: 28px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .btn { background: #fbbf24; color: #1e1b4b; border: none; padding: 14px 20px; font-weight: 800; border-radius: 12px; font-size: 15px; margin: 8px auto; width: 100%; max-width: 320px; display: block; cursor: pointer; }
+    .btn:active { transform: scale(0.97); }
+    .status { font-size: 12px; color: #38bdf8; margin-bottom: 12px; }
   </style>
 </head>
 <body>
-  <h2 style="margin: 0; font-size: 18px;">Locker Icon Generator</h2>
-  <p style="color: #94a3b8; font-size: 12px; margin: 4px 0 16px;">Matches the in-app single lever vault logo</p>
+  <h2 style="margin: 0; font-size: 18px;">Official Vault Icon Generator</h2>
+  <p style="color: #94a3b8; font-size: 12px; margin: 4px 0 16px;">1:1 Vector match with the in-app Phosphor vault logo</p>
 
-  <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">1. In-App Logo:</div>
-  <div class="badge">
-    <i class="ph ph-vault" id="source-icon"></i>
+  <div class="status" id="load-status">Loading official Phosphor vector asset...</div>
+
+  <div class="preview-box">
+    <div>
+      <div style="font-size: 11px; color: #94a3b8; font-weight: bold; margin-bottom: 6px;">1. IN-APP BADGE</div>
+      <div class="badge">
+        <i class="ph ph-vault"></i>
+      </div>
+    </div>
+    <div>
+      <div style="font-size: 11px; color: #94a3b8; font-weight: bold; margin-bottom: 6px;">2. PWA ICON PREVIEW</div>
+      <canvas id="preview" width="110" height="110"></canvas>
+    </div>
   </div>
 
-  <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; margin-top: 12px;">2. Generated PWA Icon Preview:</div>
-  <canvas id="preview" width="160" height="160"></canvas>
-
-  <button onclick="downloadIcon(192)">Download icon-192.png</button>
-  <button onclick="downloadIcon(512)">Download icon-512.png</button>
+  <button class="btn" onclick="downloadIcon(192)">Download icon-192.png</button>
+  <button class="btn" onclick="downloadIcon(512)">Download icon-512.png</button>
 
   <script>
-    function drawLocker(ctx, size) {
-      // 1. Dark Indigo Background
-      ctx.fillStyle = '#1e1b4b';
-      ctx.fillRect(0, 0, size, size);
+    let vaultSvgText = null;
 
-      // 2. Amber Rounded Vault Badge
-      const pad = size * 0.12;
-      const bW = size - (pad * 2);
-      const bH = size - (pad * 2);
-      const bR = size * 0.18;
-
-      ctx.fillStyle = '#fbbf24';
-      ctx.beginPath();
-      ctx.roundRect(pad, pad, bW, bH, bR);
-      ctx.fill();
-
-      // 3. Locker Door Body in Indigo
-      ctx.strokeStyle = '#1e1b4b';
-      ctx.fillStyle = '#1e1b4b';
-      ctx.lineWidth = size * 0.038;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-
-      const doorPad = size * 0.25;
-      const doorW = size - (doorPad * 2);
-      const doorH = size - (doorPad * 2);
-      const doorR = size * 0.045;
-
-      ctx.beginPath();
-      ctx.roundRect(doorPad, doorPad, doorW, doorH, doorR);
-      ctx.stroke();
-
-      // 4. Left Door Hinges
-      const hingeLen = size * 0.045;
-      const h1Y = doorPad + (doorH * 0.25);
-      const h2Y = doorPad + (doorH * 0.75);
-
-      ctx.beginPath();
-      ctx.moveTo(doorPad, h1Y);
-      ctx.lineTo(doorPad - hingeLen, h1Y);
-      ctx.moveTo(doorPad, h2Y);
-      ctx.lineTo(doorPad - hingeLen, h2Y);
-      ctx.stroke();
-
-      // 5. Center Dial
-      const cx = doorPad + (doorW * 0.42);
-      const cy = size * 0.50;
-      const dialR = size * 0.105;
-
-      ctx.beginPath();
-      ctx.arc(cx, cy, dialR, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // 6. Single Lever Handle (extending right, then down)
-      const leverEndX = cx + (size * 0.155);
-      const leverEndY = cy + (size * 0.115);
-
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.lineTo(leverEndX, cy);
-      ctx.lineTo(leverEndX, leverEndY);
-      ctx.stroke();
-
-      // Center Pivot Pin
-      ctx.beginPath();
-      ctx.arc(cx, cy, size * 0.024, 0, Math.PI * 2);
-      ctx.fill();
+    async function fetchSvg() {
+      const urls = [
+        'https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2.1.1/assets/regular/vault.svg',
+        'https://unpkg.com/@phosphor-icons/core@2.1.1/assets/regular/vault.svg'
+      ];
+      for (const url of urls) {
+        try {
+          const res = await fetch(url);
+          if (res.ok) {
+            vaultSvgText = await res.text();
+            document.getElementById('load-status').innerText = '✓ Official Phosphor vector loaded successfully';
+            document.getElementById('load-status').style.color = '#4ade80';
+            drawToCanvas(document.getElementById('preview'), 110);
+            return;
+          }
+        } catch (e) {}
+      }
+      document.getElementById('load-status').innerText = 'Failed to load remote vector asset.';
+      document.getElementById('load-status').style.color = '#f87171';
     }
 
-    // Render preview canvas
-    const pCanvas = document.getElementById('preview');
-    drawLocker(pCanvas.getContext('2d'), 160);
+    function drawToCanvas(canvas, size, callback) {
+      if (!vaultSvgText) return;
+      const ctx = canvas.getContext('2d');
+      canvas.width = size;
+      canvas.height = size;
+
+      // 1. Amber Background matching app badge
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(0, 0, size, size);
+
+      // 2. Format SVG with exact dark indigo fill
+      const coloredSvg = vaultSvgText.replace(/fill="currentColor"/g, 'fill="#1e1b4b"');
+      const blob = new Blob([coloredSvg], { type: 'image/svg+xml;charset=utf-8' });
+      const blobUrl = URL.createObjectURL(blob);
+      const img = new Image();
+
+      img.onload = () => {
+        // Safe-zone padding for Android launcher icons
+        const pad = size * 0.16;
+        const iconSize = size - (pad * 2);
+        ctx.drawImage(img, pad, pad, iconSize, iconSize);
+        URL.revokeObjectURL(blobUrl);
+        if (callback) callback();
+      };
+      img.src = blobUrl;
+    }
 
     function downloadIcon(size) {
       const c = document.createElement('canvas');
-      c.width = size;
-      c.height = size;
-      drawLocker(c.getContext('2d'), size);
-
-      const a = document.createElement('a');
-      a.download = `icon-${size}.png`;
-      a.href = c.toDataURL('image/png');
-      a.click();
+      drawToCanvas(c, size, () => {
+        const a = document.createElement('a');
+        a.download = `icon-${size}.png`;
+        a.href = c.toDataURL('image/png');
+        a.click();
+      });
     }
+
+    fetchSvg();
   </script>
 </body>
 </html>
