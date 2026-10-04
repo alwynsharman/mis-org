@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mis-org-v3';
+const CACHE_NAME = 'mis-org-v4';
 
 self.addEventListener('install', (event) => {
   // Installs unconditionally so Chrome never fails the PWA check
