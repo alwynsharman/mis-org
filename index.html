@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="mis-org" />
-  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=M&size=192&background=1e1b4b&color=fbbf24&bold=true&format=png" />
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -769,13 +769,11 @@
       }
 
       init() {
-        // Register Service Worker for Progressive Web App (PWA)
+        // Direct Service Worker registration for PWA (executes reliably within ES module)
         if ('serviceWorker' in navigator) {
-          window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js')
-              .then(reg => console.log('ServiceWorker registered with scope:', reg.scope))
-              .catch(err => console.error('ServiceWorker registration error:', err));
-          });
+          navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('PWA ServiceWorker active:', reg.scope))
+            .catch(err => console.error('ServiceWorker error:', err));
         }
 
         const btn = document.getElementById('sign-in-btn');
@@ -1419,7 +1417,7 @@
                   <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-1.5 py-0.5 rounded">${m.memberNo}</span>
                   <span class="font-bold text-xs text-slate-800">${m.name}</span>
                 </div>
-                <div class="text-[11px] text-slate-500">${m.phone}</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">${m.phone}</div>
                 <div class="text-[11px] text-emerald-600 font-bold">Total Paid: ${this.formatINR(totalPaid)}</div>
                 ${m.isPrized ? `<span class="inline-block bg-amber-100 text-amber-900 text-[10px] font-bold px-1.5 py-0.5 rounded">Prized (M${m.prizedMonth})</span>` : ''}
               </div>
