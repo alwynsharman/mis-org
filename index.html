@@ -106,7 +106,7 @@
       </div>
     </div>
 
-    <!-- Navigation Tabs (Combined Members & Passbook) -->
+    <!-- Navigation Tabs -->
     <nav id="module-tabs" class="bg-indigo-950/70 border-t border-indigo-800/60 overflow-x-auto no-scrollbar flex space-x-1 px-3 py-1.5 no-print hidden">
       <button onclick="app.navigate('dashboard')" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5" data-tab="dashboard">
         <i class="ph ph-chart-pie-slice text-sm"></i> Dashboard
@@ -208,7 +208,7 @@
         <div class="bg-gradient-to-br from-indigo-900 to-indigo-950 text-white rounded-2xl p-5 shadow flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <span class="px-2 py-0.5 rounded bg-indigo-800 text-amber-300 font-bold text-[10px] uppercase">Chit Group A</span>
-            <h3 class="text-base sm:lg font-bold mt-1">₹5,00,000 • 40 Subscribers • 41 Months</h3>
+            <h3 class="text-base sm:text-lg font-bold mt-1">₹5,00,000 • 40 Subscribers • 41 Months</h3>
             <p class="text-xs text-indigo-200 mt-0.5">Start: Oct 2026. Month 1 (Foreman: ₹5,00,000), Month 10 (Special: ₹5,00,000).</p>
           </div>
           <button onclick="app.navigate('collections')" class="w-full sm:w-auto px-5 py-2.5 bg-amber-400 hover:bg-amber-300 active:scale-95 text-indigo-950 font-bold rounded-xl text-xs sm:text-sm shadow-sm transition">
@@ -247,7 +247,7 @@
         </div>
       </section>
 
-      <!-- 3. MEMBER DIRECTORY (Primary Tab) -->
+      <!-- 3. MEMBER DIRECTORY (Merged with Passbook) -->
       <section id="view-members" class="space-y-3 hidden">
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
@@ -293,7 +293,7 @@
         </div>
       </section>
 
-      <!-- 4. SUBSCRIBER PASSBOOK (Combined / Drilldown) -->
+      <!-- 4. SUBSCRIBER PASSBOOK (Drilldown View) -->
       <section id="view-passbook" class="space-y-3 hidden">
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 no-print">
           <div class="flex items-center gap-2.5">
@@ -757,9 +757,7 @@
       getDocs 
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // -------------------------------------------------------------
     // FIREBASE CONFIGURATION
-    // -------------------------------------------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyBqdtnXqFNo2IqjurUIUfX3gG1AIAwamAM",
       authDomain: "mis-org.firebaseapp.com",
@@ -942,7 +940,6 @@
           .trim();
       }
 
-      // Compact Vector PDF Voucher Generation
       generateReceiptPDF(data) {
         const jsPdfClass = window.jspdf?.jsPDF || window.jsPDF;
         if (!jsPdfClass) throw new Error("jsPDF library not loaded");
@@ -1303,7 +1300,7 @@
         document.getElementById('module-tabs').classList.remove('hidden');
         document.getElementById('pb-back-btn')?.classList.remove('hidden');
         
-        // Audit Log and Add Member Buttons strictly for Admin
+        // Audit Log and Add Member strictly guarded for Admin
         if (this.userRole === "admin") {
           document.getElementById('tab-audit')?.classList.remove('hidden');
           document.getElementById('add-member-btn')?.classList.remove('hidden');
@@ -1317,6 +1314,12 @@
       }
 
       navigate(tabName, addToHistory = true) {
+        // Enforce strict Admin-only access to Audit Trail
+        if (tabName === 'audit' && this.userRole !== 'admin') {
+          this.navigate('dashboard', false);
+          return;
+        }
+
         if (addToHistory && this.currentView && this.currentView !== tabName) {
           this.navigationStack.push(this.currentView);
           document.getElementById('nav-back-btn').classList.remove('hidden');
@@ -1327,13 +1330,18 @@
         const targetView = document.getElementById(`view-${tabName}`);
         if (targetView) targetView.classList.remove('hidden');
 
-        // Maintain Members tab active status when drilling down into Passbook
+        // Maintain Members tab active styling when drilling down into Passbook
         document.querySelectorAll('.tab-btn').forEach(btn => {
           const isActive = btn.dataset.tab === tabName || (tabName === 'passbook' && btn.dataset.tab === 'members');
           if (isActive) {
             btn.className = "tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-indigo-950 shadow-sm flex items-center gap-1.5";
           } else {
             btn.className = "tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5";
+          }
+
+          // Keep Audit Tab permanently hidden for non-admin accounts across re-renders
+          if (btn.id === 'tab-audit' && this.userRole !== 'admin') {
+            btn.classList.add('hidden');
           }
         });
 
@@ -1419,8 +1427,6 @@
       populateMonthDropdowns() {
         const select = document.getElementById('collection-month-select');
         const reportSelect = document.getElementById('report-month-select');
-        
-        // Clean Month format without EMI clutter
         const optionsHtml = MASTER_SCHEDULE.map(r => `
           <option value="${r.m}">Month ${r.m} (${this.getMonthLabel(r.m)})</option>
         `).join('');
