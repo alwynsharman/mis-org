@@ -421,13 +421,13 @@
       </section>
 
       <!-- 7. RESTRUCTURED & CLEAN REPORTS -->
-      <section id="view-reports" class="space-y-4 hidden">
+      <section id="view-reports" class="space-y-3.5 hidden">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-3.5">
           <!-- Top Bar: Title + Month Select + Export Statement -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-3">
             <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2 min-w-0">
               <i class="ph ph-receipt text-indigo-900 text-lg shrink-0"></i>
-              <span id="report-heading-title" class="truncate">Monthly Collection Statement</span>
+              <span id="report-heading-title" class="truncate">Collection Report</span>
             </h3>
 
             <!-- Compact Dropdown + Export Icon Button -->
@@ -442,77 +442,87 @@
 
           <!-- Ultra-Compact Single-Line 4-Stat Metric Strip -->
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50/80 p-1.5 rounded-xl border border-slate-200/60">
-            <div class="flex items-center justify-between sm:justify-start sm:gap-2 px-2.5 py-1 bg-white rounded-lg border border-slate-100 shadow-2xs">
+            <div class="flex items-center justify-between sm:justify-start sm:gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-slate-100 shadow-2xs">
               <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Target</span>
               <span id="rep-stat-target" class="text-xs sm:text-sm font-extrabold text-slate-900">₹0</span>
             </div>
-            <div class="flex items-center justify-between sm:justify-start sm:gap-2 px-2.5 py-1 bg-white rounded-lg border border-emerald-100/60 shadow-2xs">
+            <div class="flex items-center justify-between sm:justify-start sm:gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-emerald-100/60 shadow-2xs">
               <span class="text-[9px] font-bold text-emerald-700 uppercase tracking-wider">Collected</span>
               <span id="rep-stat-collected" class="text-xs sm:text-sm font-extrabold text-emerald-800">₹0</span>
             </div>
-            <div class="flex items-center justify-between sm:justify-start sm:gap-2 px-2.5 py-1 bg-white rounded-lg border border-indigo-100/60 shadow-2xs">
+            <div class="flex items-center justify-between sm:justify-start sm:gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-indigo-100/60 shadow-2xs">
               <span class="text-[9px] font-bold text-indigo-700 uppercase tracking-wider">Paid</span>
               <span id="rep-stat-paid-count" class="text-xs sm:text-sm font-extrabold text-indigo-950">0 / 40</span>
             </div>
-            <div class="flex items-center justify-between sm:justify-start sm:gap-2 px-2.5 py-1 bg-white rounded-lg border border-rose-100/60 shadow-2xs">
+            <div class="flex items-center justify-between sm:justify-start sm:gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-rose-100/60 shadow-2xs">
               <span class="text-[9px] font-bold text-rose-700 uppercase tracking-wider">Deficit</span>
               <span id="rep-stat-deficit" class="text-xs sm:text-sm font-extrabold text-rose-700">₹0</span>
             </div>
           </div>
 
-          <!-- Collections by Channel Strip with Month/All Scope Toggle -->
-          <div class="bg-slate-50/60 p-3 rounded-xl border border-slate-200/70 space-y-2">
+          <!-- Collections by Channel Strip with Lightweight Scope Toggle (Month | All) -->
+          <div class="bg-slate-50/70 p-3 rounded-xl border border-slate-200/70 space-y-2">
             <div class="flex items-center justify-between gap-2">
               <span class="font-bold text-[11px] text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                 <i class="ph ph-wallet text-indigo-900 text-sm"></i>
                 Collections by Channel
               </span>
-              <div class="inline-flex p-0.5 bg-slate-200/70 rounded-lg text-[10px] font-semibold">
-                <button id="scope-btn-month" onclick="app.setChannelScope('month')" class="px-2 py-0.5 rounded-md bg-white text-indigo-950 font-bold shadow-xs transition">Selected Month</button>
-                <button id="scope-btn-all" onclick="app.setChannelScope('all')" class="px-2 py-0.5 rounded-md text-slate-600 hover:text-slate-900 transition">All Time</button>
+              <div class="inline-flex p-0.5 bg-slate-200/80 rounded-lg text-[10px] font-semibold border border-slate-300/50">
+                <button id="scope-btn-month" onclick="app.setChannelScope('month')" class="px-2 py-0.5 rounded-md bg-white text-indigo-950 font-bold shadow-2xs transition">Month</button>
+                <button id="scope-btn-all" onclick="app.setChannelScope('all')" class="px-2 py-0.5 rounded-md text-slate-600 hover:text-slate-900 transition">All</button>
               </div>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5" id="payment-mode-stats"></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="payment-mode-stats"></div>
           </div>
 
-          <!-- Filter Chips with Integrated Icon-Only Pending Export -->
-          <div class="flex items-center justify-between gap-1.5 pt-0.5">
-            <div class="flex items-center gap-1.5">
-              <button id="rep-filter-all" onclick="app.setReportFilter('all')" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-900 text-white shadow-xs">
-                All (<span id="rep-cnt-all">0</span>)
-              </button>
-              <button id="rep-filter-paid" onclick="app.setReportFilter('paid')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">
-                Paid (<span id="rep-cnt-paid">0</span>)
-              </button>
-              <button id="rep-filter-pending" onclick="app.setReportFilter('pending')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200">
-                Pending (<span id="rep-cnt-pending">0</span>)
+          <!-- Integrated Subscriber Statement Section (Eliminates Orphan Look) -->
+          <div class="border-t border-slate-200/80 pt-3 space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-slate-800 flex items-center gap-1">
+                  <i class="ph ph-users-three text-indigo-900"></i>
+                  Subscribers
+                </span>
+                <!-- Clean Segmented Status Tabs -->
+                <div class="inline-flex p-0.5 bg-slate-100 rounded-lg text-xs font-semibold border border-slate-200/60">
+                  <button id="rep-filter-all" onclick="app.setReportFilter('all')" class="px-2.5 py-1 rounded-md text-xs font-bold bg-white text-indigo-950 shadow-2xs transition">
+                    All (<span id="rep-cnt-all">0</span>)
+                  </button>
+                  <button id="rep-filter-paid" onclick="app.setReportFilter('paid')" class="px-2.5 py-1 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 transition">
+                    Paid (<span id="rep-cnt-paid">0</span>)
+                  </button>
+                  <button id="rep-filter-pending" onclick="app.setReportFilter('pending')" class="px-2.5 py-1 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 transition">
+                    Pending (<span id="rep-cnt-pending">0</span>)
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Export Pending Button: Contextually docked right beside the list toolbar -->
+              <button id="rep-export-pending-btn" onclick="app.exportMonthlyPendingCSV()" class="hidden px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold items-center gap-1 shadow-2xs transition" title="Export Pending List CSV">
+                <i class="ph ph-file-csv text-sm"></i> Export Pending
               </button>
             </div>
-            
-            <!-- Compact Icon-Only Button: Visible Only on Pending -->
-            <button id="rep-export-pending-btn" onclick="app.exportMonthlyPendingCSV()" class="hidden p-1.5 bg-rose-700 hover:bg-rose-800 active:scale-95 text-white rounded-lg text-xs shadow-xs transition items-center justify-center" title="Export Pending List CSV" aria-label="Export Pending List">
-              <i class="ph ph-file-csv text-base"></i>
-            </button>
+
+            <!-- Statement Table -->
+            <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-2xs">
+              <table class="w-full text-left text-xs whitespace-nowrap">
+                <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                  <tr>
+                    <th class="p-2.5">ID</th>
+                    <th class="p-2.5">Subscriber</th>
+                    <th class="p-2.5 text-right">Scheduled EMI</th>
+                    <th class="p-2.5 text-right">Amount Paid</th>
+                    <th class="p-2.5">Payment Date</th>
+                    <th class="p-2.5">Payment Method</th>
+                    <th class="p-2.5">Received By</th>
+                    <th class="p-2.5 text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="report-statement-tbody" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
           </div>
 
-          <!-- Statement Table -->
-          <div class="overflow-x-auto rounded-xl border border-slate-100">
-            <table class="w-full text-left text-xs whitespace-nowrap">
-              <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
-                <tr>
-                  <th class="p-2.5">ID</th>
-                  <th class="p-2.5">Subscriber</th>
-                  <th class="p-2.5 text-right">Scheduled EMI</th>
-                  <th class="p-2.5 text-right">Amount Paid</th>
-                  <th class="p-2.5">Payment Date</th>
-                  <th class="p-2.5">Payment Method</th>
-                  <th class="p-2.5">Received By</th>
-                  <th class="p-2.5 text-center">Status</th>
-                </tr>
-              </thead>
-              <tbody id="report-statement-tbody" class="divide-y divide-slate-100"></tbody>
-            </table>
-          </div>
         </div>
       </section>
 
@@ -2140,12 +2150,12 @@
           const btn = document.getElementById(`rep-filter-${f}`);
           if (btn) {
             btn.className = f === filterType 
-              ? "px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-900 text-white shadow-xs" 
-              : "px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200";
+              ? "px-2.5 py-1 rounded-md text-xs font-bold bg-white text-indigo-950 shadow-2xs transition" 
+              : "px-2.5 py-1 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 transition";
           }
         });
 
-        // Toggle Icon-only Export Pending button: strictly visible when Pending filter is active
+        // Toggle Export Pending button: strictly visible when Pending filter is active
         const pendingExportBtn = document.getElementById('rep-export-pending-btn');
         if (pendingExportBtn) {
           if (filterType === 'pending') {
@@ -2166,10 +2176,10 @@
         const allBtn = document.getElementById('scope-btn-all');
         if (monthBtn && allBtn) {
           if (scope === 'month') {
-            monthBtn.className = "px-2 py-0.5 rounded-md bg-white text-indigo-950 font-bold shadow-xs transition";
+            monthBtn.className = "px-2 py-0.5 rounded-md bg-white text-indigo-950 font-bold shadow-2xs transition";
             allBtn.className = "px-2 py-0.5 rounded-md text-slate-600 hover:text-slate-900 transition";
           } else {
-            allBtn.className = "px-2 py-0.5 rounded-md bg-white text-indigo-950 font-bold shadow-xs transition";
+            allBtn.className = "px-2 py-0.5 rounded-md bg-white text-indigo-950 font-bold shadow-2xs transition";
             monthBtn.className = "px-2 py-0.5 rounded-md text-slate-600 hover:text-slate-900 transition";
           }
         }
@@ -2182,10 +2192,10 @@
         const totalMembers = this.members.length;
         const expectedTarget = (sch?.emi || 0) * totalMembers;
 
-        // Dynamic Header Title indicating installment and calendar month
+        // Dynamic Header Title: Compact to prevent wrapping on mobile
         const headingEl = document.getElementById('report-heading-title');
         if (headingEl) {
-          headingEl.innerText = `Monthly Collection Statement - Month ${monthNum} (${this.getMonthLabel(monthNum)})`;
+          headingEl.innerText = `Collection Report • Month ${monthNum}`;
         }
 
         const monthCols = this.collections.filter(c => c.month === monthNum);
@@ -2196,7 +2206,7 @@
         const reportData = [];
 
         this.members.forEach(m => {
-          const entry = monthCols.find(c => c.memberNo === m.memberNo);
+          const entry = monthCols.find(c => c.month === monthNum && c.memberNo === m.memberNo);
           const paid = entry ? Number(entry.amountPaid) : 0;
           let statusText = "Pending";
           let statusClass = "bg-rose-100 text-rose-800";
@@ -2303,7 +2313,7 @@
         this.notify(`Downloaded Month ${monthNum} collection statement`);
       }
 
-      // Exports pending defaulters list with centered headings (triggered via inline icon button)
+      // Exports pending defaulters list with centered headings (triggered via inline button)
       exportMonthlyPendingCSV() {
         const monthNum = this.reportSelectedMonth;
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
@@ -2376,7 +2386,7 @@
         if (!statsContainer) return;
         if (Object.keys(channelTotals).length === 0) {
           const label = this.channelReportScope === 'month' ? `Month ${this.reportSelectedMonth}` : 'the chit cycle';
-          statsContainer.innerHTML = `<div class="text-xs text-slate-400 py-1.5 col-span-2">No collections recorded for ${label}.</div>`;
+          statsContainer.innerHTML = `<div class="text-xs text-slate-400 py-1 col-span-2">No collections recorded for ${label}.</div>`;
           return;
         }
 
@@ -2384,7 +2394,7 @@
           const pct = grandTotal > 0 ? Math.round((amt / grandTotal) * 100) : 0;
           const isBank = channel.includes('Bank Transfer');
           return `
-            <div class="bg-white p-2.5 rounded-xl border border-slate-200/70 shadow-2xs">
+            <div class="bg-white p-2 rounded-lg border border-slate-200/70 shadow-2xs">
               <div class="flex justify-between text-[11px] font-semibold mb-1">
                 <span class="${isBank ? 'text-indigo-900 font-bold' : 'text-slate-700'} truncate pr-1">${channel}</span>
                 <span class="font-bold shrink-0 ${isBank ? 'text-indigo-900' : 'text-emerald-700'}">${this.formatINR(amt)} <span class="text-slate-400 font-normal">(${pct}%)</span></span>
