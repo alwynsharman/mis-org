@@ -472,7 +472,7 @@
               Pending (<span id="rep-cnt-pending">0</span>)
             </button>
             
-            <!-- Compact Icon-Only Button: Visible Only on Pending -->
+            <!-- Contextual Export Pending Button: visible strictly when Pending tab is clicked -->
             <button id="rep-export-pending-btn" onclick="app.exportMonthlyPendingCSV()" class="hidden p-1.5 bg-rose-700 hover:bg-rose-800 active:scale-95 text-white rounded-lg text-xs shadow-xs transition items-center justify-center" title="Export Pending List CSV" aria-label="Export Pending List">
               <i class="ph ph-file-csv text-base"></i>
             </button>
@@ -561,7 +561,7 @@
           </select>
         </div>
 
-        <!-- Foreman selection is enabled only for Admin; Foremen are locked to their own identity -->
+        <!-- Foreman selection: Enabled for Admin; Locked/Disabled for Foremen -->
         <div id="coll-foreman-container">
           <label id="coll-foreman-label" class="block text-xs font-semibold text-slate-500 mb-1">Received by Foreman</label>
           <select id="coll-foreman-select" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white font-medium disabled:bg-slate-100 disabled:text-slate-600 disabled:cursor-not-allowed">
@@ -1194,6 +1194,17 @@
 
               this.currentUser = user;
               this.userRole = (profile.role || "member").toLowerCase();
+
+              // Auto-sync Google Account displayName to Firestore document if missing or changed
+              if (user.displayName && (!profile.displayName || profile.displayName !== user.displayName)) {
+                profile.displayName = user.displayName;
+                try {
+                  await setDoc(doc(db, "users", user.uid), { displayName: user.displayName }, { merge: true });
+                } catch (e) {
+                  console.warn("Could not sync Google displayName to Firestore:", e);
+                }
+              }
+
               this.userProfile = profile;
               this.setAuthLoading(false);
               this.clearAuthError();
@@ -1398,15 +1409,24 @@
           const aucSnap = await getDocs(query(collection(db, "auctions"), where("chitId", "==", this.activeChitId)));
           this.auctions = aucSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-          // Extract formal display names from Firestore users collection
+          // Case-insensitive query directly reading saved displayName across all admin/foreman documents
           try {
-            const uSnap = await getDocs(query(collection(db, "users"), where("role", "in", ["foreman", "admin"])));
+            const uSnap = await getDocs(collection(db, "users"));
             this.foremenList = uSnap.docs
               .map(d => {
                 const u = d.data();
-                return (u.displayName || u.name || '').trim();
+                const role = (u.role || '').toString().trim().toLowerCase();
+                // Exclude only if explicitly set to subscriber/member
+                if (role === 'member') return null;
+
+                // Priority: exact displayName as saved in Firestore
+                const name = (u.displayName || u.DisplayName || u.name || u.fullName || u.displayname || '').toString().trim();
+                return name || null;
               })
-              .filter(name => name.length > 0);
+              .filter(name => name && name.length > 0);
+
+            // Deduplicate names in case multiple documents exist for the same user
+            this.foremenList = Array.from(new Set(this.foremenList));
           } catch(e) {
             console.warn("Could not fetch foremen display names:", e);
           }
@@ -1791,10 +1811,10 @@
         document.getElementById('coll-month').value = monthNum;
         document.getElementById('coll-amount').value = existing ? existing.amountPaid : defaultAmt;
         
-        // Resolve real user display name
-        const currentUserDisplayName = (this.userProfile?.displayName || this.currentUser.displayName || this.currentUser.email.split('@')[0]).trim();
+        // Resolve logged-in user display name directly
+        const currentUserDisplayName = (this.userProfile?.displayName || this.currentUser?.displayName || '').toString().trim();
 
-        // Build list guaranteed to include the logged in user
+        // Build guaranteed list of all 4 foremen/admins
         const optionsSet = new Set(this.foremenList);
         if (currentUserDisplayName) optionsSet.add(currentUserDisplayName);
         if (existing?.receivedBy && existing.receivedBy !== 'Main Bank Account') {
@@ -1808,17 +1828,17 @@
         document.getElementById('coll-method').value = currentMethod;
         this.onPaymentMethodChange(currentMethod);
 
-        // Security restriction: Dropdown is enabled for Admin only. Foremen are locked to their own identity.
+        // Security: Enabled for Admin; Locked/Disabled for Foremen
         if (this.userRole === 'admin') {
           fSelect.disabled = false;
           if (existing?.receivedBy && existing.receivedBy !== 'Main Bank Account') {
             fSelect.value = existing.receivedBy;
           } else {
-            fSelect.value = currentUserDisplayName;
+            fSelect.value = currentUserDisplayName || (fSelect.options[0]?.value || '');
           }
         } else {
           fSelect.disabled = true;
-          fSelect.value = currentUserDisplayName;
+          fSelect.value = currentUserDisplayName || (fSelect.options[0]?.value || '');
         }
 
         document.getElementById('coll-date').value = existing?.paymentDate || new Date().toISOString().split('T')[0];
@@ -1846,12 +1866,12 @@
         const existing = this.collections.find(c => c.month === monthNum && c.memberNo === memberNo);
 
         const method = document.getElementById('coll-method').value;
-        const currentUserDisplayName = (this.userProfile?.displayName || this.currentUser.displayName || this.currentUser.email.split('@')[0]).trim();
+        const currentUserDisplayName = (this.userProfile?.displayName || this.currentUser?.displayName || '').toString().trim();
 
-        // Backend security guarantee: only Admin can assign another Foreman; Foremen are enforced to their own name
+        // Backend security guarantee: Admin can assign another Foreman; Foremen are enforced to their own name
         const receivedBy = (this.userRole === 'admin')
           ? document.getElementById('coll-foreman-select').value
-          : currentUserDisplayName;
+          : (currentUserDisplayName || document.getElementById('coll-foreman-select').value);
 
         const payload = {
           chitId: this.activeChitId,
