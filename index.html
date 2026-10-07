@@ -561,9 +561,10 @@
           </select>
         </div>
 
+        <!-- Foreman selection is enabled only for Admin; Foremen are locked to their own identity -->
         <div id="coll-foreman-container">
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Received by Foreman</label>
-          <select id="coll-foreman-select" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white font-medium">
+          <label id="coll-foreman-label" class="block text-xs font-semibold text-slate-500 mb-1">Received by Foreman</label>
+          <select id="coll-foreman-select" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white font-medium disabled:bg-slate-100 disabled:text-slate-600 disabled:cursor-not-allowed">
           </select>
         </div>
 
@@ -709,7 +710,7 @@
             <span class="font-semibold text-slate-800 text-right truncate pl-2" id="rec-channel">-</span>
           </div>
           <div class="flex justify-between items-center py-2">
-            <span class="text-slate-500 font-medium shrink-0">Received By</span>
+            <span class="text-slate-500 font-medium shrink-0">Received / Verified By</span>
             <span class="font-semibold text-slate-800 text-right truncate pl-2" id="rec-recipient">-</span>
           </div>
         </div>
@@ -928,11 +929,11 @@
       }
 
       onPaymentMethodChange(val) {
-        const foremanContainer = document.getElementById('coll-foreman-container');
-        if (val === 'Bank Transfer to Main Account') {
-          foremanContainer.classList.add('hidden');
-        } else {
-          foremanContainer.classList.remove('hidden');
+        const label = document.getElementById('coll-foreman-label');
+        if (label) {
+          label.innerText = (val === 'Bank Transfer to Main Account') 
+            ? 'Verified / Recorded by Foreman' 
+            : 'Received by Foreman';
         }
       }
 
@@ -1015,7 +1016,7 @@
           ['Installment Period', this.cleanAscii(data.monthName)],
           ['Scheduled EMI', this.cleanAscii(data.scheduledEmi)],
           ['Payment Mode', this.cleanAscii(data.method)],
-          ['Received By', this.cleanAscii(data.recipient)]
+          ['Received / Verified By', this.cleanAscii(data.recipient)]
         ];
 
         let startY = bannerY + bannerHeight + 6;
@@ -1704,10 +1705,11 @@
 
           let channelBadge = "-";
           if (entry) {
+            const verifier = (entry.receivedBy && entry.receivedBy !== 'Main Bank Account') ? entry.receivedBy : (entry.recordedByName || 'Foreman');
             if (entry.paymentMethod === 'Bank Transfer to Main Account') {
-              channelBadge = `<span class="text-indigo-600 font-semibold">Bank A/c</span>`;
+              channelBadge = `<span class="text-indigo-600 font-semibold">Bank A/c (${verifier})</span>`;
             } else {
-              channelBadge = `<span class="text-amber-700 font-semibold">Cash/UPI (${entry.receivedBy || 'Foreman'})</span>`;
+              channelBadge = `<span class="text-amber-700 font-semibold">Cash/UPI (${verifier})</span>`;
             }
           }
 
@@ -1748,9 +1750,10 @@
 
           let channelDisplay = "-";
           if (entry) {
+            const verifier = (entry.receivedBy && entry.receivedBy !== 'Main Bank Account') ? entry.receivedBy : (entry.recordedByName || 'Foreman');
             channelDisplay = entry.paymentMethod === 'Bank Transfer to Main Account' 
-              ? 'Bank Transfer (Main Account)' 
-              : `Cash/UPI (${entry.receivedBy || 'Foreman'})`;
+              ? `Bank Transfer (${verifier})` 
+              : `Cash/UPI (${verifier})`;
           }
 
           return `
@@ -1788,22 +1791,34 @@
         document.getElementById('coll-month').value = monthNum;
         document.getElementById('coll-amount').value = existing ? existing.amountPaid : defaultAmt;
         
-        // Populate foreman selector with formal display names from Firestore
+        // Resolve real user display name
+        const currentUserDisplayName = (this.userProfile?.displayName || this.currentUser.displayName || this.currentUser.email.split('@')[0]).trim();
+
+        // Build list guaranteed to include the logged in user
+        const optionsSet = new Set(this.foremenList);
+        if (currentUserDisplayName) optionsSet.add(currentUserDisplayName);
+        if (existing?.receivedBy && existing.receivedBy !== 'Main Bank Account') {
+          optionsSet.add(existing.receivedBy);
+        }
+
         const fSelect = document.getElementById('coll-foreman-select');
-        fSelect.innerHTML = this.foremenList.map(fn => `<option value="${fn}">${fn}</option>`).join('');
+        fSelect.innerHTML = Array.from(optionsSet).map(fn => `<option value="${fn}">${fn}</option>`).join('');
 
         const currentMethod = existing ? existing.paymentMethod : "Cash / UPI to Foreman";
         document.getElementById('coll-method').value = currentMethod;
         this.onPaymentMethodChange(currentMethod);
 
-        if (existing?.receivedBy && existing.receivedBy !== 'Main Bank Account') {
-          fSelect.value = existing.receivedBy;
-        } else {
-          // Pre-select current logged in user's display name if present in list
-          const myDisplayName = (this.userProfile?.displayName || '').trim();
-          if (myDisplayName && Array.from(fSelect.options).some(opt => opt.value === myDisplayName)) {
-            fSelect.value = myDisplayName;
+        // Security restriction: Dropdown is enabled for Admin only. Foremen are locked to their own identity.
+        if (this.userRole === 'admin') {
+          fSelect.disabled = false;
+          if (existing?.receivedBy && existing.receivedBy !== 'Main Bank Account') {
+            fSelect.value = existing.receivedBy;
+          } else {
+            fSelect.value = currentUserDisplayName;
           }
+        } else {
+          fSelect.disabled = true;
+          fSelect.value = currentUserDisplayName;
         }
 
         document.getElementById('coll-date').value = existing?.paymentDate || new Date().toISOString().split('T')[0];
@@ -1831,12 +1846,12 @@
         const existing = this.collections.find(c => c.month === monthNum && c.memberNo === memberNo);
 
         const method = document.getElementById('coll-method').value;
-        const receivedBy = method === 'Bank Transfer to Main Account' 
-          ? 'Main Bank Account' 
-          : document.getElementById('coll-foreman-select').value;
+        const currentUserDisplayName = (this.userProfile?.displayName || this.currentUser.displayName || this.currentUser.email.split('@')[0]).trim();
 
-        // Use Firestore displayName for audit and collection tracking
-        const recorderDisplayName = this.userProfile?.displayName || this.currentUser.displayName || this.currentUser.email.split('@')[0];
+        // Backend security guarantee: only Admin can assign another Foreman; Foremen are enforced to their own name
+        const receivedBy = (this.userRole === 'admin')
+          ? document.getElementById('coll-foreman-select').value
+          : currentUserDisplayName;
 
         const payload = {
           chitId: this.activeChitId,
@@ -1848,7 +1863,7 @@
           paymentDate: document.getElementById('coll-date').value,
           remarks: document.getElementById('coll-remarks').value,
           recordedByUid: existing ? existing.recordedByUid : this.currentUser.uid,
-          recordedByName: recorderDisplayName,
+          recordedByName: currentUserDisplayName,
           updatedAt: new Date().toISOString()
         };
 
@@ -1878,6 +1893,7 @@
         const memClean = memberNo.replace(/\D/g, '').padStart(2, '0');
         const recId = `MISR/${memClean}/${mFormatted}`;
         const dateStr = this.formatDate(entry.paymentDate);
+        const verifier = (entry.receivedBy && entry.receivedBy !== 'Main Bank Account') ? entry.receivedBy : (entry.recordedByName || 'Foreman');
 
         this.currentReceiptData = {
           recId,
@@ -1890,7 +1906,7 @@
           amountPaid: this.formatINR(entry.amountPaid),
           rawAmount: entry.amountPaid,
           method: entry.paymentMethod,
-          recipient: entry.receivedBy || entry.recordedByName || 'Foreman',
+          recipient: verifier,
           date: dateStr
         };
 
@@ -2192,25 +2208,31 @@
           return;
         }
 
-        tbody.innerHTML = displayList.map(item => `
-          <tr class="hover:bg-slate-50 transition">
-            <td class="p-2.5 font-mono font-bold text-indigo-900">${item.member.memberNo}</td>
-            <td class="p-2.5 font-semibold text-slate-800">${item.member.name}</td>
-            <td class="p-2.5 text-right font-medium text-slate-600">${this.formatINR(sch.emi)}</td>
-            <td class="p-2.5 text-right font-extrabold ${item.paid > 0 ? 'text-emerald-600' : 'text-slate-300'}">
-              ${item.paid > 0 ? this.formatINR(item.paid) : '₹0'}
-            </td>
-            <td class="p-2.5 text-slate-600">${this.formatDate(item.entry?.paymentDate)}</td>
-            <td class="p-2.5 text-slate-700">${item.entry?.paymentMethod || '-'}</td>
-            <td class="p-2.5 text-slate-700 font-medium">${item.entry?.receivedBy || '-'}</td>
-            <td class="p-2.5 text-center">
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.statusClass}">${item.statusText}</span>
-            </td>
-          </tr>
-        `).join('');
+        tbody.innerHTML = displayList.map(item => {
+          const verifier = (item.entry?.receivedBy && item.entry?.receivedBy !== 'Main Bank Account') 
+            ? item.entry.receivedBy 
+            : (item.entry?.recordedByName || '-');
+
+          return `
+            <tr class="hover:bg-slate-50 transition">
+              <td class="p-2.5 font-mono font-bold text-indigo-900">${item.member.memberNo}</td>
+              <td class="p-2.5 font-semibold text-slate-800">${item.member.name}</td>
+              <td class="p-2.5 text-right font-medium text-slate-600">${this.formatINR(sch.emi)}</td>
+              <td class="p-2.5 text-right font-extrabold ${item.paid > 0 ? 'text-emerald-600' : 'text-slate-300'}">
+                ${item.paid > 0 ? this.formatINR(item.paid) : '₹0'}
+              </td>
+              <td class="p-2.5 text-slate-600">${this.formatDate(item.entry?.paymentDate)}</td>
+              <td class="p-2.5 text-slate-700">${item.entry?.paymentMethod || '-'}</td>
+              <td class="p-2.5 text-slate-700 font-medium">${verifier}</td>
+              <td class="p-2.5 text-center">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.statusClass}">${item.statusText}</span>
+              </td>
+            </tr>
+          `;
+        }).join('');
       }
 
-      // Exports full monthly statement with centered headings and without phone numbers
+      // Exports full monthly statement with centered headings and verified foreman name
       exportMonthlyReportCSV() {
         const monthNum = this.reportSelectedMonth;
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
@@ -2230,7 +2252,11 @@
           if (paid >= (sch?.emi || 0)) statusText = "Cleared";
           else if (paid > 0) statusText = "Partial";
 
-          csv += `"${m.memberNo}","${m.name}","${sch.emi}","${paid}","${entry?.paymentDate ? this.formatDate(entry.paymentDate) : '-'}","${entry?.paymentMethod || '-'}","${entry?.receivedBy || '-'}","${statusText}"\n`;
+          const verifier = (entry?.receivedBy && entry?.receivedBy !== 'Main Bank Account') 
+            ? entry.receivedBy 
+            : (entry?.recordedByName || '-');
+
+          csv += `"${m.memberNo}","${m.name}","${sch.emi}","${paid}","${entry?.paymentDate ? this.formatDate(entry.paymentDate) : '-'}","${entry?.paymentMethod || '-'}","${verifier}","${statusText}"\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -2308,7 +2334,7 @@
           if (c.paymentMethod === 'Bank Transfer to Main Account' || c.paymentMethod === 'Bank Transfer') {
             channelKey = "Bank Transfer (Main Account)";
           } else {
-            const foremanName = c.receivedBy || c.recordedByName || 'Foreman (General)';
+            const foremanName = (c.receivedBy && c.receivedBy !== 'Main Bank Account') ? c.receivedBy : (c.recordedByName || 'Foreman (General)');
             channelKey = `Cash / UPI (${foremanName})`;
           }
 
