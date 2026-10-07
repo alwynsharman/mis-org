@@ -604,12 +604,12 @@
     </div>
   </div>
 
-  <!-- Subscriber Modal (Default India +91) -->
+  <!-- Subscriber Modal (Edit for Admin / Read-only Details for Foreman) -->
   <div id="member-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto">
       <div class="flex justify-between items-start mb-3">
         <h3 class="text-base font-bold text-slate-900" id="member-modal-title">Subscriber Record</h3>
-        <button onclick="app.closeMemberModal()" class="p-1 rounded-full text-slate-400">
+        <button onclick="app.closeMemberModal()" class="p-1 rounded-full text-slate-400 hover:text-slate-600">
           <i class="ph ph-x text-lg"></i>
         </button>
       </div>
@@ -618,12 +618,12 @@
         <input type="hidden" id="mem-edit-id" />
         
         <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Member ID (Auto-Generated)</label>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Member ID</label>
           <input type="text" id="mem-number" readonly required class="w-full border rounded-xl px-3 py-2 text-sm font-mono font-bold bg-slate-100 text-indigo-950 cursor-not-allowed select-none" />
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-500 mb-1">Subscriber Full Name</label>
-          <input type="text" id="mem-name" required placeholder="Full Name" class="w-full border rounded-xl px-3 py-2 text-sm" />
+          <input type="text" id="mem-name" required placeholder="Full Name" class="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
         </div>
         
         <!-- Phone Number with Fixed +91 Prefix -->
@@ -637,16 +637,16 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-500 mb-1">Google Email (For Passbook Access)</label>
-          <input type="email" id="mem-email" class="w-full border rounded-xl px-3 py-2 text-sm" placeholder="member@gmail.com" />
+          <input type="email" id="mem-email" class="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" placeholder="member@gmail.com" />
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Address (Optional)</label>
-          <input type="text" id="mem-address" placeholder="Address" class="w-full border rounded-xl px-3 py-2 text-sm" />
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Address</label>
+          <input type="text" id="mem-address" placeholder="Address" class="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
         </div>
 
         <div class="flex gap-2 pt-2">
-          <button type="button" onclick="app.closeMemberModal()" class="w-1/2 py-2.5 border rounded-xl text-xs font-semibold text-slate-600">Cancel</button>
-          <button type="submit" class="w-1/2 py-2.5 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow">Save Member</button>
+          <button type="button" id="mem-cancel-btn" onclick="app.closeMemberModal()" class="w-1/2 py-2.5 border rounded-xl text-xs font-semibold text-slate-600">Cancel</button>
+          <button type="submit" id="mem-save-btn" class="w-1/2 py-2.5 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow">Save Member</button>
         </div>
       </form>
     </div>
@@ -1503,6 +1503,7 @@
 
       renderMembers(list = this.members) {
         const isAdmin = this.userRole === 'admin';
+        const isForeman = this.userRole === 'foreman';
         const isFull = this.members.length >= 40;
 
         const countPill = document.getElementById('member-count-pill');
@@ -1531,10 +1532,10 @@
           const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.amountPaid) || 0), 0);
           return `
             <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-              <div class="space-y-0.5">
+              <div class="space-y-0.5 cursor-pointer" onclick="app.openMemberModal('${m.memberNo}')">
                 <div class="flex items-center gap-1.5">
                   <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-1.5 py-0.5 rounded">${m.memberNo}</span>
-                  <span class="font-bold text-xs text-slate-800">${m.name}</span>
+                  <span class="font-bold text-xs text-slate-800 hover:text-indigo-900">${m.name}</span>
                 </div>
                 <div class="text-[11px] text-slate-500">${m.phone}</div>
                 <div class="text-[11px] text-emerald-600 font-bold">Total Paid: ${this.formatINR(totalPaid)}</div>
@@ -1545,9 +1546,11 @@
                   <i class="ph ph-book-open text-sm"></i> Ledger
                 </button>
                 ${isAdmin ? `
-                  <button onclick="app.openMemberModal('${m.memberNo}')" class="p-2 rounded-xl bg-slate-100 text-slate-700 active:scale-90" title="Edit"><i class="ph ph-pencil-simple"></i></button>
-                  <button onclick="app.deleteMember('${m.memberNo}')" class="p-2 rounded-xl bg-rose-50 text-rose-600 active:scale-90" title="Delete"><i class="ph ph-trash"></i></button>
-                ` : ''}
+                  <button onclick="app.openMemberModal('${m.memberNo}')" class="p-2 rounded-xl bg-slate-100 text-slate-700 active:scale-90" title="Edit Subscriber"><i class="ph ph-pencil-simple"></i></button>
+                  <button onclick="app.deleteMember('${m.memberNo}')" class="p-2 rounded-xl bg-rose-50 text-rose-600 active:scale-90" title="Delete Subscriber"><i class="ph ph-trash"></i></button>
+                ` : (isForeman ? `
+                  <button onclick="app.openMemberModal('${m.memberNo}')" class="p-2 rounded-xl bg-slate-100 text-slate-700 active:scale-90" title="View Details"><i class="ph ph-eye"></i></button>
+                ` : '')}
               </div>
             </div>
           `;
@@ -1558,8 +1561,8 @@
           const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.amountPaid) || 0), 0);
           return `
             <tr class="hover:bg-slate-50">
-              <td class="p-3 font-mono font-bold text-indigo-900">${m.memberNo}</td>
-              <td class="p-3 font-semibold text-slate-800">${m.name}</td>
+              <td class="p-3 font-mono font-bold text-indigo-900 cursor-pointer" onclick="app.openMemberModal('${m.memberNo}')">${m.memberNo}</td>
+              <td class="p-3 font-semibold text-slate-800 cursor-pointer hover:text-indigo-900" onclick="app.openMemberModal('${m.memberNo}')">${m.name}</td>
               <td class="p-3 text-slate-600">${m.phone}</td>
               <td class="p-3 text-center">${m.isPrized ? `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-bold">Month ${m.prizedMonth}</span>` : '<span class="text-slate-400">Non-prized</span>'}</td>
               <td class="p-3 text-right font-bold text-emerald-600">${this.formatINR(totalPaid)}</td>
@@ -1568,9 +1571,11 @@
                   <i class="ph ph-book-open"></i> Passbook
                 </button>
                 ${isAdmin ? `
-                  <button onclick="app.openMemberModal('${m.memberNo}')" class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50" title="Edit"><i class="ph ph-pencil-simple"></i></button>
-                  <button onclick="app.deleteMember('${m.memberNo}')" class="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50" title="Delete"><i class="ph ph-trash"></i></button>
-                ` : ''}
+                  <button onclick="app.openMemberModal('${m.memberNo}')" class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50" title="Edit Subscriber"><i class="ph ph-pencil-simple"></i></button>
+                  <button onclick="app.deleteMember('${m.memberNo}')" class="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50" title="Delete Subscriber"><i class="ph ph-trash"></i></button>
+                ` : (isForeman ? `
+                  <button onclick="app.openMemberModal('${m.memberNo}')" class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50" title="View Details"><i class="ph ph-eye"></i></button>
+                ` : '')}
               </td>
             </tr>
           `;
@@ -1614,8 +1619,9 @@
       }
 
       openMemberModal(memberNo = null) {
-        if (this.userRole !== 'admin') {
-          this.notify("Admin privileges required to manage subscribers.", true);
+        // Prevent Foremen from adding new members
+        if (!memberNo && this.userRole !== 'admin') {
+          this.notify("Admin privileges required to add new subscribers.", true);
           return;
         }
 
@@ -1624,22 +1630,51 @@
           return;
         }
 
+        const isAdmin = this.userRole === 'admin';
         document.getElementById('member-form').reset();
         document.getElementById('mem-edit-id').value = "";
+
+        const nameInput = document.getElementById('mem-name');
+        const phoneInput = document.getElementById('mem-phone');
+        const emailInput = document.getElementById('mem-email');
+        const addressInput = document.getElementById('mem-address');
+        const cancelBtn = document.getElementById('mem-cancel-btn');
+        const saveBtn = document.getElementById('mem-save-btn');
+
+        // Toggle editability and buttons based on user role
+        if (!isAdmin) {
+          // Read-only inspection mode for Foreman
+          nameInput.readOnly = true;
+          phoneInput.readOnly = true;
+          emailInput.readOnly = true;
+          addressInput.readOnly = true;
+          saveBtn.classList.add('hidden');
+          cancelBtn.className = "w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition";
+          cancelBtn.innerText = "Close";
+        } else {
+          // Editable mode for Admin
+          nameInput.readOnly = false;
+          phoneInput.readOnly = false;
+          emailInput.readOnly = false;
+          addressInput.readOnly = false;
+          saveBtn.classList.remove('hidden');
+          cancelBtn.className = "w-1/2 py-2.5 border rounded-xl text-xs font-semibold text-slate-600";
+          cancelBtn.innerText = "Cancel";
+        }
         
         if (memberNo) {
           const m = this.members.find(x => x.memberNo === memberNo);
-          document.getElementById('member-modal-title').innerText = `Edit Subscriber ${m.memberNo}`;
+          document.getElementById('member-modal-title').innerText = isAdmin ? `Edit Subscriber ${m.memberNo}` : `Subscriber Details (${m.memberNo})`;
           document.getElementById('mem-edit-id').value = m.memberNo;
           document.getElementById('mem-number').value = m.memberNo;
-          document.getElementById('mem-name').value = m.name;
+          nameInput.value = m.name;
           
           // Extracts last 10 digits cleanly without duplicating +91 in UI
           const tenDigits = (m.phone || '').replace(/\D/g, '').slice(-10);
-          document.getElementById('mem-phone').value = tenDigits;
+          phoneInput.value = tenDigits;
 
-          document.getElementById('mem-email').value = m.email || '';
-          document.getElementById('mem-address').value = m.address || '';
+          emailInput.value = m.email || '';
+          addressInput.value = m.address || '';
         } else {
           const nextId = this.generateNextMemberId();
           if (!nextId) {
@@ -1648,7 +1683,7 @@
           }
           document.getElementById('member-modal-title').innerText = `Add New Subscriber (${nextId})`;
           document.getElementById('mem-number').value = nextId;
-          document.getElementById('mem-phone').value = "";
+          phoneInput.value = "";
         }
         document.getElementById('member-modal').classList.remove('hidden');
       }
@@ -2206,7 +2241,7 @@
         const reportData = [];
 
         this.members.forEach(m => {
-          const entry = monthCols.find(c => c.month === monthNum && c.memberNo === m.memberNo);
+          const entry = monthCols.find(c => c.memberNo === m.memberNo);
           const paid = entry ? Number(entry.amountPaid) : 0;
           let statusText = "Pending";
           let statusClass = "bg-rose-100 text-rose-800";
