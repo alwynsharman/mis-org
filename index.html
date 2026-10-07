@@ -472,7 +472,7 @@
               Pending (<span id="rep-cnt-pending">0</span>)
             </button>
             
-            <!-- Contextual Export Pending Button: visible strictly when Pending tab is clicked -->
+            <!-- Compact Icon-Only Button: Visible Only on Pending -->
             <button id="rep-export-pending-btn" onclick="app.exportMonthlyPendingCSV()" class="hidden p-1.5 bg-rose-700 hover:bg-rose-800 active:scale-95 text-white rounded-lg text-xs shadow-xs transition items-center justify-center" title="Export Pending List CSV" aria-label="Export Pending List">
               <i class="ph ph-file-csv text-base"></i>
             </button>
@@ -561,7 +561,7 @@
           </select>
         </div>
 
-        <!-- Foreman selection: Enabled for Admin; Locked/Disabled for Foremen -->
+        <!-- Foreman selection: Enabled only for Admin; Foremen are locked to their own identity -->
         <div id="coll-foreman-container">
           <label id="coll-foreman-label" class="block text-xs font-semibold text-slate-500 mb-1">Received by Foreman</label>
           <select id="coll-foreman-select" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white font-medium disabled:bg-slate-100 disabled:text-slate-600 disabled:cursor-not-allowed">
@@ -1174,7 +1174,7 @@
                   if (matchedMember) {
                     profile = {
                       role: 'member',
-                      displayName: matchedMember.data().name || user.displayName || 'Subscriber',
+                      displayName: matchedMember.data().name || 'Subscriber',
                       email: cleanEmail
                     };
                   }
@@ -1195,16 +1195,7 @@
               this.currentUser = user;
               this.userRole = (profile.role || "member").toLowerCase();
 
-              // Auto-sync Google Account displayName to Firestore document if missing or changed
-              if (user.displayName && (!profile.displayName || profile.displayName !== user.displayName)) {
-                profile.displayName = user.displayName;
-                try {
-                  await setDoc(doc(db, "users", user.uid), { displayName: user.displayName }, { merge: true });
-                } catch (e) {
-                  console.warn("Could not sync Google displayName to Firestore:", e);
-                }
-              }
-
+              // Strictly preserve Firestore displayName without ever overwriting with Google Auth full name
               this.userProfile = profile;
               this.setAuthLoading(false);
               this.clearAuthError();
@@ -1281,8 +1272,8 @@
         document.getElementById('app-container').classList.remove('hidden');
         document.getElementById('user-profile-widget').classList.remove('hidden');
 
-        // Prefer Firestore displayName, then Google displayName, then email prefix
-        const displayName = this.userProfile?.displayName || this.currentUser.displayName || this.currentUser.email.split('@')[0];
+        // Strictly prioritize Firestore displayName, falling back only to email prefix
+        const displayName = (this.userProfile?.displayName || this.userProfile?.name || this.currentUser.email.split('@')[0]).trim();
         const initial = displayName.charAt(0).toUpperCase();
 
         document.getElementById('user-avatar-initial').innerText = initial;
@@ -1409,23 +1400,23 @@
           const aucSnap = await getDocs(query(collection(db, "auctions"), where("chitId", "==", this.activeChitId)));
           this.auctions = aucSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-          // Case-insensitive query directly reading saved displayName across all admin/foreman documents
+          // Resilient Foremen retrieval: Directly extracts saved displayName across all admin/foreman documents
           try {
             const uSnap = await getDocs(collection(db, "users"));
             this.foremenList = uSnap.docs
               .map(d => {
                 const u = d.data();
                 const role = (u.role || '').toString().trim().toLowerCase();
-                // Exclude only if explicitly set to subscriber/member
+                // Exclude only subscribers/members
                 if (role === 'member') return null;
 
-                // Priority: exact displayName as saved in Firestore
-                const name = (u.displayName || u.DisplayName || u.name || u.fullName || u.displayname || '').toString().trim();
+                // Priority: Firestore saved displayName -> name -> email prefix (ensuring all 4 users always appear)
+                const name = (u.displayName || u.DisplayName || u.name || (u.email ? u.email.split('@')[0] : '')).toString().trim();
                 return name || null;
               })
               .filter(name => name && name.length > 0);
 
-            // Deduplicate names in case multiple documents exist for the same user
+            // Deduplicate names
             this.foremenList = Array.from(new Set(this.foremenList));
           } catch(e) {
             console.warn("Could not fetch foremen display names:", e);
@@ -1811,12 +1802,12 @@
         document.getElementById('coll-month').value = monthNum;
         document.getElementById('coll-amount').value = existing ? existing.amountPaid : defaultAmt;
         
-        // Resolve logged-in user display name directly
-        const currentUserDisplayName = (this.userProfile?.displayName || this.currentUser?.displayName || '').toString().trim();
+        // Strictly resolve logged-in user display name from Firestore profile
+        const myDisplayName = (this.userProfile?.displayName || this.userProfile?.name || this.currentUser.email.split('@')[0]).trim();
 
-        // Build guaranteed list of all 4 foremen/admins
+        // Build list guaranteed to include all foremen and current user
         const optionsSet = new Set(this.foremenList);
-        if (currentUserDisplayName) optionsSet.add(currentUserDisplayName);
+        if (myDisplayName) optionsSet.add(myDisplayName);
         if (existing?.receivedBy && existing.receivedBy !== 'Main Bank Account') {
           optionsSet.add(existing.receivedBy);
         }
@@ -1834,11 +1825,11 @@
           if (existing?.receivedBy && existing.receivedBy !== 'Main Bank Account') {
             fSelect.value = existing.receivedBy;
           } else {
-            fSelect.value = currentUserDisplayName || (fSelect.options[0]?.value || '');
+            fSelect.value = myDisplayName || (fSelect.options[0]?.value || '');
           }
         } else {
           fSelect.disabled = true;
-          fSelect.value = currentUserDisplayName || (fSelect.options[0]?.value || '');
+          fSelect.value = myDisplayName || (fSelect.options[0]?.value || '');
         }
 
         document.getElementById('coll-date').value = existing?.paymentDate || new Date().toISOString().split('T')[0];
@@ -1866,12 +1857,12 @@
         const existing = this.collections.find(c => c.month === monthNum && c.memberNo === memberNo);
 
         const method = document.getElementById('coll-method').value;
-        const currentUserDisplayName = (this.userProfile?.displayName || this.currentUser?.displayName || '').toString().trim();
+        const myDisplayName = (this.userProfile?.displayName || this.userProfile?.name || this.currentUser.email.split('@')[0]).trim();
 
-        // Backend security guarantee: Admin can assign another Foreman; Foremen are enforced to their own name
+        // Backend security guarantee: Admin can choose; Foreman is locked to their own displayName
         const receivedBy = (this.userRole === 'admin')
           ? document.getElementById('coll-foreman-select').value
-          : (currentUserDisplayName || document.getElementById('coll-foreman-select').value);
+          : myDisplayName;
 
         const payload = {
           chitId: this.activeChitId,
@@ -1883,7 +1874,7 @@
           paymentDate: document.getElementById('coll-date').value,
           remarks: document.getElementById('coll-remarks').value,
           recordedByUid: existing ? existing.recordedByUid : this.currentUser.uid,
-          recordedByName: currentUserDisplayName,
+          recordedByName: myDisplayName,
           updatedAt: new Date().toISOString()
         };
 
