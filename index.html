@@ -208,7 +208,7 @@
         <div class="bg-gradient-to-br from-indigo-900 to-indigo-950 text-white rounded-2xl p-5 shadow flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <span class="px-2 py-0.5 rounded bg-indigo-800 text-amber-300 font-bold text-[10px] uppercase">Chit Group A</span>
-            <h3 class="text-base sm:lg font-bold mt-1">₹5,00,000 • 40 Subscribers • 41 Months</h3>
+            <h3 class="text-base sm:text-lg font-bold mt-1">₹5,00,000 • 40 Subscribers • 41 Months</h3>
             <p class="text-xs text-indigo-200 mt-0.5">Start: Oct 2026. Month 1 (Foreman: ₹5,00,000), Month 10 (Special: ₹5,00,000).</p>
           </div>
           <button onclick="app.navigate('collections')" class="w-full sm:w-auto px-5 py-2.5 bg-amber-400 hover:bg-amber-300 active:scale-95 text-indigo-950 font-bold rounded-xl text-xs sm:text-sm shadow-sm transition">
@@ -255,7 +255,7 @@
               <h2 class="text-base sm:text-lg font-bold text-slate-900">Member Directory</h2>
               <span id="member-count-pill" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-900 border border-indigo-100">0 / 40</span>
             </div>
-            <p class="text-xs text-slate-500 mt-0.5">Subscriber records and passbook ledgers</p>
+            <p class="text-xs text-slate-500 mt-0.5">Subscriber records, joint shares & ledgers</p>
           </div>
 
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -282,7 +282,7 @@
               <tr>
                 <th class="p-3">ID</th>
                 <th class="p-3">Subscriber</th>
-                <th class="p-3">Phone</th>
+                <th class="p-3">Contact</th>
                 <th class="p-3 text-center">Prized Month</th>
                 <th class="p-3 text-right">Total Paid</th>
                 <th class="p-3 text-right">Actions</th>
@@ -368,7 +368,7 @@
         </div>
       </section>
 
-      <!-- 5. MONTHLY COLLECTIONS -->
+      <!-- 5. MONTHLY COLLECTIONS (Compact & Beautified) -->
       <section id="view-collections" class="space-y-3 hidden">
         <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
@@ -381,8 +381,10 @@
           </div>
         </div>
 
-        <div id="collection-mobile-cards" class="sm:hidden space-y-2.5"></div>
+        <!-- Mobile View: Beautified 2-Row Compact Cards -->
+        <div id="collection-mobile-cards" class="sm:hidden space-y-2"></div>
 
+        <!-- Desktop View: Sleek Table -->
         <div class="hidden sm:block bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
           <table class="w-full text-left text-xs">
             <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
@@ -391,10 +393,10 @@
                 <th class="p-3">Subscriber Name</th>
                 <th class="p-3 text-right">EMI</th>
                 <th class="p-3 text-right">Total Paid</th>
-                <th class="p-3 text-right">Balance Due</th>
-                <th class="p-3">Payment Channel</th>
-                <th class="p-3">Date</th>
-                <th class="p-3 text-right">Receipts & Action</th>
+                <th class="p-3 text-right">Due</th>
+                <th class="p-3">Channel / Last Collector</th>
+                <th class="p-3 text-center">Receipts</th>
+                <th class="p-3 text-right">Action</th>
               </tr>
             </thead>
             <tbody id="collection-desktop-tbody" class="divide-y divide-slate-100"></tbody>
@@ -424,7 +426,6 @@
       <!-- 7. RESTRUCTURED & CLEAN REPORTS -->
       <section id="view-reports" class="space-y-3.5 hidden">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-3.5">
-          <!-- Top Bar: Title + Month Select + Export Statement -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-3">
             <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2 min-w-0">
               <i class="ph ph-receipt text-indigo-900 text-lg shrink-0"></i>
@@ -547,9 +548,9 @@
   </div>
 
   <!-- ================= MODALS ================= -->
-  <!-- Record Collection Modal (Multi-Tranche Ledger) -->
+  <!-- Record Collection Modal (Multi-Tranche & Joint Split Support) -->
   <div id="collection-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto space-y-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto space-y-3.5">
       <div class="flex justify-between items-start">
         <div>
           <h3 class="text-base font-bold text-slate-900" id="coll-modal-title">Record Payment</h3>
@@ -576,10 +577,18 @@
         </div>
       </div>
 
+      <!-- Joint Co-Payers Status Banner (Visible only for Joint Tickets) -->
+      <div id="coll-joint-status-box" class="hidden bg-indigo-50/70 border border-indigo-100 rounded-xl p-2.5 space-y-1.5 text-xs">
+        <span class="text-[10px] font-bold text-indigo-950 uppercase tracking-wider flex items-center gap-1">
+          <i class="ph ph-users-three"></i> Joint Share Allocation (50–50 Split)
+        </span>
+        <div class="grid grid-cols-2 gap-2 text-[11px]" id="coll-joint-pills-container"></div>
+      </div>
+
       <!-- List of Recorded Payments for this Month -->
-      <div class="space-y-2">
-        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Recorded Payments for Month</span>
-        <div id="coll-tranches-list" class="space-y-2"></div>
+      <div class="space-y-1.5">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Recorded Payments for Month</span>
+        <div id="coll-tranches-list" class="space-y-1.5"></div>
       </div>
 
       <!-- Locked Banner when Full Payment is Cleared -->
@@ -587,7 +596,7 @@
         <div class="flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-900">
           <i class="ph ph-check-circle text-base text-emerald-600"></i> Installment Cleared (Nil Due)
         </div>
-        <p class="text-[11px] text-emerald-700">Full payment received for this month. No further receipts can be added.</p>
+        <p class="text-[11px] text-emerald-700">Full payment received for this ticket. No further receipts can be added.</p>
       </div>
 
       <!-- Add New Payment Form (Active only when balanceDue > 0) -->
@@ -596,40 +605,45 @@
         <input type="hidden" id="coll-month" />
 
         <div class="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
-          <i class="ph ph-plus-circle text-base text-indigo-600"></i> Add New Payment Tranche
+          <i class="ph ph-plus-circle text-base text-indigo-600"></i> Add Payment Tranche
+        </div>
+
+        <!-- Co-Payer Selector for Joint Tickets -->
+        <div id="coll-joint-select-container" class="hidden">
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Paying Subscriber / Partner</label>
+          <select id="coll-joint-payer-select" onchange="app.onJointPayerChange()" class="w-full border rounded-xl px-3 py-2 text-xs bg-white font-medium focus:ring-2 focus:ring-indigo-600"></select>
         </div>
 
         <div>
           <label class="block text-xs font-semibold text-slate-500 mb-1">Amount to Add (₹)</label>
-          <input type="number" id="coll-amount" required step="any" min="1" class="w-full border rounded-xl px-3 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+          <input type="number" id="coll-amount" required step="any" min="1" class="w-full border rounded-xl px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-600" />
         </div>
 
         <div>
           <label class="block text-xs font-semibold text-slate-500 mb-1">Payment Method</label>
-          <select id="coll-method" onchange="app.onPaymentMethodChange(this.value)" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white font-medium">
+          <select id="coll-method" onchange="app.onPaymentMethodChange(this.value)" class="w-full border rounded-xl px-3 py-2 text-xs bg-white font-medium">
             <option value="Cash / UPI to Foreman">Cash or UPI to Foreman</option>
             <option value="Bank Transfer to Main Account">Bank Transfer to Main Account</option>
           </select>
         </div>
 
-        <!-- Foreman selection: Enabled only for Admin; Foremen locked to self -->
         <div id="coll-foreman-container">
           <label id="coll-foreman-label" class="block text-xs font-semibold text-slate-500 mb-1">Received by Foreman</label>
-          <select id="coll-foreman-select" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white font-medium disabled:bg-slate-100 disabled:text-slate-600 disabled:cursor-not-allowed">
+          <select id="coll-foreman-select" class="w-full border rounded-xl px-3 py-2 text-xs bg-white font-medium disabled:bg-slate-100 disabled:text-slate-600 disabled:cursor-not-allowed">
           </select>
         </div>
 
         <div>
           <label class="block text-xs font-semibold text-slate-500 mb-1">Payment Date</label>
-          <input type="date" id="coll-date" required class="w-full border rounded-xl px-3 py-2.5 text-sm" />
+          <input type="date" id="coll-date" required class="w-full border rounded-xl px-3 py-2 text-xs" />
         </div>
 
         <div>
           <label class="block text-xs font-semibold text-slate-500 mb-1">UTR / Cheque No / Remarks</label>
-          <input type="text" id="coll-remarks" placeholder="Optional notes or UTR" class="w-full border rounded-xl px-3 py-2.5 text-sm" />
+          <input type="text" id="coll-remarks" placeholder="Optional notes or UTR" class="w-full border rounded-xl px-3 py-2 text-xs" />
         </div>
 
-        <div class="flex gap-2 pt-2">
+        <div class="flex gap-2 pt-1">
           <button type="button" onclick="app.closeCollectionModal()" class="w-1/2 py-2.5 border rounded-xl text-xs font-semibold text-slate-600">Close</button>
           <button type="submit" id="coll-submit-btn" class="w-1/2 py-2.5 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow">Add Payment</button>
         </div>
@@ -637,9 +651,9 @@
     </div>
   </div>
 
-  <!-- Subscriber Modal -->
+  <!-- Subscriber Modal (Single & Joint Ticket Profiles) -->
   <div id="member-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto">
+    <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto">
       <div class="flex justify-between items-start mb-3">
         <h3 class="text-base font-bold text-slate-900" id="member-modal-title">Subscriber Record</h3>
         <button onclick="app.closeMemberModal()" class="p-1 rounded-full text-slate-400 hover:text-slate-600">
@@ -647,36 +661,77 @@
         </button>
       </div>
 
-      <form id="member-form" onsubmit="app.saveMember(event)" class="space-y-3">
+      <form id="member-form" onsubmit="app.saveMember(event)" class="space-y-3.5">
         <input type="hidden" id="mem-edit-id" />
         
         <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Member ID</label>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Member Identifier</label>
           <input type="text" id="mem-number" readonly required class="w-full border rounded-xl px-3 py-2 text-sm font-mono font-bold bg-slate-100 text-indigo-950 cursor-not-allowed select-none" />
         </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Subscriber Full Name</label>
-          <input type="text" id="mem-name" required placeholder="Full Name" class="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+
+        <!-- Joint Ticket Toggle Switch -->
+        <div class="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100 flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-indigo-950 block">Joint Ticket (50–50 Shared)</span>
+            <span class="text-[10px] text-indigo-600">Split ticket between two subscribers</span>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="mem-joint-toggle" onchange="app.onJointToggleChange()" class="sr-only peer" disabled />
+            <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+          </label>
         </div>
-        
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Phone Number</label>
-          <div class="flex rounded-xl shadow-xs">
-            <span class="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-slate-300 bg-slate-100 text-slate-600 text-xs font-bold select-none">+91</span>
-            <input type="tel" id="mem-phone" required maxlength="10" placeholder="9876543210" class="w-full border border-slate-300 rounded-r-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+
+        <!-- 1. Single Member Section -->
+        <div id="mem-single-fields" class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Subscriber Full Name</label>
+            <input type="text" id="mem-name" required placeholder="Full Name" class="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Phone Number</label>
+            <div class="flex rounded-xl shadow-xs">
+              <span class="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-slate-300 bg-slate-100 text-slate-600 text-xs font-bold select-none">+91</span>
+              <input type="tel" id="mem-phone" maxlength="10" placeholder="9876543210" class="w-full border border-slate-300 rounded-r-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Google Email (Passbook Sign-in)</label>
+            <input type="email" id="mem-email" class="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" placeholder="subscriber@gmail.com" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Physical Address</label>
+            <input type="text" id="mem-address" placeholder="Address" class="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
           </div>
         </div>
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Google Email (For Passbook Access)</label>
-          <input type="email" id="mem-email" class="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" placeholder="member@gmail.com" />
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Address</label>
-          <input type="text" id="mem-address" placeholder="Address" class="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+        <!-- 2. Joint Members Section (Co-Payer 1 & 2) -->
+        <div id="mem-joint-fields" class="space-y-3 hidden">
+          <!-- Co-Payer 1 -->
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2">
+            <span class="text-[10px] font-extrabold uppercase tracking-wider text-indigo-900 block">Co-Payer 1 (50% Share)</span>
+            <input type="text" id="mem-cp1-name" placeholder="Full Name" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white" />
+            <div class="flex rounded-lg shadow-2xs">
+              <span class="inline-flex items-center px-2.5 rounded-l-lg border border-r-0 border-slate-300 bg-slate-100 text-slate-600 text-[11px] font-bold select-none">+91</span>
+              <input type="tel" id="mem-cp1-phone" maxlength="10" placeholder="Phone Number" class="w-full border border-slate-300 rounded-r-lg px-2.5 py-1.5 text-xs bg-white" />
+            </div>
+            <input type="email" id="mem-cp1-email" placeholder="Google Email (for Passbook login)" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white" />
+            <input type="text" id="mem-cp1-address" placeholder="Address" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white" />
+          </div>
+
+          <!-- Co-Payer 2 -->
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2">
+            <span class="text-[10px] font-extrabold uppercase tracking-wider text-indigo-900 block">Co-Payer 2 (50% Share)</span>
+            <input type="text" id="mem-cp2-name" placeholder="Full Name" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white" />
+            <div class="flex rounded-lg shadow-2xs">
+              <span class="inline-flex items-center px-2.5 rounded-l-lg border border-r-0 border-slate-300 bg-slate-100 text-slate-600 text-[11px] font-bold select-none">+91</span>
+              <input type="tel" id="mem-cp2-phone" maxlength="10" placeholder="Phone Number" class="w-full border border-slate-300 rounded-r-lg px-2.5 py-1.5 text-xs bg-white" />
+            </div>
+            <input type="email" id="mem-cp2-email" placeholder="Google Email (for Passbook login)" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white" />
+            <input type="text" id="mem-cp2-address" placeholder="Address" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white" />
+          </div>
         </div>
 
-        <div class="flex items-center gap-2 pt-2" id="mem-modal-actions">
+        <div class="flex items-center gap-2 pt-1" id="mem-modal-actions">
           <button type="button" id="mem-cancel-btn" onclick="app.closeMemberModal()" class="flex-1 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold transition">Close</button>
           <button type="button" id="mem-edit-toggle-btn" onclick="app.enableMemberEdit()" class="hidden flex-1 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition">
             <i class="ph ph-pencil-simple text-sm"></i> Edit Details
@@ -712,7 +767,7 @@
     </div>
   </div>
 
-  <!-- ================= PAYMENT RECEIPT MODAL ================= -->
+  <!-- ================= PAYMENT RECEIPT MODAL (Streamlined & Non-Redundant) ================= -->
   <div id="receipt-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
     <div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 my-auto">
       
@@ -724,7 +779,7 @@
           </div>
           <div>
             <h3 class="text-base font-black text-indigo-950 tracking-tight leading-none">mis-org</h3>
-            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mt-1" id="rec-type-badge">Payment Receipt</span>
+            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mt-1">Payment Receipt</span>
           </div>
         </div>
         <div class="text-right">
@@ -733,11 +788,11 @@
         </div>
       </div>
 
-      <!-- Structured Ledger Alignment -->
+      <!-- Structured Ledger Alignment (No Duplicate Amount Rows) -->
       <div class="space-y-3">
         <div class="border border-indigo-100 bg-indigo-50/80 p-3.5 rounded-2xl flex justify-between items-center">
           <div>
-            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-900/70 block">Tranche Amount Received</span>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-900/70 block">Amount Received</span>
             <span class="text-xs font-semibold text-indigo-950 mt-0.5 block" id="rec-date">Date: -</span>
           </div>
           <div class="text-2xl font-black text-indigo-950 tracking-tight" id="rec-amount">₹0</div>
@@ -760,12 +815,16 @@
             <span class="text-slate-500 font-medium shrink-0">Scheduled Monthly EMI</span>
             <span class="font-semibold text-slate-700 text-right pl-2" id="rec-scheduled-emi">-</span>
           </div>
-          <div class="flex justify-between items-center py-2">
-            <span class="text-slate-500 font-medium shrink-0">Month Total Paid To Date</span>
-            <span class="font-bold text-emerald-800 text-right pl-2" id="rec-total-paid">-</span>
+          <div class="flex justify-between items-center py-2" id="rec-joint-share-row">
+            <span class="text-slate-500 font-medium shrink-0">Individual Share Target</span>
+            <span class="font-bold text-indigo-900 text-right pl-2" id="rec-share-target">-</span>
           </div>
           <div class="flex justify-between items-center py-2">
-            <span class="text-slate-500 font-medium shrink-0">Balance Outstanding</span>
+            <span class="text-slate-500 font-medium shrink-0">Installment Status</span>
+            <span class="font-bold text-right pl-2" id="rec-status-tag">-</span>
+          </div>
+          <div class="flex justify-between items-center py-2" id="rec-balance-due-row">
+            <span class="text-slate-500 font-medium shrink-0">Balance Remaining</span>
             <span class="font-bold text-rose-700 text-right pl-2" id="rec-balance-due">-</span>
           </div>
           <div class="flex justify-between items-center py-2">
@@ -1013,6 +1072,7 @@
           .trim();
       }
 
+      // Streamlined PDF Generation (No "Final Settlement", No Duplicate Amounts)
       generateReceiptPDF(data) {
         const jsPdfClass = window.jspdf?.jsPDF || window.jsPDF;
         if (!jsPdfClass) throw new Error("jsPDF library not loaded");
@@ -1021,9 +1081,9 @@
         const pageWidth = 210;
 
         const cardWidth = 140;
-        const cardHeight = 175;
+        const cardHeight = 170;
         const cardX = (pageWidth - cardWidth) / 2;
-        const cardY = 32;
+        const cardY = 35;
 
         doc.setDrawColor(203, 213, 225);
         doc.setFillColor(255, 255, 255);
@@ -1041,8 +1101,7 @@
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(7.5);
         doc.setTextColor(100, 116, 139);
-        const subTypeTitle = data.isPartPayment ? 'PART PAYMENT ACKNOWLEDGMENT' : 'PAYMENT RECEIPT (FINAL SETTLEMENT)';
-        doc.text(subTypeTitle, cardX + 10, cardY + 21);
+        doc.text('CHIT FUND PAYMENT RECEIPT', cardX + 10, cardY + 21);
 
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(7.5);
@@ -1066,7 +1125,7 @@
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(8);
         doc.setTextColor(67, 56, 202);
-        doc.text('TRANCHE RECEIVED', cardX + 16, bannerY + 9);
+        doc.text('AMOUNT RECEIVED', cardX + 16, bannerY + 9);
 
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
@@ -1083,16 +1142,28 @@
           ['Subscriber Name', this.cleanAscii(data.memberName)],
           ['Member Identifier', this.cleanAscii(data.memberNo)],
           ['Installment Period', this.cleanAscii(data.monthName)],
-          ['Scheduled Monthly EMI', this.cleanAscii(data.scheduledEmi)],
-          ['Total Paid So Far (Month)', this.cleanAscii(data.totalPaid)],
-          ['Balance Due (Month)', this.cleanAscii(data.balanceDue)],
-          ['Payment Mode', this.cleanAscii(data.method)],
-          ['Received / Verified By', this.cleanAscii(data.recipient)],
-          ['Remarks / UTR', this.cleanAscii(data.remarks || '-')]
+          ['Scheduled Monthly EMI', this.cleanAscii(data.scheduledEmi)]
         ];
 
+        if (data.isJoint) {
+          rows.push(['Individual Share Target', this.cleanAscii(data.shareTarget)]);
+        }
+
+        rows.push(['Installment Status', this.cleanAscii(data.statusText)]);
+
+        if (data.rawBalanceDue > 0) {
+          rows.push(['Balance Outstanding', this.cleanAscii(data.balanceDue)]);
+        }
+
+        rows.push(['Payment Mode', this.cleanAscii(data.method)]);
+        rows.push(['Received / Verified By', this.cleanAscii(data.recipient)]);
+
+        if (data.remarks) {
+          rows.push(['Remarks / UTR', this.cleanAscii(data.remarks)]);
+        }
+
         let startY = bannerY + bannerHeight + 6;
-        const rowHeight = 9;
+        const rowHeight = 8.5;
 
         doc.setDrawColor(241, 245, 249);
         doc.roundedRect(cardX + 10, startY - 2, cardWidth - 20, (rows.length * rowHeight) + 2, 2, 2, 'D');
@@ -1238,15 +1309,32 @@
                 } catch(e) {}
               }
 
+              // Checks subscriber profiles, including joint co-payers
               if (!profile) {
                 const cleanEmail = (user.email || '').trim().toLowerCase();
                 try {
                   const mSnap = await getDocs(query(collection(db, "members"), where("chitId", "==", this.activeChitId)));
-                  const matchedMember = mSnap.docs.find(d => (d.data().email || '').trim().toLowerCase() === cleanEmail);
+                  const matchedMember = mSnap.docs.find(d => {
+                    const data = d.data();
+                    if ((data.email || '').trim().toLowerCase() === cleanEmail) return true;
+                    if (data.isJoint && data.coPayers) {
+                      if ((data.coPayers.payer1?.email || '').trim().toLowerCase() === cleanEmail) return true;
+                      if ((data.coPayers.payer2?.email || '').trim().toLowerCase() === cleanEmail) return true;
+                    }
+                    return false;
+                  });
+
                   if (matchedMember) {
+                    const d = matchedMember.data();
+                    let dName = d.name || 'Subscriber';
+                    if (d.isJoint && d.coPayers) {
+                      if ((d.coPayers.payer1?.email || '').trim().toLowerCase() === cleanEmail) dName = d.coPayers.payer1.name;
+                      else if ((d.coPayers.payer2?.email || '').trim().toLowerCase() === cleanEmail) dName = d.coPayers.payer2.name;
+                    }
+
                     profile = {
                       role: 'member',
-                      displayName: matchedMember.data().name || 'Subscriber',
+                      displayName: dName,
                       email: cleanEmail
                     };
                   }
@@ -1359,7 +1447,15 @@
           document.getElementById('pb-back-btn')?.classList.add('hidden');
           await this.loadData();
           const currentEmail = (this.currentUser.email || '').trim().toLowerCase();
-          const me = this.members.find(m => (m.email || '').trim().toLowerCase() === currentEmail);
+          const me = this.members.find(m => {
+            if ((m.email || '').trim().toLowerCase() === currentEmail) return true;
+            if (m.isJoint && m.coPayers) {
+              if ((m.coPayers.payer1?.email || '').trim().toLowerCase() === currentEmail) return true;
+              if ((m.coPayers.payer2?.email || '').trim().toLowerCase() === currentEmail) return true;
+            }
+            return false;
+          });
+
           if (me) {
             const pbSelect = document.getElementById('passbook-member-select');
             if (pbSelect) {
@@ -1571,14 +1667,19 @@
         const mContainer = document.getElementById('member-mobile-cards');
         mContainer.innerHTML = list.length === 0 ? `<div class="p-6 text-center text-xs text-slate-400 bg-white rounded-2xl">No subscribers found.</div>` : list.map(m => {
           const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.totalPaid) || 0), 0);
+          const contactInfo = m.isJoint 
+            ? `${m.coPayers?.payer1?.name || 'CP1'}: ${m.coPayers?.payer1?.phone || '-'} • ${m.coPayers?.payer2?.name || 'CP2'}: ${m.coPayers?.payer2?.phone || '-'}`
+            : (m.phone || '-');
+
           return `
             <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
               <div class="space-y-0.5 flex-1 cursor-pointer pr-2" onclick="app.openMemberModal('${m.memberNo}')">
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-1.5 flex-wrap">
                   <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-1.5 py-0.5 rounded">${m.memberNo}</span>
                   <span class="font-bold text-xs text-slate-800 hover:text-indigo-900">${m.name}</span>
+                  ${m.isJoint ? `<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Joint (50-50)</span>` : ''}
                 </div>
-                <div class="text-[11px] text-slate-500">${m.phone}</div>
+                <div class="text-[11px] text-slate-500 truncate max-w-xs">${contactInfo}</div>
                 <div class="text-[11px] text-emerald-600 font-bold">Total Paid: ${this.formatINR(totalPaid)}</div>
                 ${m.isPrized ? `<span class="inline-block bg-amber-100 text-amber-900 text-[10px] font-bold px-1.5 py-0.5 rounded">Prized (M${m.prizedMonth})</span>` : ''}
               </div>
@@ -1597,11 +1698,18 @@
         const dBody = document.getElementById('member-desktop-tbody');
         dBody.innerHTML = list.map(m => {
           const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.totalPaid) || 0), 0);
+          const contactDisplay = m.isJoint 
+            ? `${m.coPayers?.payer1?.name} & ${m.coPayers?.payer2?.name}` 
+            : (m.phone || '-');
+
           return `
             <tr class="hover:bg-slate-50 transition">
               <td class="p-3 font-mono font-bold text-indigo-900 cursor-pointer" onclick="app.openMemberModal('${m.memberNo}')">${m.memberNo}</td>
-              <td class="p-3 font-semibold text-slate-800 cursor-pointer hover:text-indigo-900" onclick="app.openMemberModal('${m.memberNo}')">${m.name}</td>
-              <td class="p-3 text-slate-600 cursor-pointer" onclick="app.openMemberModal('${m.memberNo}')">${m.phone}</td>
+              <td class="p-3 font-semibold text-slate-800 cursor-pointer hover:text-indigo-900" onclick="app.openMemberModal('${m.memberNo}')">
+                ${m.name}
+                ${m.isJoint ? `<span class="ml-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Joint</span>` : ''}
+              </td>
+              <td class="p-3 text-slate-600 cursor-pointer" onclick="app.openMemberModal('${m.memberNo}')">${contactDisplay}</td>
               <td class="p-3 text-center cursor-pointer" onclick="app.openMemberModal('${m.memberNo}')">${m.isPrized ? `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-bold">Month ${m.prizedMonth}</span>` : '<span class="text-slate-400">Non-prized</span>'}</td>
               <td class="p-3 text-right font-bold text-emerald-600 cursor-pointer" onclick="app.openMemberModal('${m.memberNo}')">${this.formatINR(totalPaid)}</td>
               <td class="p-3 text-right space-x-1">
@@ -1622,7 +1730,9 @@
         const filtered = this.members.filter(m => 
           m.name.toLowerCase().includes(q) || 
           m.memberNo.toLowerCase().includes(q) || 
-          (m.phone && m.phone.includes(q))
+          (m.phone && m.phone.includes(q)) ||
+          (m.coPayers?.payer1?.name && m.coPayers.payer1.name.toLowerCase().includes(q)) ||
+          (m.coPayers?.payer2?.name && m.coPayers.payer2.name.toLowerCase().includes(q))
         );
         this.renderMembers(filtered);
       }
@@ -1637,11 +1747,16 @@
         let csv = `\uFEFF,,,,"mis-org Chit Fund Management - Subscriber Master Directory",,,,,\n`;
         csv += `,,,,"Group A (Rs. 5,00,000 • 40 Subscribers • 41 Months) | Export Date: ${exportDate}",,,,,\n`;
         csv += `,,,,,\n\n`;
-        csv += "Member ID,Subscriber Name,Phone,Email,Address,Status,Prized Status,Prized Month,Prize Money Received,Total Amount Paid\n";
+        csv += "Member ID,Ticket Name,Ticket Type,Co-Payer 1 Name,Co-Payer 1 Phone,Co-Payer 2 Name,Co-Payer 2 Phone,Prized Month,Total Paid\n";
         
         this.members.forEach(m => {
           const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.totalPaid) || 0), 0);
-          csv += `"${m.memberNo}","${m.name}","${m.phone || ''}","${m.email || ''}","${(m.address || '').replace(/"/g, '""')}","${m.isActive ? 'Active' : 'Inactive'}","${m.isPrized ? 'Prized' : 'Non-Prized'}","${m.prizedMonth || '-'}","${m.prizeMoney || 0}","${totalPaid}"\n`;
+          const cp1Name = m.isJoint ? (m.coPayers?.payer1?.name || '') : m.name;
+          const cp1Phone = m.isJoint ? (m.coPayers?.payer1?.phone || '') : (m.phone || '');
+          const cp2Name = m.isJoint ? (m.coPayers?.payer2?.name || '') : '';
+          const cp2Phone = m.isJoint ? (m.coPayers?.payer2?.phone || '') : '';
+
+          csv += `"${m.memberNo}","${m.name}","${m.isJoint ? 'Joint (50-50)' : 'Single'}","${cp1Name}","${cp1Phone}","${cp2Name}","${cp2Phone}","${m.prizedMonth || '-'}","${totalPaid}"\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1650,6 +1765,28 @@
         link.download = `mis_org_subscribers_${new Date().toISOString().split('T')[0]}.csv`;
         link.click();
         this.notify("Downloaded subscribers directory");
+      }
+
+      onJointToggleChange() {
+        const isChecked = document.getElementById('mem-joint-toggle').checked;
+        const singleBox = document.getElementById('mem-single-fields');
+        const jointBox = document.getElementById('mem-joint-fields');
+
+        if (isChecked) {
+          singleBox.classList.add('hidden');
+          jointBox.classList.remove('hidden');
+
+          // Seed Co-Payer 1 with current single data if empty
+          if (!document.getElementById('mem-cp1-name').value) {
+            document.getElementById('mem-cp1-name').value = document.getElementById('mem-name').value;
+            document.getElementById('mem-cp1-phone').value = document.getElementById('mem-phone').value;
+            document.getElementById('mem-cp1-email').value = document.getElementById('mem-email').value;
+            document.getElementById('mem-cp1-address').value = document.getElementById('mem-address').value;
+          }
+        } else {
+          singleBox.classList.remove('hidden');
+          jointBox.classList.add('hidden');
+        }
       }
 
       openMemberModal(memberNo = null) {
@@ -1667,13 +1804,16 @@
         document.getElementById('member-form').reset();
         document.getElementById('mem-edit-id').value = "";
 
-        const nameInput = document.getElementById('mem-name');
-        const phoneInput = document.getElementById('mem-phone');
-        const emailInput = document.getElementById('mem-email');
-        const addressInput = document.getElementById('mem-address');
+        const jointToggle = document.getElementById('mem-joint-toggle');
         const cancelBtn = document.getElementById('mem-cancel-btn');
         const editToggleBtn = document.getElementById('mem-edit-toggle-btn');
         const saveBtn = document.getElementById('mem-save-btn');
+
+        const inputs = [
+          'mem-name', 'mem-phone', 'mem-email', 'mem-address',
+          'mem-cp1-name', 'mem-cp1-phone', 'mem-cp1-email', 'mem-cp1-address',
+          'mem-cp2-name', 'mem-cp2-phone', 'mem-cp2-email', 'mem-cp2-address'
+        ].map(id => document.getElementById(id));
 
         if (memberNo) {
           const m = this.members.find(x => x.memberNo === memberNo);
@@ -1681,27 +1821,36 @@
           document.getElementById('mem-edit-id').value = m.memberNo;
           document.getElementById('mem-number').value = m.memberNo;
           
-          nameInput.value = m.name;
-          nameInput.readOnly = true;
-          
-          const tenDigits = (m.phone || '').replace(/\D/g, '').slice(-10);
-          phoneInput.value = tenDigits;
-          phoneInput.readOnly = true;
+          jointToggle.checked = Boolean(m.isJoint);
+          jointToggle.disabled = true;
 
-          emailInput.value = m.email || '';
-          emailInput.readOnly = true;
+          // Single fields
+          document.getElementById('mem-name').value = m.name || '';
+          document.getElementById('mem-phone').value = (m.phone || '').replace(/\D/g, '').slice(-10);
+          document.getElementById('mem-email').value = m.email || '';
+          document.getElementById('mem-address').value = m.address || '';
 
-          addressInput.value = m.address || '';
-          addressInput.readOnly = true;
+          // Joint fields
+          if (m.isJoint && m.coPayers) {
+            document.getElementById('mem-cp1-name').value = m.coPayers.payer1?.name || '';
+            document.getElementById('mem-cp1-phone').value = (m.coPayers.payer1?.phone || '').replace(/\D/g, '').slice(-10);
+            document.getElementById('mem-cp1-email').value = m.coPayers.payer1?.email || '';
+            document.getElementById('mem-cp1-address').value = m.coPayers.payer1?.address || '';
+
+            document.getElementById('mem-cp2-name').value = m.coPayers.payer2?.name || '';
+            document.getElementById('mem-cp2-phone').value = (m.coPayers.payer2?.phone || '').replace(/\D/g, '').slice(-10);
+            document.getElementById('mem-cp2-email').value = m.coPayers.payer2?.email || '';
+            document.getElementById('mem-cp2-address').value = m.coPayers.payer2?.address || '';
+          }
+
+          this.onJointToggleChange();
+          inputs.forEach(inp => inp.readOnly = true);
 
           saveBtn.classList.add('hidden');
           cancelBtn.innerText = "Close";
+          if (isAdmin) editToggleBtn.classList.remove('hidden');
+          else editToggleBtn.classList.add('hidden');
 
-          if (isAdmin) {
-            editToggleBtn.classList.remove('hidden');
-          } else {
-            editToggleBtn.classList.add('hidden');
-          }
         } else {
           const nextId = this.generateNextMemberId();
           if (!nextId) {
@@ -1711,13 +1860,11 @@
 
           document.getElementById('member-modal-title').innerText = `Add New Subscriber (${nextId})`;
           document.getElementById('mem-number').value = nextId;
-          
-          nameInput.readOnly = false;
-          phoneInput.readOnly = false;
-          phoneInput.value = "";
-          emailInput.readOnly = false;
-          addressInput.readOnly = false;
+          jointToggle.checked = false;
+          jointToggle.disabled = false;
+          this.onJointToggleChange();
 
+          inputs.forEach(inp => inp.readOnly = false);
           editToggleBtn.classList.add('hidden');
           saveBtn.classList.remove('hidden');
           saveBtn.innerText = "Save Member";
@@ -1733,22 +1880,31 @@
         const editId = document.getElementById('mem-edit-id').value;
         document.getElementById('member-modal-title').innerText = `Edit Subscriber (${editId})`;
 
-        document.getElementById('mem-name').readOnly = false;
-        document.getElementById('mem-phone').readOnly = false;
-        document.getElementById('mem-email').readOnly = false;
-        document.getElementById('mem-address').readOnly = false;
+        document.getElementById('mem-joint-toggle').disabled = false;
+        [
+          'mem-name', 'mem-phone', 'mem-email', 'mem-address',
+          'mem-cp1-name', 'mem-cp1-phone', 'mem-cp1-email', 'mem-cp1-address',
+          'mem-cp2-name', 'mem-cp2-phone', 'mem-cp2-email', 'mem-cp2-address'
+        ].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.readOnly = false;
+        });
 
         document.getElementById('mem-edit-toggle-btn').classList.add('hidden');
         const saveBtn = document.getElementById('mem-save-btn');
         saveBtn.classList.remove('hidden');
         saveBtn.innerText = "Save Changes";
-
         document.getElementById('mem-cancel-btn').innerText = "Cancel";
-        document.getElementById('mem-name').focus();
       }
 
       closeMemberModal() {
         document.getElementById('member-modal').classList.add('hidden');
+      }
+
+      formatPhoneHelper(raw) {
+        const cleaned = (raw || '').replace(/\D/g, '');
+        const slice10 = cleaned.length > 10 && cleaned.startsWith('91') ? cleaned.slice(2) : cleaned;
+        return slice10.length === 10 ? `+91 ${slice10.slice(0, 5)} ${slice10.slice(5)}` : (slice10 ? `+91 ${slice10}` : '');
       }
 
       async saveMember(e) {
@@ -1765,24 +1921,49 @@
         }
 
         const num = document.getElementById('mem-number').value.trim();
+        const isJoint = document.getElementById('mem-joint-toggle').checked;
 
-        let rawPhone = document.getElementById('mem-phone').value.trim().replace(/\D/g, '');
-        if (rawPhone.length > 10 && rawPhone.startsWith('91')) {
-          rawPhone = rawPhone.slice(2);
-        }
-        const standardizedPhone = rawPhone.length === 10 
-          ? `+91 ${rawPhone.slice(0, 5)} ${rawPhone.slice(5)}` 
-          : (rawPhone ? `+91 ${rawPhone}` : '');
-
-        const payload = {
+        let payload = {
           chitId: this.activeChitId,
           memberNo: num,
-          name: document.getElementById('mem-name').value.trim(),
-          phone: standardizedPhone,
-          email: document.getElementById('mem-email').value.trim().toLowerCase(),
-          address: document.getElementById('mem-address').value.trim(),
-          isActive: true
+          isActive: true,
+          isJoint: isJoint
         };
+
+        if (isJoint) {
+          const cp1Name = document.getElementById('mem-cp1-name').value.trim();
+          const cp2Name = document.getElementById('mem-cp2-name').value.trim();
+
+          if (!cp1Name || !cp2Name) {
+            this.notify("Both co-payers must have valid names for joint tickets.", true);
+            return;
+          }
+
+          payload.name = `${cp1Name} & ${cp2Name}`;
+          payload.coPayers = {
+            payer1: {
+              name: cp1Name,
+              phone: this.formatPhoneHelper(document.getElementById('mem-cp1-phone').value),
+              email: document.getElementById('mem-cp1-email').value.trim().toLowerCase(),
+              address: document.getElementById('mem-cp1-address').value.trim(),
+              sharePct: 50
+            },
+            payer2: {
+              name: cp2Name,
+              phone: this.formatPhoneHelper(document.getElementById('mem-cp2-phone').value),
+              email: document.getElementById('mem-cp2-email').value.trim().toLowerCase(),
+              address: document.getElementById('mem-cp2-address').value.trim(),
+              sharePct: 50
+            }
+          };
+          payload.phone = `${payload.coPayers.payer1.phone} / ${payload.coPayers.payer2.phone}`;
+        } else {
+          payload.name = document.getElementById('mem-name').value.trim();
+          payload.phone = this.formatPhoneHelper(document.getElementById('mem-phone').value);
+          payload.email = document.getElementById('mem-email').value.trim().toLowerCase();
+          payload.address = document.getElementById('mem-address').value.trim();
+          payload.coPayers = null;
+        }
 
         try {
           await setDoc(doc(db, "members", `${this.activeChitId}_${num}`), payload, { merge: true });
@@ -1815,7 +1996,7 @@
         }
       }
 
-      // ================= MULTI-TRANCHE COLLECTIONS LOGIC =================
+      // ================= BEAUTIFIED COLLECTIONS GRID & RECEIPT BADGES =================
       loadCollectionsGrid(monthNum) {
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
         const isPastMonth = monthNum < this.currentMonthIdx;
@@ -1829,70 +2010,59 @@
           const isPartial = totalPaid > 0 && !isCleared;
           const payments = Array.isArray(entry?.payments) ? entry.payments : [];
 
-          let channelBadge = "-";
+          // Clean, Compact Receipt Badges (Floating Mini 1, 2 Numbers)
+          let receiptsBadgeList = payments.length > 0 ? `
+            <div class="flex items-center gap-1.5 flex-wrap">
+              ${payments.map((p, pIdx) => `
+                <button onclick="app.viewReceipt(${monthNum}, '${m.memberNo}', '${p.paymentId}')" class="relative w-7 h-7 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 active:scale-95 flex items-center justify-center transition" title="Receipt ${pIdx + 1} (${this.formatINR(p.amount)})">
+                  <i class="ph ph-receipt text-xs"></i>
+                  <span class="absolute -top-1 -right-1 bg-emerald-700 text-white text-[8px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center ring-1 ring-white">${pIdx + 1}</span>
+                </button>
+              `).join('')}
+            </div>
+          ` : `<span class="text-[11px] text-slate-300">-</span>`;
+
+          // Concise channel hint
+          let channelSnippet = "Pending";
           if (payments.length > 0) {
             const lastP = payments[payments.length - 1];
             const verifier = (lastP.receivedBy && lastP.receivedBy !== 'Main Bank Account') ? lastP.receivedBy : (lastP.recordedByName || 'Foreman');
-            if (lastP.paymentMethod === 'Bank Transfer to Main Account') {
-              channelBadge = `<span class="text-indigo-600 font-semibold">Bank A/c (${verifier})</span>`;
-            } else {
-              channelBadge = `<span class="text-amber-700 font-semibold">Cash/UPI (${verifier})</span>`;
-            }
-            if (payments.length > 1) {
-              channelBadge += ` <span class="text-[10px] bg-slate-100 text-slate-600 px-1 rounded font-bold">${payments.length} parts</span>`;
-            }
-          }
-
-          let receiptsHtml = "";
-          if (payments.length > 0) {
-            receiptsHtml = `
-              <div class="flex items-center gap-1 flex-wrap">
-                ${payments.map(p => `
-                  <button onclick="app.viewReceipt(${monthNum}, '${m.memberNo}', '${p.paymentId}')" class="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 active:scale-95 border border-emerald-200/80 text-[10px] font-bold flex items-center gap-0.5" title="View Receipt ${p.receiptNo}">
-                    <i class="ph ph-receipt"></i> ${p.receiptNo.split('-')[1] || 'P1'}
-                  </button>
-                `).join('')}
-              </div>
-            `;
+            channelSnippet = lastP.paymentMethod === 'Bank Transfer to Main Account' ? `Bank (${verifier})` : `Cash/UPI (${verifier})`;
           }
 
           return `
-            <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-2.5">
-              <div class="flex items-start justify-between">
-                <div>
-                  <div class="flex items-center gap-1.5">
-                    <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-1.5 py-0.5 rounded">${m.memberNo}</span>
-                    <span class="font-bold text-xs text-slate-800">${m.name}</span>
-                  </div>
-                  <div class="text-[11px] text-slate-500 mt-0.5">Scheduled EMI: <span class="font-semibold text-slate-700">${this.formatINR(sch.emi)}</span></div>
+            <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
+              <!-- Row 1: Identity + Financial Status -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1.5 min-w-0 pr-2">
+                  <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-1.5 py-0.5 rounded shrink-0">${m.memberNo}</span>
+                  <span class="font-bold text-xs text-slate-800 truncate">${m.name}</span>
+                  ${m.isJoint ? `<span class="px-1.5 py-0.2 rounded text-[8px] font-bold bg-amber-50 text-amber-800 border border-amber-200 shrink-0">Joint</span>` : ''}
                 </div>
                 <div>
                   ${isCleared 
-                    ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Cleared</span>`
+                    ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 shrink-0">Cleared</span>`
                     : (isPartial 
-                        ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">Partial (${this.formatINR(balanceDue)} due)</span>`
-                        : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600">Pending</span>`)}
+                        ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 shrink-0">Due: ${this.formatINR(balanceDue)}</span>`
+                        : `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 shrink-0">Pending</span>`)}
                 </div>
               </div>
 
-              <div class="text-xs flex items-center justify-between border-t border-slate-100 pt-2 text-slate-600">
-                <div>
-                  <span class="font-bold ${totalPaid > 0 ? 'text-slate-900' : 'text-slate-400'}">Paid: ${this.formatINR(totalPaid)}</span>
-                  <span class="text-[11px] text-slate-400 block">${channelBadge}</span>
-                </div>
-                <div class="text-right">
-                  ${balanceDue > 0 ? `<span class="font-bold text-rose-600 block text-[11px]">Due: ${this.formatINR(balanceDue)}</span>` : `<span class="font-bold text-emerald-600 block text-[11px]">Nil Due</span>`}
-                </div>
+              <!-- Inline Summary Subline -->
+              <div class="flex items-center justify-between text-[11px] text-slate-500">
+                <span>EMI: <b class="text-slate-700">${this.formatINR(sch.emi)}</b> • Paid: <b class="${totalPaid > 0 ? 'text-emerald-700' : 'text-slate-400'}">${this.formatINR(totalPaid)}</b></span>
+                <span class="text-[10px] text-slate-400 truncate max-w-[120px]">${channelSnippet}</span>
               </div>
 
-              <div class="flex items-center justify-between gap-1.5 border-t border-slate-100 pt-2">
-                <div class="flex-1">${receiptsHtml}</div>
+              <!-- Row 2: Micro Receipt Badges + Compact Action -->
+              <div class="flex items-center justify-between pt-1 border-t border-slate-100 gap-2">
+                <div class="flex-1">${receiptsBadgeList}</div>
                 <div>
                   ${!isPastMonth ? `
-                    <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}')" class="px-3 py-1.5 ${isCleared ? 'bg-slate-100 hover:bg-slate-200 text-slate-800' : 'bg-indigo-900 hover:bg-indigo-800 text-white'} rounded-xl text-xs font-bold active:scale-95 shadow-sm transition">
+                    <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}')" class="px-2.5 py-1 ${isCleared ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-indigo-900 hover:bg-indigo-800 text-white'} rounded-lg text-xs font-bold active:scale-95 transition">
                       ${isCleared ? 'Details' : (isPartial ? '+ Add Part' : 'Record')}
                     </button>
-                  ` : `<span class="text-[11px] text-slate-400 font-semibold italic">Locked</span>`}
+                  ` : `<span class="text-[10px] text-slate-400 italic">Locked</span>`}
                 </div>
               </div>
             </div>
@@ -1910,33 +2080,37 @@
 
           let channelDisplay = "-";
           if (payments.length > 0) {
-            const channels = payments.map(p => {
+            const list = payments.map(p => {
               const verifier = (p.receivedBy && p.receivedBy !== 'Main Bank Account') ? p.receivedBy : (p.recordedByName || 'Foreman');
-              return p.paymentMethod === 'Bank Transfer to Main Account' ? `Bank (${verifier})` : `Cash/UPI (${verifier})`;
+              return p.paymentMethod === 'Bank Transfer to Main Account' ? `Bank (${verifier})` : `Cash (${verifier})`;
             });
-            channelDisplay = Array.from(new Set(channels)).join(', ');
+            channelDisplay = Array.from(new Set(list)).join(', ');
           }
 
-          let receiptsHtml = "";
-          if (payments.length > 0) {
-            receiptsHtml = payments.map(p => `
-              <button onclick="app.viewReceipt(${monthNum}, '${m.memberNo}', '${p.paymentId}')" class="px-2 py-0.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg font-bold text-xs inline-flex items-center gap-0.5 border border-emerald-200/60" title="Receipt ${p.receiptNo}">
-                <i class="ph ph-receipt"></i> ${p.receiptNo.split('-')[1] || 'P1'}
-              </button>
-            `).join(' ');
-          }
+          let receiptsBadgeList = payments.length > 0 ? `
+            <div class="flex items-center justify-center gap-1 flex-wrap">
+              ${payments.map((p, pIdx) => `
+                <button onclick="app.viewReceipt(${monthNum}, '${m.memberNo}', '${p.paymentId}')" class="relative w-6 h-6 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 active:scale-95 flex items-center justify-center transition" title="Receipt ${pIdx + 1} (${p.receiptNo})">
+                  <i class="ph ph-receipt text-[11px]"></i>
+                  <span class="absolute -top-1 -right-1 bg-emerald-700 text-white text-[7px] font-black w-3 h-3 rounded-full flex items-center justify-center ring-1 ring-white">${pIdx + 1}</span>
+                </button>
+              `).join('')}
+            </div>
+          ` : `<span class="text-slate-300">-</span>`;
 
           return `
-            <tr class="hover:bg-slate-50">
+            <tr class="hover:bg-slate-50 transition">
               <td class="p-3 font-mono font-bold text-indigo-900">${m.memberNo}</td>
-              <td class="p-3 font-semibold text-slate-800">${m.name}</td>
+              <td class="p-3 font-semibold text-slate-800">
+                ${m.name}
+                ${m.isJoint ? `<span class="ml-1 px-1 py-0.2 rounded text-[8px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Joint</span>` : ''}
+              </td>
               <td class="p-3 text-right font-medium">${this.formatINR(sch.emi)}</td>
               <td class="p-3 text-right font-bold ${totalPaid > 0 ? 'text-emerald-600' : 'text-slate-400'}">${this.formatINR(totalPaid)}</td>
               <td class="p-3 text-right font-bold ${balanceDue > 0 ? 'text-rose-600' : 'text-slate-400'}">${this.formatINR(balanceDue)}</td>
-              <td class="p-3 text-xs font-medium text-slate-700">${channelDisplay}</td>
-              <td class="p-3 text-slate-500">${this.formatDate(entry?.lastPaymentDate)}</td>
-              <td class="p-3 text-right space-x-1.5 whitespace-nowrap">
-                ${receiptsHtml}
+              <td class="p-3 text-xs text-slate-600">${channelDisplay}</td>
+              <td class="p-3 text-center">${receiptsBadgeList}</td>
+              <td class="p-3 text-right">
                 ${!isPastMonth ? `
                   <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}')" class="px-2.5 py-1 ${isCleared ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'} rounded-lg font-bold text-xs transition">
                     ${isCleared ? 'Details' : (isPartial ? '+ Add Part' : 'Record')}
@@ -1968,31 +2142,76 @@
         document.getElementById('coll-stat-paid').innerText = this.formatINR(totalPaid);
         document.getElementById('coll-stat-due').innerText = this.formatINR(balanceDue);
 
+        // Joint Share Allocations Setup
+        const jointStatusBox = document.getElementById('coll-joint-status-box');
+        const jointSelectContainer = document.getElementById('coll-joint-select-container');
+        const jointPayerSelect = document.getElementById('coll-joint-payer-select');
+
+        if (mem.isJoint && mem.coPayers) {
+          jointStatusBox.classList.remove('hidden');
+          jointSelectContainer.classList.remove('hidden');
+
+          const cp1 = mem.coPayers.payer1;
+          const cp2 = mem.coPayers.payer2;
+          const halfEmi = emi / 2;
+
+          const cp1Paid = payments.filter(p => p.payerName === cp1.name).reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+          const cp2Paid = payments.filter(p => p.payerName === cp2.name).reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+
+          document.getElementById('coll-joint-pills-container').innerHTML = `
+            <div class="p-2 rounded-lg bg-white border border-indigo-100">
+              <span class="font-bold text-slate-800 truncate block">${cp1.name}</span>
+              <span class="text-[10px] text-slate-500">Paid: ${this.formatINR(cp1Paid)} / ${this.formatINR(halfEmi)}</span>
+              <span class="block mt-0.5 font-bold ${cp1Paid >= halfEmi ? 'text-emerald-700' : 'text-amber-700'}">${cp1Paid >= halfEmi ? '✓ Cleared' : `Due: ${this.formatINR(halfEmi - cp1Paid)}`}</span>
+            </div>
+            <div class="p-2 rounded-lg bg-white border border-indigo-100">
+              <span class="font-bold text-slate-800 truncate block">${cp2.name}</span>
+              <span class="text-[10px] text-slate-500">Paid: ${this.formatINR(cp2Paid)} / ${this.formatINR(halfEmi)}</span>
+              <span class="block mt-0.5 font-bold ${cp2Paid >= halfEmi ? 'text-emerald-700' : 'text-amber-700'}">${cp2Paid >= halfEmi ? '✓ Cleared' : `Due: ${this.formatINR(halfEmi - cp2Paid)}`}</span>
+            </div>
+          `;
+
+          jointPayerSelect.innerHTML = `
+            <option value="${cp1.name}" data-due="${Math.max(0, halfEmi - cp1Paid)}">${cp1.name} (Due: ${this.formatINR(Math.max(0, halfEmi - cp1Paid))})</option>
+            <option value="${cp2.name}" data-due="${Math.max(0, halfEmi - cp2Paid)}">${cp2.name} (Due: ${this.formatINR(Math.max(0, halfEmi - cp2Paid))})</option>
+          `;
+
+          // Auto-select partner with unpaid balance
+          if (cp1Paid >= halfEmi && cp2Paid < halfEmi) {
+            jointPayerSelect.value = cp2.name;
+          }
+        } else {
+          jointStatusBox.classList.add('hidden');
+          jointSelectContainer.classList.add('hidden');
+        }
+
         // Render recorded tranches
         const tranchesContainer = document.getElementById('coll-tranches-list');
         if (payments.length === 0) {
-          tranchesContainer.innerHTML = `<div class="p-3 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">No payments recorded yet for this month.</div>`;
+          tranchesContainer.innerHTML = `<div class="p-2.5 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">No payments recorded yet for this month.</div>`;
         } else {
-          tranchesContainer.innerHTML = payments.map((p, idx) => {
+          tranchesContainer.innerHTML = payments.map((p, pIdx) => {
             const verifier = (p.receivedBy && p.receivedBy !== 'Main Bank Account') ? p.receivedBy : (p.recordedByName || 'Foreman');
+            const payerLabel = p.payerName ? ` • <b>${p.payerName}</b>` : '';
+
             return `
-              <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200/90 flex items-center justify-between text-xs">
+              <div class="p-2 bg-slate-50 rounded-xl border border-slate-200/90 flex items-center justify-between text-xs">
                 <div>
                   <div class="flex items-center gap-1.5">
                     <span class="font-mono font-bold text-indigo-950">${p.receiptNo}</span>
                     <span class="font-bold text-emerald-700">${this.formatINR(p.amount)}</span>
+                    <span class="text-[11px] text-slate-600">${payerLabel}</span>
                   </div>
-                  <div class="text-[11px] text-slate-500 mt-0.5">
+                  <div class="text-[10px] text-slate-500 mt-0.5">
                     ${this.formatDate(p.paymentDate)} • ${p.paymentMethod} • <span class="font-semibold text-slate-700">${verifier}</span>
                   </div>
-                  ${p.remarks ? `<div class="text-[10px] text-slate-400 italic mt-0.5">"${p.remarks}"</div>` : ''}
                 </div>
                 <div class="flex items-center gap-1 shrink-0 ml-2">
-                  <button type="button" onclick="app.viewReceipt(${monthNum}, '${memberNo}', '${p.paymentId}')" class="p-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 rounded-lg text-xs font-bold" title="View Receipt">
+                  <button type="button" onclick="app.viewReceipt(${monthNum}, '${memberNo}', '${p.paymentId}')" class="p-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 rounded-lg text-xs font-bold" title="View Receipt">
                     <i class="ph ph-receipt text-sm"></i>
                   </button>
                   ${this.userRole === 'admin' ? `
-                    <button type="button" onclick="app.deletePaymentTranche(${monthNum}, '${memberNo}', '${p.paymentId}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs" title="Revoke Payment Entry">
+                    <button type="button" onclick="app.deletePaymentTranche(${monthNum}, '${memberNo}', '${p.paymentId}')" class="p-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs" title="Revoke Payment">
                       <i class="ph ph-trash text-sm"></i>
                     </button>
                   ` : ''}
@@ -2002,7 +2221,7 @@
           }).join('');
         }
 
-        // Lock form when installment is cleared
+        // Lock form when full ticket is cleared
         const clearedBanner = document.getElementById('coll-cleared-banner');
         const formEl = document.getElementById('collection-form');
 
@@ -2013,9 +2232,7 @@
           clearedBanner.classList.add('hidden');
           formEl.classList.remove('hidden');
 
-          // Default amount to remaining balance due
-          document.getElementById('coll-amount').value = balanceDue;
-          document.getElementById('coll-amount').max = balanceDue;
+          this.onJointPayerChange();
 
           const myDisplayName = (this.userProfile?.displayName || this.userProfile?.name || this.currentUser.email.split('@')[0]).trim();
           const optionsSet = new Set(this.foremenList);
@@ -2042,6 +2259,22 @@
         document.getElementById('collection-modal').classList.remove('hidden');
       }
 
+      onJointPayerChange() {
+        const mem = this.members.find(m => m.memberNo === document.getElementById('coll-member-id').value);
+        const sch = MASTER_SCHEDULE.find(s => s.m === parseInt(document.getElementById('coll-month').value));
+        const emi = sch ? sch.emi : 12500;
+        const totalPaid = Number(this.collections.find(c => c.month === sch.m && c.memberNo === mem.memberNo)?.totalPaid) || 0;
+        const ticketBalance = Math.max(0, emi - totalPaid);
+
+        if (mem.isJoint && mem.coPayers) {
+          const sel = document.getElementById('coll-joint-payer-select');
+          const dueAttr = parseFloat(sel.options[sel.selectedIndex]?.dataset?.due || "0");
+          document.getElementById('coll-amount').value = dueAttr > 0 ? dueAttr : ticketBalance;
+        } else {
+          document.getElementById('coll-amount').value = ticketBalance;
+        }
+      }
+
       closeCollectionModal() {
         document.getElementById('collection-modal').classList.add('hidden');
       }
@@ -2064,6 +2297,7 @@
 
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
         const emi = sch ? sch.emi : 12500;
+        const mem = this.members.find(m => m.memberNo === memberNo);
         const docKey = `${this.activeChitId}_M${monthNum}_${memberNo}`;
         const existing = this.collections.find(c => c.month === monthNum && c.memberNo === memberNo);
 
@@ -2085,10 +2319,16 @@
           ? document.getElementById('coll-foreman-select').value
           : myDisplayName;
 
+        let payerName = mem.name;
+        if (mem.isJoint && mem.coPayers) {
+          payerName = document.getElementById('coll-joint-payer-select').value;
+        }
+
         const newTranche = {
           paymentId: `P-${nextTrancheIndex}`,
           receiptNo: receiptNo,
           amount: newAmount,
+          payerName: payerName,
           paymentMethod: method,
           receivedBy: receivedBy,
           paymentDate: document.getElementById('coll-date').value,
@@ -2117,7 +2357,7 @@
 
         try {
           await setDoc(doc(db, "collections", docKey), payload, { merge: true });
-          await this.logActivity("Collections", "ADD_PAYMENT_TRANCHE", null, { receiptNo, amount: newAmount, memberNo, monthNum });
+          await this.logActivity("Collections", "ADD_PAYMENT_TRANCHE", null, { receiptNo, amount: newAmount, payerName, memberNo, monthNum });
           this.notify(`Payment recorded (${receiptNo})`);
           await this.loadData();
           this.openCollectionModal(monthNum, memberNo);
@@ -2186,21 +2426,44 @@
         const recId = tranche.receiptNo;
         const dateStr = this.formatDate(tranche.paymentDate);
         const verifier = (tranche.receivedBy && tranche.receivedBy !== 'Main Bank Account') ? tranche.receivedBy : (tranche.recordedByName || 'Foreman');
-        const isPart = (Number(entry.totalPaid) || 0) < sch.emi;
+
+        let subscriberDisplayName = mem.name;
+        let isJoint = Boolean(mem.isJoint && mem.coPayers);
+        let shareTargetText = "";
+        let statusText = "Cleared (Nil Due)";
+        let balanceDueAmount = 0;
+
+        if (isJoint) {
+          const pName = tranche.payerName || mem.coPayers.payer1.name;
+          const otherPayer = (pName === mem.coPayers.payer1.name) ? mem.coPayers.payer2.name : mem.coPayers.payer1.name;
+          subscriberDisplayName = `${pName} (Co-holder with ${otherPayer})`;
+          
+          const halfEmi = sch.emi / 2;
+          shareTargetText = `${this.formatINR(halfEmi)} (50% Share)`;
+
+          const payerTotalPaid = entry.payments.filter(p => p.payerName === pName).reduce((s, p) => s + (Number(p.amount) || 0), 0);
+          balanceDueAmount = Math.max(0, halfEmi - payerTotalPaid);
+          statusText = balanceDueAmount === 0 ? "Share Cleared (Nil Due)" : `Part Payment (${this.formatINR(balanceDueAmount)} due)`;
+        } else {
+          balanceDueAmount = Math.max(0, sch.emi - entry.totalPaid);
+          statusText = balanceDueAmount === 0 ? "Cleared (Nil Due)" : `Part Payment (${this.formatINR(balanceDueAmount)} due)`;
+        }
 
         this.currentReceiptData = {
           recId,
           memberNo,
-          memberName: mem.name,
+          memberName: subscriberDisplayName,
           phone: mem.phone || '',
           monthNum,
           monthName: `Month ${monthNum} (${this.getMonthLabel(monthNum)})`,
           scheduledEmi: this.formatINR(sch.emi),
+          shareTarget: shareTargetText,
+          isJoint: isJoint,
           amountPaid: this.formatINR(tranche.amount),
           rawAmount: tranche.amount,
-          totalPaid: this.formatINR(entry.totalPaid),
-          balanceDue: this.formatINR(entry.balanceDue),
-          isPartPayment: isPart,
+          balanceDue: this.formatINR(balanceDueAmount),
+          rawBalanceDue: balanceDueAmount,
+          statusText: statusText,
           method: tranche.paymentMethod,
           recipient: verifier,
           remarks: tranche.remarks || '',
@@ -2208,13 +2471,31 @@
         };
 
         document.getElementById('rec-number').innerText = recId;
-        document.getElementById('rec-type-badge').innerText = isPart ? 'Part Payment Receipt' : 'Payment Receipt (Settled)';
-        document.getElementById('rec-member-name').innerText = mem.name;
+        document.getElementById('rec-member-name').innerText = subscriberDisplayName;
         document.getElementById('rec-member-id').innerText = memberNo;
         document.getElementById('rec-month').innerText = this.currentReceiptData.monthName;
         document.getElementById('rec-scheduled-emi').innerText = this.currentReceiptData.scheduledEmi;
-        document.getElementById('rec-total-paid').innerText = this.currentReceiptData.totalPaid;
-        document.getElementById('rec-balance-due').innerText = this.currentReceiptData.balanceDue;
+        
+        const shareTargetRow = document.getElementById('rec-joint-share-row');
+        if (isJoint) {
+          shareTargetRow.classList.remove('hidden');
+          document.getElementById('rec-share-target').innerText = shareTargetText;
+        } else {
+          shareTargetRow.classList.add('hidden');
+        }
+
+        const statusTag = document.getElementById('rec-status-tag');
+        statusTag.innerText = statusText;
+        statusTag.className = balanceDueAmount === 0 ? "font-bold text-emerald-700 text-right pl-2" : "font-bold text-amber-700 text-right pl-2";
+
+        const balDueRow = document.getElementById('rec-balance-due-row');
+        if (balanceDueAmount > 0) {
+          balDueRow.classList.remove('hidden');
+          document.getElementById('rec-balance-due').innerText = this.currentReceiptData.balanceDue;
+        } else {
+          balDueRow.classList.add('hidden');
+        }
+
         document.getElementById('rec-date').innerText = `Date: ${dateStr}`;
         document.getElementById('rec-amount').innerText = this.currentReceiptData.amountPaid;
         document.getElementById('rec-channel').innerText = tranche.paymentMethod;
@@ -2250,7 +2531,7 @@
 
         document.getElementById('pb-member-name').innerText = mem.name;
         document.getElementById('pb-member-id').innerText = mem.memberNo;
-        document.getElementById('pb-member-prized').innerText = mem.isPrized ? `Prized in Month ${mem.prizedMonth} (${this.formatINR(mem.prizeMoney)})` : "Non-Prized Subscriber";
+        document.getElementById('pb-member-prized').innerText = mem.isPrized ? `Prized in Month ${mem.prizedMonth} (${this.formatINR(mem.prizeMoney)})` : (mem.isJoint ? "Joint Ticket (50-50 Split)" : "Non-Prized Subscriber");
 
         let runningBalance = 0;
         let totalPaidAll = 0;
@@ -2285,9 +2566,10 @@
           if (payments.length > 0) {
             receiptsHtml = `
               <div class="flex items-center justify-end gap-1 flex-wrap">
-                ${payments.map(p => `
-                  <button onclick="app.viewReceipt(${sch.m}, '${memberNo}', '${p.paymentId}')" class="px-1.5 py-0.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded font-bold text-[10px] border border-emerald-200/80 inline-flex items-center gap-0.5" title="${p.receiptNo} (${this.formatINR(p.amount)})">
-                    <i class="ph ph-receipt"></i> ${p.receiptNo.split('-')[1] || 'P1'}
+                ${payments.map((p, pIdx) => `
+                  <button onclick="app.viewReceipt(${sch.m}, '${memberNo}', '${p.paymentId}')" class="relative w-6 h-6 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 active:scale-95 flex items-center justify-center transition" title="${p.receiptNo} (${this.formatINR(p.amount)})">
+                    <i class="ph ph-receipt text-[11px]"></i>
+                    <span class="absolute -top-1 -right-1 bg-emerald-700 text-white text-[7px] font-black w-3 h-3 rounded-full flex items-center justify-center ring-1 ring-white">${pIdx + 1}</span>
                   </button>
                 `).join('')}
               </div>
