@@ -208,7 +208,7 @@
         <div class="bg-gradient-to-br from-indigo-900 to-indigo-950 text-white rounded-2xl p-5 shadow flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <span class="px-2 py-0.5 rounded bg-indigo-800 text-amber-300 font-bold text-[10px] uppercase">Chit Group A</span>
-            <h3 class="text-base sm:text-lg font-bold mt-1">₹5,00,000 • 40 Subscribers • 41 Months</h3>
+            <h3 class="text-base sm:lg font-bold mt-1">₹5,00,000 • 40 Subscribers • 41 Months</h3>
             <p class="text-xs text-indigo-200 mt-0.5">Start: Oct 2026. Month 1 (Foreman: ₹5,00,000), Month 10 (Special: ₹5,00,000).</p>
           </div>
           <button onclick="app.navigate('collections')" class="w-full sm:w-auto px-5 py-2.5 bg-amber-400 hover:bg-amber-300 active:scale-95 text-indigo-950 font-bold rounded-xl text-xs sm:text-sm shadow-sm transition">
@@ -247,7 +247,7 @@
         </div>
       </section>
 
-      <!-- 3. MEMBER DIRECTORY (Merged with Passbook) -->
+      <!-- 3. MEMBER DIRECTORY -->
       <section id="view-members" class="space-y-3 hidden">
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
@@ -293,7 +293,7 @@
         </div>
       </section>
 
-      <!-- 4. SUBSCRIBER PASSBOOK (Drilldown View) -->
+      <!-- 4. SUBSCRIBER PASSBOOK -->
       <section id="view-passbook" class="space-y-3 hidden">
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 no-print">
           <div class="flex items-center gap-2.5">
@@ -355,7 +355,7 @@
                   <th class="p-3 text-right">Month +/-</th>
                   <th class="p-3 text-right">Cumulative Balance</th>
                   <th class="p-3 text-center">Status</th>
-                  <th class="p-3 text-right no-print">Receipt</th>
+                  <th class="p-3 text-right no-print">Receipt(s)</th>
                 </tr>
               </thead>
               <tbody id="passbook-ledger-body" class="divide-y divide-slate-100"></tbody>
@@ -373,7 +373,7 @@
         <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
             <h2 class="text-base sm:text-lg font-bold text-slate-900">Monthly Collections</h2>
-            <p class="text-[11px] text-slate-400">Past months locked. Cut-off: 15th.</p>
+            <p class="text-[11px] text-slate-400">Past months locked. Cut-off: 15th of every month.</p>
           </div>
           <div class="w-full sm:w-auto">
             <select id="collection-month-select" onchange="app.loadCollectionsGrid(parseInt(this.value))" class="w-full border rounded-xl px-3 py-2 text-xs font-semibold bg-slate-50">
@@ -390,10 +390,11 @@
                 <th class="p-3">ID</th>
                 <th class="p-3">Subscriber Name</th>
                 <th class="p-3 text-right">EMI</th>
-                <th class="p-3 text-right">Paid</th>
+                <th class="p-3 text-right">Total Paid</th>
+                <th class="p-3 text-right">Balance Due</th>
                 <th class="p-3">Payment Channel</th>
                 <th class="p-3">Date</th>
-                <th class="p-3 text-right">Receipt & Action</th>
+                <th class="p-3 text-right">Receipts & Action</th>
               </tr>
             </thead>
             <tbody id="collection-desktop-tbody" class="divide-y divide-slate-100"></tbody>
@@ -430,7 +431,6 @@
               <span id="report-heading-title" class="truncate">Collection Report</span>
             </h3>
 
-            <!-- Compact Dropdown + Export Icon Button -->
             <div class="flex items-center gap-2 self-end sm:self-auto shrink-0">
               <select id="report-month-select" onchange="app.onReportMonthChange(parseInt(this.value))" class="border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold bg-slate-50 text-slate-800 focus:ring-2 focus:ring-indigo-600 focus:outline-none shadow-xs">
               </select>
@@ -460,7 +460,7 @@
             </div>
           </div>
 
-          <!-- Collections by Channel Strip with Lightweight Scope Toggle (Month | All) -->
+          <!-- Collections by Channel Strip -->
           <div class="bg-slate-50/70 p-3 rounded-xl border border-slate-200/70 space-y-2">
             <div class="flex items-center justify-between gap-2">
               <span class="font-bold text-[11px] text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
@@ -475,7 +475,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="payment-mode-stats"></div>
           </div>
 
-          <!-- Integrated Subscriber Statement Section (Eliminates Orphan Look) -->
+          <!-- Integrated Subscriber Statement Section -->
           <div class="border-t border-slate-200/80 pt-3 space-y-2.5">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div class="flex items-center gap-2">
@@ -483,7 +483,6 @@
                   <i class="ph ph-users-three text-indigo-900"></i>
                   Subscribers
                 </span>
-                <!-- Clean Segmented Status Tabs -->
                 <div class="inline-flex p-0.5 bg-slate-100 rounded-lg text-xs font-semibold border border-slate-200/60">
                   <button id="rep-filter-all" onclick="app.setReportFilter('all')" class="px-2.5 py-1 rounded-md text-xs font-bold bg-white text-indigo-950 shadow-2xs transition">
                     All (<span id="rep-cnt-all">0</span>)
@@ -497,7 +496,6 @@
                 </div>
               </div>
               
-              <!-- Export Pending Button: Contextually docked right beside the list toolbar -->
               <button id="rep-export-pending-btn" onclick="app.exportMonthlyPendingCSV()" class="hidden px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold items-center gap-1 shadow-2xs transition" title="Export Pending List CSV">
                 <i class="ph ph-file-csv text-sm"></i> Export Pending
               </button>
@@ -511,10 +509,10 @@
                     <th class="p-2.5">ID</th>
                     <th class="p-2.5">Subscriber</th>
                     <th class="p-2.5 text-right">Scheduled EMI</th>
-                    <th class="p-2.5 text-right">Amount Paid</th>
-                    <th class="p-2.5">Payment Date</th>
-                    <th class="p-2.5">Payment Method</th>
-                    <th class="p-2.5">Received By</th>
+                    <th class="p-2.5 text-right">Total Paid</th>
+                    <th class="p-2.5 text-right">Balance Due</th>
+                    <th class="p-2.5">Last Payment</th>
+                    <th class="p-2.5">Channel(s)</th>
                     <th class="p-2.5 text-center">Status</th>
                   </tr>
                 </thead>
@@ -526,27 +524,9 @@
         </div>
       </section>
 
-      <!-- 8. ACTIVITY LOG (Admin Only) with Migration Action Tool -->
+      <!-- 8. ACTIVITY LOG (Admin Only) -->
       <section id="view-audit" class="space-y-3 hidden">
-        <div class="flex items-center justify-between">
-          <h2 class="text-base sm:text-lg font-bold text-slate-900">Audit Trail (Read Only)</h2>
-        </div>
-
-        <!-- Temporary Database Migration Card for Mobile -->
-        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
-          <div>
-            <div class="flex items-center gap-1.5 text-xs font-bold text-amber-900 uppercase tracking-wider">
-              <i class="ph ph-database text-base"></i> Collections Ledger Migration
-            </div>
-            <p class="text-[11px] text-amber-800 mt-0.5">
-              One-time database utility: Converts legacy flat collections into multi-tranche ledger arrays (-P1 receipts).
-            </p>
-          </div>
-          <button id="migration-btn" onclick="app.runDataMigration()" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 whitespace-nowrap">
-            <i class="ph ph-arrows-clockwise text-sm"></i> Run Migration
-          </button>
-        </div>
-
+        <h2 class="text-base sm:text-lg font-bold text-slate-900">Audit Trail (Read Only)</h2>
         <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
           <table class="w-full text-left text-xs whitespace-nowrap">
             <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
@@ -567,10 +547,10 @@
   </div>
 
   <!-- ================= MODALS ================= -->
-  <!-- Record Collection Modal -->
+  <!-- Record Collection Modal (Multi-Tranche Ledger) -->
   <div id="collection-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto">
-      <div class="flex justify-between items-start mb-3">
+    <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto space-y-4">
+      <div class="flex justify-between items-start">
         <div>
           <h3 class="text-base font-bold text-slate-900" id="coll-modal-title">Record Payment</h3>
           <p class="text-xs text-slate-500" id="coll-modal-subtitle"></p>
@@ -579,14 +559,49 @@
           <i class="ph ph-x text-lg"></i>
         </button>
       </div>
-      
-      <form id="collection-form" onsubmit="app.saveCollection(event)" class="space-y-3">
+
+      <!-- Installment Running Status Strip -->
+      <div class="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-2xl border border-slate-200/80 text-center">
+        <div>
+          <span class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Scheduled EMI</span>
+          <span id="coll-stat-emi" class="text-xs font-bold text-slate-800 mt-0.5 block">₹0</span>
+        </div>
+        <div>
+          <span class="text-[9px] uppercase font-bold text-emerald-700 block tracking-wider">Total Paid</span>
+          <span id="coll-stat-paid" class="text-xs font-extrabold text-emerald-800 mt-0.5 block">₹0</span>
+        </div>
+        <div>
+          <span class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Balance Due</span>
+          <span id="coll-stat-due" class="text-xs font-extrabold text-rose-700 mt-0.5 block">₹0</span>
+        </div>
+      </div>
+
+      <!-- List of Recorded Payments for this Month -->
+      <div class="space-y-2">
+        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Recorded Payments for Month</span>
+        <div id="coll-tranches-list" class="space-y-2"></div>
+      </div>
+
+      <!-- Locked Banner when Full Payment is Cleared -->
+      <div id="coll-cleared-banner" class="hidden p-3.5 bg-emerald-50/90 border border-emerald-200 rounded-2xl text-center space-y-1">
+        <div class="flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-900">
+          <i class="ph ph-check-circle text-base text-emerald-600"></i> Installment Cleared (Nil Due)
+        </div>
+        <p class="text-[11px] text-emerald-700">Full payment received for this month. No further receipts can be added.</p>
+      </div>
+
+      <!-- Add New Payment Form (Active only when balanceDue > 0) -->
+      <form id="collection-form" onsubmit="app.saveCollection(event)" class="space-y-3 border-t border-slate-200/70 pt-3">
         <input type="hidden" id="coll-member-id" />
         <input type="hidden" id="coll-month" />
 
+        <div class="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
+          <i class="ph ph-plus-circle text-base text-indigo-600"></i> Add New Payment Tranche
+        </div>
+
         <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">Amount Paid (₹)</label>
-          <input type="number" id="coll-amount" required step="50" class="w-full border rounded-xl px-3 py-2.5 text-sm font-semibold" />
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Amount to Add (₹)</label>
+          <input type="number" id="coll-amount" required step="50" min="1" class="w-full border rounded-xl px-3 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-600" />
         </div>
 
         <div>
@@ -597,7 +612,7 @@
           </select>
         </div>
 
-        <!-- Foreman selection: Enabled only for Admin; Foremen are locked to their own identity -->
+        <!-- Foreman selection: Enabled only for Admin; Foremen locked to self -->
         <div id="coll-foreman-container">
           <label id="coll-foreman-label" class="block text-xs font-semibold text-slate-500 mb-1">Received by Foreman</label>
           <select id="coll-foreman-select" class="w-full border rounded-xl px-3 py-2.5 text-sm bg-white font-medium disabled:bg-slate-100 disabled:text-slate-600 disabled:cursor-not-allowed">
@@ -615,14 +630,14 @@
         </div>
 
         <div class="flex gap-2 pt-2">
-          <button type="button" onclick="app.closeCollectionModal()" class="w-1/2 py-2.5 border rounded-xl text-xs font-semibold text-slate-600">Cancel</button>
-          <button type="submit" class="w-1/2 py-2.5 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow">Save</button>
+          <button type="button" onclick="app.closeCollectionModal()" class="w-1/2 py-2.5 border rounded-xl text-xs font-semibold text-slate-600">Close</button>
+          <button type="submit" id="coll-submit-btn" class="w-1/2 py-2.5 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow">Add Payment</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Subscriber Modal (Edit for Admin / Read-only Details for Foreman) -->
+  <!-- Subscriber Modal -->
   <div id="member-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto">
       <div class="flex justify-between items-start mb-3">
@@ -644,7 +659,6 @@
           <input type="text" id="mem-name" required placeholder="Full Name" class="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
         </div>
         
-        <!-- Phone Number with Fixed +91 Prefix -->
         <div>
           <label class="block text-xs font-semibold text-slate-500 mb-1">Phone Number</label>
           <div class="flex rounded-xl shadow-xs">
@@ -710,12 +724,12 @@
           </div>
           <div>
             <h3 class="text-base font-black text-indigo-950 tracking-tight leading-none">mis-org</h3>
-            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mt-1">Payment Receipt</span>
+            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mt-1" id="rec-type-badge">Payment Receipt</span>
           </div>
         </div>
         <div class="text-right">
           <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Receipt No</span>
-          <span class="text-xs font-mono font-bold text-indigo-950 block" id="rec-number">MISR/01/01</span>
+          <span class="text-xs font-mono font-bold text-indigo-950 block" id="rec-number">MISR/01/01-P1</span>
         </div>
       </div>
 
@@ -723,7 +737,7 @@
       <div class="space-y-3">
         <div class="border border-indigo-100 bg-indigo-50/80 p-3.5 rounded-2xl flex justify-between items-center">
           <div>
-            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-900/70 block">Amount Received</span>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-900/70 block">Tranche Amount Received</span>
             <span class="text-xs font-semibold text-indigo-950 mt-0.5 block" id="rec-date">Date: -</span>
           </div>
           <div class="text-2xl font-black text-indigo-950 tracking-tight" id="rec-amount">₹0</div>
@@ -739,12 +753,20 @@
             <span class="font-mono font-bold text-indigo-900 text-right pl-2" id="rec-member-id">-</span>
           </div>
           <div class="flex justify-between items-center py-2">
-            <span class="text-slate-500 font-medium shrink-0">Installment</span>
+            <span class="text-slate-500 font-medium shrink-0">Installment Period</span>
             <span class="font-semibold text-slate-800 text-right truncate pl-2" id="rec-month">-</span>
           </div>
           <div class="flex justify-between items-center py-2">
-            <span class="text-slate-500 font-medium shrink-0">Scheduled EMI</span>
+            <span class="text-slate-500 font-medium shrink-0">Scheduled Monthly EMI</span>
             <span class="font-semibold text-slate-700 text-right pl-2" id="rec-scheduled-emi">-</span>
+          </div>
+          <div class="flex justify-between items-center py-2">
+            <span class="text-slate-500 font-medium shrink-0">Month Total Paid To Date</span>
+            <span class="font-bold text-emerald-800 text-right pl-2" id="rec-total-paid">-</span>
+          </div>
+          <div class="flex justify-between items-center py-2">
+            <span class="text-slate-500 font-medium shrink-0">Balance Outstanding</span>
+            <span class="font-bold text-rose-700 text-right pl-2" id="rec-balance-due">-</span>
           </div>
           <div class="flex justify-between items-center py-2">
             <span class="text-slate-500 font-medium shrink-0">Payment Mode</span>
@@ -753,6 +775,10 @@
           <div class="flex justify-between items-center py-2">
             <span class="text-slate-500 font-medium shrink-0">Received / Verified By</span>
             <span class="font-semibold text-slate-800 text-right truncate pl-2" id="rec-recipient">-</span>
+          </div>
+          <div class="flex justify-between items-center py-2" id="rec-remarks-row">
+            <span class="text-slate-500 font-medium shrink-0">Remarks / UTR</span>
+            <span class="font-medium text-slate-700 text-right truncate pl-2" id="rec-remarks">-</span>
           </div>
         </div>
 
@@ -870,7 +896,7 @@
         this.currentMonthIdx = 1;
         this.reportSelectedMonth = 1;
         this.reportFilter = 'all';
-        this.channelReportScope = 'month'; // 'month' or 'all'
+        this.channelReportScope = 'month';
         this.startYear = 2026;
         this.startMonth = 10;
         this.navigationStack = [];
@@ -994,10 +1020,10 @@
         const doc = new jsPdfClass({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         const pageWidth = 210;
 
-        const cardWidth = 136;
-        const cardHeight = 160;
+        const cardWidth = 140;
+        const cardHeight = 175;
         const cardX = (pageWidth - cardWidth) / 2;
-        const cardY = 42;
+        const cardY = 32;
 
         doc.setDrawColor(203, 213, 225);
         doc.setFillColor(255, 255, 255);
@@ -1015,7 +1041,8 @@
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(7.5);
         doc.setTextColor(100, 116, 139);
-        doc.text('CHIT FUND PAYMENT RECEIPT', cardX + 10, cardY + 21);
+        const subTypeTitle = data.isPartPayment ? 'PART PAYMENT ACKNOWLEDGMENT' : 'PAYMENT RECEIPT (FINAL SETTLEMENT)';
+        doc.text(subTypeTitle, cardX + 10, cardY + 21);
 
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(7.5);
@@ -1023,7 +1050,7 @@
         doc.text('RECEIPT NO', cardX + cardWidth - 10, cardY + 15, { align: 'right' });
 
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11);
+        doc.setFontSize(10.5);
         doc.setTextColor(30, 27, 75);
         doc.text(this.cleanAscii(data.recId), cardX + cardWidth - 10, cardY + 21, { align: 'right' });
 
@@ -1037,9 +1064,9 @@
         doc.roundedRect(cardX + 10, bannerY, cardWidth - 20, bannerHeight, 2.5, 2.5, 'FD');
 
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(8.5);
+        doc.setFontSize(8);
         doc.setTextColor(67, 56, 202);
-        doc.text('AMOUNT RECEIVED', cardX + 16, bannerY + 9);
+        doc.text('TRANCHE RECEIVED', cardX + 16, bannerY + 9);
 
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
@@ -1047,7 +1074,7 @@
         doc.text(`Date: ${this.cleanAscii(data.date)}`, cardX + 16, bannerY + 17);
 
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(18);
+        doc.setFontSize(17);
         doc.setTextColor(30, 27, 75);
         const displayAmt = data.rawAmount ? `Rs. ${Number(data.rawAmount).toLocaleString('en-IN')}` : this.cleanAscii(data.amountPaid);
         doc.text(displayAmt, cardX + cardWidth - 16, bannerY + 15, { align: 'right' });
@@ -1056,13 +1083,16 @@
           ['Subscriber Name', this.cleanAscii(data.memberName)],
           ['Member Identifier', this.cleanAscii(data.memberNo)],
           ['Installment Period', this.cleanAscii(data.monthName)],
-          ['Scheduled EMI', this.cleanAscii(data.scheduledEmi)],
+          ['Scheduled Monthly EMI', this.cleanAscii(data.scheduledEmi)],
+          ['Total Paid So Far (Month)', this.cleanAscii(data.totalPaid)],
+          ['Balance Due (Month)', this.cleanAscii(data.balanceDue)],
           ['Payment Mode', this.cleanAscii(data.method)],
-          ['Received / Verified By', this.cleanAscii(data.recipient)]
+          ['Received / Verified By', this.cleanAscii(data.recipient)],
+          ['Remarks / UTR', this.cleanAscii(data.remarks || '-')]
         ];
 
         let startY = bannerY + bannerHeight + 6;
-        const rowHeight = 9.5;
+        const rowHeight = 9;
 
         doc.setDrawColor(241, 245, 249);
         doc.roundedRect(cardX + 10, startY - 2, cardWidth - 20, (rows.length * rowHeight) + 2, 2, 2, 'D');
@@ -1074,13 +1104,13 @@
           }
 
           doc.setFont('helvetica', 'normal');
-          doc.setFontSize(8.5);
+          doc.setFontSize(8);
           doc.setTextColor(100, 116, 139);
-          doc.text(label, cardX + 15, startY + 5);
+          doc.text(label, cardX + 15, startY + 4.5);
 
           doc.setFont('helvetica', 'bold');
           doc.setTextColor(15, 23, 42);
-          doc.text(value, cardX + cardWidth - 15, startY + 5, { align: 'right' });
+          doc.text(value, cardX + cardWidth - 15, startY + 4.5, { align: 'right' });
 
           if (idx < rows.length - 1) {
             doc.setDrawColor(241, 245, 249);
@@ -1237,7 +1267,6 @@
               this.currentUser = user;
               this.userRole = (profile.role || "member").toLowerCase();
 
-              // Strictly preserve Firestore displayName without overwriting with Google Auth name
               this.userProfile = profile;
               this.setAuthLoading(false);
               this.clearAuthError();
@@ -1325,7 +1354,6 @@
         document.getElementById('dropdown-user-email').innerText = this.currentUser.email;
         document.getElementById('dropdown-user-role').innerText = this.userRole;
 
-        // Subscriber Direct Access: View Passbook Only
         if (this.userRole === "member") {
           document.getElementById('module-tabs').classList.add('hidden');
           document.getElementById('pb-back-btn')?.classList.add('hidden');
@@ -1349,7 +1377,6 @@
         document.getElementById('module-tabs').classList.remove('hidden');
         document.getElementById('pb-back-btn')?.classList.remove('hidden');
         
-        // Audit Log and Add Member strictly guarded for Admin
         if (this.userRole === "admin") {
           document.getElementById('tab-audit')?.classList.remove('hidden');
           document.getElementById('add-member-btn')?.classList.remove('hidden');
@@ -1466,98 +1493,6 @@
         }
       }
 
-      // ================= ONE-TIME DATA MIGRATION METHOD =================
-      async runDataMigration() {
-        if (this.userRole !== 'admin') {
-          this.notify("Unauthorized: Admin privileges required.", true);
-          return;
-        }
-
-        const btn = document.getElementById('migration-btn');
-        if (btn) {
-          btn.disabled = true;
-          btn.innerHTML = `<i class="ph ph-spinner animate-spin text-sm"></i> Migrating...`;
-        }
-
-        this.notify("Starting collections migration...");
-
-        try {
-          const snap = await getDocs(query(collection(db, "collections"), where("chitId", "==", this.activeChitId)));
-          let migratedCount = 0;
-          let skippedCount = 0;
-
-          for (const docSnap of snap.docs) {
-            const data = docSnap.data();
-
-            // Skip records that are already converted
-            if (Array.isArray(data.payments) && data.payments.length > 0) {
-              skippedCount++;
-              continue;
-            }
-
-            const monthNum = Number(data.month);
-            const memberNo = String(data.memberNo);
-            const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
-            const emi = sch ? sch.emi : 12500;
-            const paid = Number(data.amountPaid) || 0;
-
-            const mFormatted = String(monthNum).padStart(2, "0");
-            const memClean = memberNo.replace(/\D/g, "").padStart(2, "0");
-            const receiptNo = `MISR/${memClean}/${mFormatted}-P1`;
-
-            let status = "Pending";
-            if (paid >= emi) {
-              status = "Cleared";
-            } else if (paid > 0) {
-              status = "Partial";
-            }
-
-            const tranche = {
-              paymentId: "P-1",
-              receiptNo: receiptNo,
-              amount: paid,
-              paymentMethod: data.paymentMethod || "Cash / UPI to Foreman",
-              receivedBy: data.receivedBy || data.recordedByName || "Foreman",
-              paymentDate: data.paymentDate || new Date().toISOString().split("T")[0],
-              remarks: data.remarks || "",
-              recordedByUid: data.recordedByUid || this.currentUser.uid,
-              recordedByName: data.recordedByName || "Admin"
-            };
-
-            const newDoc = {
-              chitId: data.chitId || "group_a",
-              month: monthNum,
-              memberNo: memberNo,
-              scheduledEmi: emi,
-              totalPaid: paid,
-              balanceDue: Math.max(0, emi - paid),
-              status: status,
-              lastPaymentDate: tranche.paymentDate,
-              updatedAt: data.updatedAt || new Date().toISOString(),
-              payments: paid > 0 ? [tranche] : []
-            };
-
-            await setDoc(doc(db, "collections", docSnap.id), newDoc, { merge: true });
-            migratedCount++;
-          }
-
-          await this.logActivity("Database", "MIGRATE_COLLECTIONS", null, { migratedCount, skippedCount });
-          this.notify(`Migration finished! ${migratedCount} updated.`);
-          alert(`Migration Complete!\n\n• Converted: ${migratedCount} documents\n• Already in new schema: ${skippedCount} documents`);
-
-          await this.loadData();
-          this.navigate('collections');
-        } catch (err) {
-          console.error("Migration error:", err);
-          this.notify(`Migration failed: ${err.message}`, true);
-        } finally {
-          if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = `<i class="ph ph-arrows-clockwise text-sm"></i> Run Migration`;
-          }
-        }
-      }
-
       renderSchedule() {
         const tbody = document.getElementById('schedule-table-body');
         tbody.innerHTML = MASTER_SCHEDULE.map(r => `
@@ -1589,8 +1524,8 @@
         const curSchedule = MASTER_SCHEDULE.find(s => s.m === curM);
         const monthCollections = this.collections.filter(c => c.month === curM);
         const memberCount = this.members.length;
-        const paidCount = new Set(monthCollections.filter(c => (c.totalPaid ?? c.amountPaid) >= curSchedule.emi).map(c => c.memberNo)).size;
-        const totalAmountMonth = monthCollections.reduce((acc, c) => acc + (Number(c.totalPaid ?? c.amountPaid) || 0), 0);
+        const paidCount = new Set(monthCollections.filter(c => (Number(c.totalPaid) || 0) >= curSchedule.emi).map(c => c.memberNo)).size;
+        const totalAmountMonth = monthCollections.reduce((acc, c) => acc + (Number(c.totalPaid) || 0), 0);
         
         document.getElementById('dash-month-name').innerText = `Month ${curM}`;
         document.getElementById('dash-paid-count').innerText = `${paidCount} / ${memberCount} Paid`;
@@ -1603,7 +1538,7 @@
 
         let expectedToDate = 0;
         for (let m = 1; m <= curM; m++) expectedToDate += MASTER_SCHEDULE.find(s => s.m === m).emi;
-        const totalPaidAll = this.collections.reduce((sum, c) => sum + (Number(c.totalPaid ?? c.amountPaid) || 0), 0);
+        const totalPaidAll = this.collections.reduce((sum, c) => sum + (Number(c.totalPaid) || 0), 0);
         const totalPending = Math.max(0, (expectedToDate * memberCount) - totalPaidAll);
         document.getElementById('dash-total-pending').innerText = this.formatINR(totalPending);
       }
@@ -1635,7 +1570,7 @@
 
         const mContainer = document.getElementById('member-mobile-cards');
         mContainer.innerHTML = list.length === 0 ? `<div class="p-6 text-center text-xs text-slate-400 bg-white rounded-2xl">No subscribers found.</div>` : list.map(m => {
-          const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.totalPaid ?? c.amountPaid) || 0), 0);
+          const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.totalPaid) || 0), 0);
           return `
             <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
               <div class="space-y-0.5 flex-1 cursor-pointer pr-2" onclick="app.openMemberModal('${m.memberNo}')">
@@ -1661,7 +1596,7 @@
 
         const dBody = document.getElementById('member-desktop-tbody');
         dBody.innerHTML = list.map(m => {
-          const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.totalPaid ?? c.amountPaid) || 0), 0);
+          const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.totalPaid) || 0), 0);
           return `
             <tr class="hover:bg-slate-50 transition">
               <td class="p-3 font-mono font-bold text-indigo-900 cursor-pointer" onclick="app.openMemberModal('${m.memberNo}')">${m.memberNo}</td>
@@ -1705,7 +1640,7 @@
         csv += "Member ID,Subscriber Name,Phone,Email,Address,Status,Prized Status,Prized Month,Prize Money Received,Total Amount Paid\n";
         
         this.members.forEach(m => {
-          const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.totalPaid ?? c.amountPaid) || 0), 0);
+          const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.totalPaid) || 0), 0);
           csv += `"${m.memberNo}","${m.name}","${m.phone || ''}","${m.email || ''}","${(m.address || '').replace(/"/g, '""')}","${m.isActive ? 'Active' : 'Inactive'}","${m.isPrized ? 'Prized' : 'Non-Prized'}","${m.prizedMonth || '-'}","${m.prizeMoney || 0}","${totalPaid}"\n`;
         });
 
@@ -1880,6 +1815,7 @@
         }
       }
 
+      // ================= MULTI-TRANCHE COLLECTIONS LOGIC =================
       loadCollectionsGrid(monthNum) {
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
         const isPastMonth = monthNum < this.currentMonthIdx;
@@ -1887,44 +1823,77 @@
         const mCards = document.getElementById('collection-mobile-cards');
         mCards.innerHTML = this.members.map(m => {
           const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
-          const totalPaid = Number(entry?.totalPaid ?? entry?.amountPaid) || 0;
-          const isPaid = totalPaid > 0;
-          const isCreator = entry && entry.recordedByUid === this.currentUser?.uid;
-          const canEdit = !isPastMonth && (this.userRole === 'admin' || isCreator || !entry);
+          const totalPaid = Number(entry?.totalPaid) || 0;
+          const balanceDue = Math.max(0, sch.emi - totalPaid);
+          const isCleared = totalPaid >= sch.emi;
+          const isPartial = totalPaid > 0 && !isCleared;
+          const payments = Array.isArray(entry?.payments) ? entry.payments : [];
 
           let channelBadge = "-";
-          if (entry) {
-            const verifier = (entry.receivedBy && entry.receivedBy !== 'Main Bank Account') ? entry.receivedBy : (entry.recordedByName || 'Foreman');
-            if (entry.paymentMethod === 'Bank Transfer to Main Account') {
+          if (payments.length > 0) {
+            const lastP = payments[payments.length - 1];
+            const verifier = (lastP.receivedBy && lastP.receivedBy !== 'Main Bank Account') ? lastP.receivedBy : (lastP.recordedByName || 'Foreman');
+            if (lastP.paymentMethod === 'Bank Transfer to Main Account') {
               channelBadge = `<span class="text-indigo-600 font-semibold">Bank A/c (${verifier})</span>`;
             } else {
               channelBadge = `<span class="text-amber-700 font-semibold">Cash/UPI (${verifier})</span>`;
             }
+            if (payments.length > 1) {
+              channelBadge += ` <span class="text-[10px] bg-slate-100 text-slate-600 px-1 rounded font-bold">${payments.length} parts</span>`;
+            }
+          }
+
+          let receiptsHtml = "";
+          if (payments.length > 0) {
+            receiptsHtml = `
+              <div class="flex items-center gap-1 flex-wrap">
+                ${payments.map(p => `
+                  <button onclick="app.viewReceipt(${monthNum}, '${m.memberNo}', '${p.paymentId}')" class="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 active:scale-95 border border-emerald-200/80 text-[10px] font-bold flex items-center gap-0.5" title="View Receipt ${p.receiptNo}">
+                    <i class="ph ph-receipt"></i> ${p.receiptNo.split('-')[1] || 'P1'}
+                  </button>
+                `).join('')}
+              </div>
+            `;
           }
 
           return `
-            <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-              <div>
-                <div class="flex items-center gap-1.5">
-                  <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-1.5 py-0.5 rounded">${m.memberNo}</span>
-                  <span class="font-bold text-xs text-slate-800">${m.name}</span>
+            <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-2.5">
+              <div class="flex items-start justify-between">
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-1.5 py-0.5 rounded">${m.memberNo}</span>
+                    <span class="font-bold text-xs text-slate-800">${m.name}</span>
+                  </div>
+                  <div class="text-[11px] text-slate-500 mt-0.5">Scheduled EMI: <span class="font-semibold text-slate-700">${this.formatINR(sch.emi)}</span></div>
                 </div>
-                <div class="text-[11px] text-slate-500 mt-0.5">Scheduled EMI: <span class="font-semibold text-slate-700">${this.formatINR(sch.emi)}</span></div>
-                <div class="text-xs font-extrabold ${isPaid ? 'text-emerald-600' : 'text-slate-400'} mt-0.5">
-                  Paid: ${this.formatINR(totalPaid)} • ${channelBadge}
+                <div>
+                  ${isCleared 
+                    ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Cleared</span>`
+                    : (isPartial 
+                        ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">Partial (${this.formatINR(balanceDue)} due)</span>`
+                        : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600">Pending</span>`)}
                 </div>
               </div>
-              <div class="flex items-center gap-1">
-                ${isPaid ? `
-                  <button onclick="app.viewReceipt(${monthNum}, '${m.memberNo}')" class="p-2 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 active:scale-95 shadow-xs" title="View Receipt">
-                    <i class="ph ph-receipt text-base"></i>
-                  </button>
-                ` : ''}
-                ${canEdit ? `
-                  <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}', ${totalPaid || sch.emi})" class="px-3 py-2 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow-sm">
-                    ${entry ? 'Update' : 'Record'}
-                  </button>
-                ` : `<span class="text-[11px] text-slate-400 font-semibold italic">Locked</span>`}
+
+              <div class="text-xs flex items-center justify-between border-t border-slate-100 pt-2 text-slate-600">
+                <div>
+                  <span class="font-bold ${totalPaid > 0 ? 'text-slate-900' : 'text-slate-400'}">Paid: ${this.formatINR(totalPaid)}</span>
+                  <span class="text-[11px] text-slate-400 block">${channelBadge}</span>
+                </div>
+                <div class="text-right">
+                  ${balanceDue > 0 ? `<span class="font-bold text-rose-600 block text-[11px]">Due: ${this.formatINR(balanceDue)}</span>` : `<span class="font-bold text-emerald-600 block text-[11px]">Nil Due</span>`}
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between gap-1.5 border-t border-slate-100 pt-2">
+                <div class="flex-1">${receiptsHtml}</div>
+                <div>
+                  ${!isPastMonth ? `
+                    <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}')" class="px-3 py-1.5 ${isCleared ? 'bg-slate-100 hover:bg-slate-200 text-slate-800' : 'bg-indigo-900 hover:bg-indigo-800 text-white'} rounded-xl text-xs font-bold active:scale-95 shadow-sm transition">
+                      ${isCleared ? 'Details' : (isPartial ? '+ Add Part' : 'Record')}
+                    </button>
+                  ` : `<span class="text-[11px] text-slate-400 font-semibold italic">Locked</span>`}
+                </div>
               </div>
             </div>
           `;
@@ -1933,17 +1902,28 @@
         const dBody = document.getElementById('collection-desktop-tbody');
         dBody.innerHTML = this.members.map(m => {
           const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
-          const totalPaid = Number(entry?.totalPaid ?? entry?.amountPaid) || 0;
-          const isPaid = totalPaid > 0;
-          const isCreator = entry && entry.recordedByUid === this.currentUser?.uid;
-          const canEdit = !isPastMonth && (this.userRole === 'admin' || isCreator || !entry);
+          const totalPaid = Number(entry?.totalPaid) || 0;
+          const balanceDue = Math.max(0, sch.emi - totalPaid);
+          const isCleared = totalPaid >= sch.emi;
+          const isPartial = totalPaid > 0 && !isCleared;
+          const payments = Array.isArray(entry?.payments) ? entry.payments : [];
 
           let channelDisplay = "-";
-          if (entry) {
-            const verifier = (entry.receivedBy && entry.receivedBy !== 'Main Bank Account') ? entry.receivedBy : (entry.recordedByName || 'Foreman');
-            channelDisplay = entry.paymentMethod === 'Bank Transfer to Main Account' 
-              ? `Bank Transfer (${verifier})` 
-              : `Cash/UPI (${verifier})`;
+          if (payments.length > 0) {
+            const channels = payments.map(p => {
+              const verifier = (p.receivedBy && p.receivedBy !== 'Main Bank Account') ? p.receivedBy : (p.recordedByName || 'Foreman');
+              return p.paymentMethod === 'Bank Transfer to Main Account' ? `Bank (${verifier})` : `Cash/UPI (${verifier})`;
+            });
+            channelDisplay = Array.from(new Set(channels)).join(', ');
+          }
+
+          let receiptsHtml = "";
+          if (payments.length > 0) {
+            receiptsHtml = payments.map(p => `
+              <button onclick="app.viewReceipt(${monthNum}, '${m.memberNo}', '${p.paymentId}')" class="px-2 py-0.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg font-bold text-xs inline-flex items-center gap-0.5 border border-emerald-200/60" title="Receipt ${p.receiptNo}">
+                <i class="ph ph-receipt"></i> ${p.receiptNo.split('-')[1] || 'P1'}
+              </button>
+            `).join(' ');
           }
 
           return `
@@ -1951,18 +1931,15 @@
               <td class="p-3 font-mono font-bold text-indigo-900">${m.memberNo}</td>
               <td class="p-3 font-semibold text-slate-800">${m.name}</td>
               <td class="p-3 text-right font-medium">${this.formatINR(sch.emi)}</td>
-              <td class="p-3 text-right font-bold ${isPaid ? 'text-emerald-600' : 'text-slate-400'}">${this.formatINR(totalPaid)}</td>
+              <td class="p-3 text-right font-bold ${totalPaid > 0 ? 'text-emerald-600' : 'text-slate-400'}">${this.formatINR(totalPaid)}</td>
+              <td class="p-3 text-right font-bold ${balanceDue > 0 ? 'text-rose-600' : 'text-slate-400'}">${this.formatINR(balanceDue)}</td>
               <td class="p-3 text-xs font-medium text-slate-700">${channelDisplay}</td>
-              <td class="p-3 text-slate-500">${this.formatDate(entry?.lastPaymentDate || entry?.paymentDate)}</td>
-              <td class="p-3 text-right space-x-1">
-                ${isPaid ? `
-                  <button onclick="app.viewReceipt(${monthNum}, '${m.memberNo}')" class="px-2 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg font-bold text-xs inline-flex items-center gap-1" title="View Receipt">
-                    <i class="ph ph-receipt"></i> Receipt
-                  </button>
-                ` : ''}
-                ${canEdit ? `
-                  <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}', ${totalPaid || sch.emi})" class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg font-bold text-xs">
-                    ${entry ? 'Update' : 'Record'}
+              <td class="p-3 text-slate-500">${this.formatDate(entry?.lastPaymentDate)}</td>
+              <td class="p-3 text-right space-x-1.5 whitespace-nowrap">
+                ${receiptsHtml}
+                ${!isPastMonth ? `
+                  <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}')" class="px-2.5 py-1 ${isCleared ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'} rounded-lg font-bold text-xs transition">
+                    ${isCleared ? 'Details' : (isPartial ? '+ Add Part' : 'Record')}
                   </button>
                 ` : '<span class="text-slate-400 text-xs italic">Locked</span>'}
               </td>
@@ -1971,45 +1948,96 @@
         }).join('');
       }
 
-      openCollectionModal(monthNum, memberNo, defaultAmt) {
+      openCollectionModal(monthNum, memberNo) {
         const mem = this.members.find(m => m.memberNo === memberNo);
         const existing = this.collections.find(c => c.month === monthNum && c.memberNo === memberNo);
+        const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
+        const emi = sch ? sch.emi : 12500;
 
-        document.getElementById('coll-modal-title').innerText = `Month ${monthNum} Collection`;
-        document.getElementById('coll-modal-subtitle').innerText = `${memberNo} - ${mem.name}`;
+        const totalPaid = Number(existing?.totalPaid) || 0;
+        const balanceDue = Math.max(0, emi - totalPaid);
+        const isCleared = totalPaid >= emi;
+        const payments = Array.isArray(existing?.payments) ? existing.payments : [];
+
+        document.getElementById('coll-modal-title').innerText = `Month ${monthNum} Installment`;
+        document.getElementById('coll-modal-subtitle').innerText = `${memberNo} • ${mem.name}`;
         document.getElementById('coll-member-id').value = memberNo;
         document.getElementById('coll-month').value = monthNum;
-        document.getElementById('coll-amount').value = existing ? (existing.totalPaid ?? existing.amountPaid) : defaultAmt;
-        
-        const myDisplayName = (this.userProfile?.displayName || this.userProfile?.name || this.currentUser.email.split('@')[0]).trim();
 
-        const optionsSet = new Set(this.foremenList);
-        if (myDisplayName) optionsSet.add(myDisplayName);
-        if (existing?.receivedBy && existing.receivedBy !== 'Main Bank Account') {
-          optionsSet.add(existing.receivedBy);
+        document.getElementById('coll-stat-emi').innerText = this.formatINR(emi);
+        document.getElementById('coll-stat-paid').innerText = this.formatINR(totalPaid);
+        document.getElementById('coll-stat-due').innerText = this.formatINR(balanceDue);
+
+        // Render recorded tranches
+        const tranchesContainer = document.getElementById('coll-tranches-list');
+        if (payments.length === 0) {
+          tranchesContainer.innerHTML = `<div class="p-3 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">No payments recorded yet for this month.</div>`;
+        } else {
+          tranchesContainer.innerHTML = payments.map((p, idx) => {
+            const verifier = (p.receivedBy && p.receivedBy !== 'Main Bank Account') ? p.receivedBy : (p.recordedByName || 'Foreman');
+            return `
+              <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200/90 flex items-center justify-between text-xs">
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-mono font-bold text-indigo-950">${p.receiptNo}</span>
+                    <span class="font-bold text-emerald-700">${this.formatINR(p.amount)}</span>
+                  </div>
+                  <div class="text-[11px] text-slate-500 mt-0.5">
+                    ${this.formatDate(p.paymentDate)} • ${p.paymentMethod} • <span class="font-semibold text-slate-700">${verifier}</span>
+                  </div>
+                  ${p.remarks ? `<div class="text-[10px] text-slate-400 italic mt-0.5">"${p.remarks}"</div>` : ''}
+                </div>
+                <div class="flex items-center gap-1 shrink-0 ml-2">
+                  <button type="button" onclick="app.viewReceipt(${monthNum}, '${memberNo}', '${p.paymentId}')" class="p-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 rounded-lg text-xs font-bold" title="View Receipt">
+                    <i class="ph ph-receipt text-sm"></i>
+                  </button>
+                  ${this.userRole === 'admin' ? `
+                    <button type="button" onclick="app.deletePaymentTranche(${monthNum}, '${memberNo}', '${p.paymentId}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs" title="Revoke Payment Entry">
+                      <i class="ph ph-trash text-sm"></i>
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+            `;
+          }).join('');
         }
 
-        const fSelect = document.getElementById('coll-foreman-select');
-        fSelect.innerHTML = Array.from(optionsSet).map(fn => `<option value="${fn}">${fn}</option>`).join('');
+        // Lock form when installment is cleared
+        const clearedBanner = document.getElementById('coll-cleared-banner');
+        const formEl = document.getElementById('collection-form');
 
-        const currentMethod = existing ? existing.paymentMethod : "Cash / UPI to Foreman";
-        document.getElementById('coll-method').value = currentMethod;
-        this.onPaymentMethodChange(currentMethod);
+        if (isCleared) {
+          clearedBanner.classList.remove('hidden');
+          formEl.classList.add('hidden');
+        } else {
+          clearedBanner.classList.add('hidden');
+          formEl.classList.remove('hidden');
 
-        if (this.userRole === 'admin') {
-          fSelect.disabled = false;
-          if (existing?.receivedBy && existing.receivedBy !== 'Main Bank Account') {
-            fSelect.value = existing.receivedBy;
+          // Default amount to remaining balance due
+          document.getElementById('coll-amount').value = balanceDue;
+          document.getElementById('coll-amount').max = balanceDue;
+
+          const myDisplayName = (this.userProfile?.displayName || this.userProfile?.name || this.currentUser.email.split('@')[0]).trim();
+          const optionsSet = new Set(this.foremenList);
+          if (myDisplayName) optionsSet.add(myDisplayName);
+
+          const fSelect = document.getElementById('coll-foreman-select');
+          fSelect.innerHTML = Array.from(optionsSet).map(fn => `<option value="${fn}">${fn}</option>`).join('');
+
+          document.getElementById('coll-method').value = "Cash / UPI to Foreman";
+          this.onPaymentMethodChange("Cash / UPI to Foreman");
+
+          if (this.userRole === 'admin') {
+            fSelect.disabled = false;
+            fSelect.value = myDisplayName || (fSelect.options[0]?.value || '');
           } else {
+            fSelect.disabled = true;
             fSelect.value = myDisplayName || (fSelect.options[0]?.value || '');
           }
-        } else {
-          fSelect.disabled = true;
-          fSelect.value = myDisplayName || (fSelect.options[0]?.value || '');
-        }
 
-        document.getElementById('coll-date').value = existing?.lastPaymentDate || existing?.paymentDate || new Date().toISOString().split('T')[0];
-        document.getElementById('coll-remarks').value = existing?.remarks || "";
+          document.getElementById('coll-date').value = new Date().toISOString().split('T')[0];
+          document.getElementById('coll-remarks').value = "";
+        }
 
         document.getElementById('collection-modal').classList.remove('hidden');
       }
@@ -2022,88 +2050,143 @@
         e.preventDefault();
         const monthNum = parseInt(document.getElementById('coll-month').value);
         const memberNo = document.getElementById('coll-member-id').value;
-        const amount = parseFloat(document.getElementById('coll-amount').value);
+        const newAmount = parseFloat(document.getElementById('coll-amount').value);
 
         if (monthNum < this.currentMonthIdx) {
           this.notify("Past months are locked from editing", true);
           return;
         }
 
+        if (isNaN(newAmount) || newAmount <= 0) {
+          this.notify("Please enter a valid amount.", true);
+          return;
+        }
+
+        const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
+        const emi = sch ? sch.emi : 12500;
         const docKey = `${this.activeChitId}_M${monthNum}_${memberNo}`;
         const existing = this.collections.find(c => c.month === monthNum && c.memberNo === memberNo);
 
+        const currentPaid = Number(existing?.totalPaid) || 0;
+        if (currentPaid >= emi) {
+          this.notify("Installment already settled. No further payments allowed.", true);
+          return;
+        }
+
+        const existingPayments = Array.isArray(existing?.payments) ? existing.payments : [];
+        const nextTrancheIndex = existingPayments.length + 1;
+        const mFormatted = String(monthNum).padStart(2, "0");
+        const memClean = memberNo.replace(/\D/g, "").padStart(2, "0");
+        const receiptNo = `MISR/${memClean}/${mFormatted}-P${nextTrancheIndex}`;
+
         const method = document.getElementById('coll-method').value;
         const myDisplayName = (this.userProfile?.displayName || this.userProfile?.name || this.currentUser.email.split('@')[0]).trim();
-
         const receivedBy = (this.userRole === 'admin')
           ? document.getElementById('coll-foreman-select').value
           : myDisplayName;
 
-        const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
-        const emi = sch ? sch.emi : 12500;
-        const mFormatted = String(monthNum).padStart(2, "0");
-        const memClean = memberNo.replace(/\D/g, "").padStart(2, "0");
-        const receiptNo = `MISR/${memClean}/${mFormatted}-P1`;
-
-        const tranche = {
-          paymentId: "P-1",
+        const newTranche = {
+          paymentId: `P-${nextTrancheIndex}`,
           receiptNo: receiptNo,
-          amount: amount,
+          amount: newAmount,
           paymentMethod: method,
           receivedBy: receivedBy,
           paymentDate: document.getElementById('coll-date').value,
-          remarks: document.getElementById('coll-remarks').value,
-          recordedByUid: existing ? existing.recordedByUid : this.currentUser.uid,
+          remarks: document.getElementById('coll-remarks').value.trim(),
+          recordedByUid: this.currentUser.uid,
           recordedByName: myDisplayName
         };
+
+        const updatedPayments = [...existingPayments, newTranche];
+        const updatedTotalPaid = updatedPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+        const updatedBalanceDue = Math.max(0, emi - updatedTotalPaid);
+        const updatedStatus = updatedTotalPaid >= emi ? "Cleared" : "Partial";
 
         const payload = {
           chitId: this.activeChitId,
           month: monthNum,
           memberNo: memberNo,
           scheduledEmi: emi,
-          totalPaid: amount,
-          balanceDue: Math.max(0, emi - amount),
-          status: amount >= emi ? "Cleared" : (amount > 0 ? "Partial" : "Pending"),
-          paymentMethod: method,
-          receivedBy: receivedBy,
-          lastPaymentDate: tranche.paymentDate,
-          remarks: document.getElementById('coll-remarks').value,
-          recordedByUid: existing ? existing.recordedByUid : this.currentUser.uid,
-          recordedByName: myDisplayName,
+          totalPaid: updatedTotalPaid,
+          balanceDue: updatedBalanceDue,
+          status: updatedStatus,
+          lastPaymentDate: newTranche.paymentDate,
           updatedAt: new Date().toISOString(),
-          payments: amount > 0 ? [tranche] : []
+          payments: updatedPayments
         };
 
         try {
           await setDoc(doc(db, "collections", docKey), payload, { merge: true });
-          await this.logActivity("Collections", "UPDATE_COLLECTION", null, payload);
-          this.notify("Payment recorded");
-          this.closeCollectionModal();
+          await this.logActivity("Collections", "ADD_PAYMENT_TRANCHE", null, { receiptNo, amount: newAmount, memberNo, monthNum });
+          this.notify(`Payment recorded (${receiptNo})`);
           await this.loadData();
+          this.openCollectionModal(monthNum, memberNo);
           this.loadCollectionsGrid(monthNum);
         } catch (err) {
           this.notify(err.message, true);
         }
       }
 
-      viewReceipt(monthNum, memberNo) {
+      async deletePaymentTranche(monthNum, memberNo, paymentId) {
+        if (this.userRole !== 'admin') {
+          this.notify("Unauthorized: Admin privileges required.", true);
+          return;
+        }
+
+        if (!confirm(`Are you sure you want to revoke payment entry ${paymentId}?`)) return;
+
+        const docKey = `${this.activeChitId}_M${monthNum}_${memberNo}`;
+        const existing = this.collections.find(c => c.month === monthNum && c.memberNo === memberNo);
+        if (!existing || !Array.isArray(existing.payments)) return;
+
+        const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
+        const emi = sch ? sch.emi : 12500;
+
+        const filteredPayments = existing.payments.filter(p => p.paymentId !== paymentId);
+        const updatedTotalPaid = filteredPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+        const updatedBalanceDue = Math.max(0, emi - updatedTotalPaid);
+        const updatedStatus = updatedTotalPaid >= emi ? "Cleared" : (updatedTotalPaid > 0 ? "Partial" : "Pending");
+        const lastDate = filteredPayments.length > 0 ? filteredPayments[filteredPayments.length - 1].paymentDate : "";
+
+        const payload = {
+          totalPaid: updatedTotalPaid,
+          balanceDue: updatedBalanceDue,
+          status: updatedStatus,
+          lastPaymentDate: lastDate,
+          updatedAt: new Date().toISOString(),
+          payments: filteredPayments
+        };
+
+        try {
+          await setDoc(doc(db, "collections", docKey), payload, { merge: true });
+          await this.logActivity("Collections", "REVOKE_PAYMENT_TRANCHE", { paymentId, memberNo, monthNum }, null);
+          this.notify(`Payment entry ${paymentId} removed`);
+          await this.loadData();
+          this.openCollectionModal(monthNum, memberNo);
+          this.loadCollectionsGrid(monthNum);
+        } catch (err) {
+          this.notify(err.message, true);
+        }
+      }
+
+      viewReceipt(monthNum, memberNo, paymentId = null) {
         const mem = this.members.find(m => m.memberNo === memberNo);
         const entry = this.collections.find(c => c.month === monthNum && c.memberNo === memberNo);
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
 
-        const totalPaid = Number(entry?.totalPaid ?? entry?.amountPaid) || 0;
-        if (!entry || totalPaid <= 0) {
+        if (!entry || !Array.isArray(entry.payments) || entry.payments.length === 0) {
           this.notify("No payment recorded for this installment.", true);
           return;
         }
 
-        const mFormatted = String(monthNum).padStart(2, '0');
-        const memClean = memberNo.replace(/\D/g, '').padStart(2, '0');
-        const recId = (entry.payments && entry.payments[0]?.receiptNo) ? entry.payments[0].receiptNo : `MISR/${memClean}/${mFormatted}-P1`;
-        const paymentDate = entry.payments?.[0]?.paymentDate || entry.lastPaymentDate || entry.paymentDate;
-        const dateStr = this.formatDate(paymentDate);
-        const verifier = (entry.receivedBy && entry.receivedBy !== 'Main Bank Account') ? entry.receivedBy : (entry.recordedByName || 'Foreman');
+        const tranche = paymentId 
+          ? (entry.payments.find(p => p.paymentId === paymentId) || entry.payments[0])
+          : entry.payments[entry.payments.length - 1];
+
+        const recId = tranche.receiptNo;
+        const dateStr = this.formatDate(tranche.paymentDate);
+        const verifier = (tranche.receivedBy && tranche.receivedBy !== 'Main Bank Account') ? tranche.receivedBy : (tranche.recordedByName || 'Foreman');
+        const isPart = (Number(entry.totalPaid) || 0) < sch.emi;
 
         this.currentReceiptData = {
           recId,
@@ -2113,22 +2196,37 @@
           monthNum,
           monthName: `Month ${monthNum} (${this.getMonthLabel(monthNum)})`,
           scheduledEmi: this.formatINR(sch.emi),
-          amountPaid: this.formatINR(totalPaid),
-          rawAmount: totalPaid,
-          method: entry.paymentMethod,
+          amountPaid: this.formatINR(tranche.amount),
+          rawAmount: tranche.amount,
+          totalPaid: this.formatINR(entry.totalPaid),
+          balanceDue: this.formatINR(entry.balanceDue),
+          isPartPayment: isPart,
+          method: tranche.paymentMethod,
           recipient: verifier,
+          remarks: tranche.remarks || '',
           date: dateStr
         };
 
         document.getElementById('rec-number').innerText = recId;
+        document.getElementById('rec-type-badge').innerText = isPart ? 'Part Payment Receipt' : 'Payment Receipt (Settled)';
         document.getElementById('rec-member-name').innerText = mem.name;
         document.getElementById('rec-member-id').innerText = memberNo;
         document.getElementById('rec-month').innerText = this.currentReceiptData.monthName;
         document.getElementById('rec-scheduled-emi').innerText = this.currentReceiptData.scheduledEmi;
+        document.getElementById('rec-total-paid').innerText = this.currentReceiptData.totalPaid;
+        document.getElementById('rec-balance-due').innerText = this.currentReceiptData.balanceDue;
         document.getElementById('rec-date').innerText = `Date: ${dateStr}`;
         document.getElementById('rec-amount').innerText = this.currentReceiptData.amountPaid;
-        document.getElementById('rec-channel').innerText = entry.paymentMethod;
+        document.getElementById('rec-channel').innerText = tranche.paymentMethod;
         document.getElementById('rec-recipient').innerText = this.currentReceiptData.recipient;
+
+        const remarksRow = document.getElementById('rec-remarks-row');
+        if (tranche.remarks) {
+          remarksRow.classList.remove('hidden');
+          document.getElementById('rec-remarks').innerText = tranche.remarks;
+        } else {
+          remarksRow.classList.add('hidden');
+        }
 
         document.getElementById('receipt-modal').classList.remove('hidden');
       }
@@ -2162,7 +2260,7 @@
 
         tbody.innerHTML = MASTER_SCHEDULE.map(sch => {
           const entry = this.collections.find(c => c.memberNo === memberNo && c.month === sch.m);
-          const paid = Number(entry?.totalPaid ?? entry?.amountPaid) || 0;
+          const paid = Number(entry?.totalPaid) || 0;
           const excessShort = paid - sch.emi;
           runningBalance += excessShort;
           totalPaidAll += paid;
@@ -2180,6 +2278,20 @@
             } else {
               statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">Partially Paid</span>';
             }
+          }
+
+          const payments = Array.isArray(entry?.payments) ? entry.payments : [];
+          let receiptsHtml = '<span class="text-slate-300 text-xs">-</span>';
+          if (payments.length > 0) {
+            receiptsHtml = `
+              <div class="flex items-center justify-end gap-1 flex-wrap">
+                ${payments.map(p => `
+                  <button onclick="app.viewReceipt(${sch.m}, '${memberNo}', '${p.paymentId}')" class="px-1.5 py-0.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded font-bold text-[10px] border border-emerald-200/80 inline-flex items-center gap-0.5" title="${p.receiptNo} (${this.formatINR(p.amount)})">
+                    <i class="ph ph-receipt"></i> ${p.receiptNo.split('-')[1] || 'P1'}
+                  </button>
+                `).join('')}
+              </div>
+            `;
           }
 
           return `
@@ -2202,11 +2314,7 @@
                 ${statusBadge}
               </td>
               <td class="p-3 text-right no-print">
-                ${paid > 0 ? `
-                  <button onclick="app.viewReceipt(${sch.m}, '${memberNo}')" class="px-2 py-1 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 rounded-lg text-xs font-bold inline-flex items-center gap-1 transition active:scale-95" title="View Receipt">
-                    <i class="ph ph-receipt"></i>
-                  </button>
-                ` : '<span class="text-slate-300 text-xs">-</span>'}
+                ${receiptsHtml}
               </td>
             </tr>
           `;
@@ -2377,7 +2485,7 @@
         }
 
         const monthCols = this.collections.filter(c => c.month === monthNum);
-        const totalRealized = monthCols.reduce((sum, c) => sum + (Number(c.totalPaid ?? c.amountPaid) || 0), 0);
+        const totalRealized = monthCols.reduce((sum, c) => sum + (Number(c.totalPaid) || 0), 0);
 
         let paidCount = 0;
         let pendingCount = 0;
@@ -2385,7 +2493,8 @@
 
         this.members.forEach(m => {
           const entry = monthCols.find(c => c.memberNo === m.memberNo);
-          const paid = Number(entry?.totalPaid ?? entry?.amountPaid) || 0;
+          const paid = Number(entry?.totalPaid) || 0;
+          const balanceDue = Math.max(0, (sch?.emi || 0) - paid);
           let statusText = "Pending";
           let statusClass = "bg-rose-100 text-rose-800";
 
@@ -2405,6 +2514,7 @@
             member: m,
             entry: entry,
             paid: paid,
+            balanceDue: balanceDue,
             statusText: statusText,
             statusClass: statusClass
           });
@@ -2433,11 +2543,15 @@
         }
 
         tbody.innerHTML = displayList.map(item => {
-          const verifier = (item.entry?.receivedBy && item.entry?.receivedBy !== 'Main Bank Account') 
-            ? item.entry.receivedBy 
-            : (item.entry?.recordedByName || '-');
-
-          const paymentDate = item.entry?.lastPaymentDate || item.entry?.paymentDate;
+          const payments = Array.isArray(item.entry?.payments) ? item.entry.payments : [];
+          let channelSummary = "-";
+          if (payments.length > 0) {
+            const list = payments.map(p => {
+              const verifier = (p.receivedBy && p.receivedBy !== 'Main Bank Account') ? p.receivedBy : (p.recordedByName || 'Foreman');
+              return p.paymentMethod === 'Bank Transfer to Main Account' ? `Bank (${verifier})` : `Cash/UPI (${verifier})`;
+            });
+            channelSummary = Array.from(new Set(list)).join(', ');
+          }
 
           return `
             <tr class="hover:bg-slate-50 transition">
@@ -2447,9 +2561,11 @@
               <td class="p-2.5 text-right font-extrabold ${item.paid > 0 ? 'text-emerald-600' : 'text-slate-300'}">
                 ${item.paid > 0 ? this.formatINR(item.paid) : '₹0'}
               </td>
-              <td class="p-2.5 text-slate-600">${this.formatDate(paymentDate)}</td>
-              <td class="p-2.5 text-slate-700">${item.entry?.paymentMethod || '-'}</td>
-              <td class="p-2.5 text-slate-700 font-medium">${verifier}</td>
+              <td class="p-2.5 text-right font-bold ${item.balanceDue > 0 ? 'text-rose-600' : 'text-slate-400'}">
+                ${this.formatINR(item.balanceDue)}
+              </td>
+              <td class="p-2.5 text-slate-600">${this.formatDate(item.entry?.lastPaymentDate)}</td>
+              <td class="p-2.5 text-slate-700">${channelSummary}</td>
               <td class="p-2.5 text-center">
                 <span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.statusClass}">${item.statusText}</span>
               </td>
@@ -2467,22 +2583,20 @@
         let csv = `\uFEFF,,,"mis-org Chit Fund Management - Monthly Collection Statement",,,,\n`;
         csv += `,,,"Installment: Month ${monthNum} (${monthLabel}) | Scheduled EMI: Rs. ${sch.emi} | Group: Group A (Rs. 5,00,000) | Date: ${exportDate}",,,,\n`;
         csv += `,,,,\n\n`;
-        csv += "Member ID,Subscriber Name,Scheduled EMI,Amount Paid,Payment Date,Payment Method,Received By,Status\n";
+        csv += "Member ID,Subscriber Name,Scheduled EMI,Total Amount Paid,Balance Due,Parts Count,Last Payment Date,Status\n";
         
         this.members.forEach(m => {
           const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
-          const paid = Number(entry?.totalPaid ?? entry?.amountPaid) || 0;
+          const paid = Number(entry?.totalPaid) || 0;
+          const balanceDue = Math.max(0, (sch?.emi || 0) - paid);
           let statusText = "Pending";
           if (paid >= (sch?.emi || 0)) statusText = "Cleared";
           else if (paid > 0) statusText = "Partial";
 
-          const verifier = (entry?.receivedBy && entry?.receivedBy !== 'Main Bank Account') 
-            ? entry.receivedBy 
-            : (entry?.recordedByName || '-');
+          const partsCount = Array.isArray(entry?.payments) ? entry.payments.length : 0;
+          const paymentDate = entry?.lastPaymentDate ? this.formatDate(entry.lastPaymentDate) : '-';
 
-          const paymentDate = entry?.lastPaymentDate || entry?.paymentDate;
-
-          csv += `"${m.memberNo}","${m.name}","${sch.emi}","${paid}","${paymentDate ? this.formatDate(paymentDate) : '-'}","${entry?.paymentMethod || '-'}","${verifier}","${statusText}"\n`;
+          csv += `"${m.memberNo}","${m.name}","${sch.emi}","${paid}","${balanceDue}","${partsCount}","${paymentDate}","${statusText}"\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -2502,7 +2616,7 @@
         const pendingList = [];
         this.members.forEach(m => {
           const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
-          const paid = Number(entry?.totalPaid ?? entry?.amountPaid) || 0;
+          const paid = Number(entry?.totalPaid) || 0;
           const due = (sch?.emi || 0) - paid;
           if (due > 0) {
             pendingList.push({
@@ -2522,7 +2636,7 @@
         let csv = `\uFEFF,,,"mis-org Chit Fund Management - Pending Installments Statement",,,\n`;
         csv += `,,,"Installment: Month ${monthNum} (${monthLabel}) | Scheduled EMI: Rs. ${sch.emi} | Pending: ${pendingList.length} Members | Date: ${exportDate}",,,\n`;
         csv += `,,,\n\n`;
-        csv += "Member ID,Subscriber Name,Phone,Scheduled EMI,Amount Paid,Pending Due,Status\n";
+        csv += "Member ID,Subscriber Name,Phone,Scheduled EMI,Total Amount Paid,Pending Due,Status\n";
 
         pendingList.forEach(item => {
           csv += `"${item.member.memberNo}","${item.member.name}","${item.member.phone || '-'}","${sch.emi}","${item.paid}","${item.due}","${item.status}"\n`;
@@ -2545,19 +2659,22 @@
         let grandTotal = 0;
 
         targetCols.forEach(c => {
-          const amt = Number(c.totalPaid ?? c.amountPaid) || 0;
-          if (amt <= 0) return;
-          grandTotal += amt;
+          const payments = Array.isArray(c.payments) ? c.payments : [];
+          payments.forEach(p => {
+            const amt = Number(p.amount) || 0;
+            if (amt <= 0) return;
+            grandTotal += amt;
 
-          let channelKey = "";
-          if (c.paymentMethod === 'Bank Transfer to Main Account' || c.paymentMethod === 'Bank Transfer') {
-            channelKey = "Bank Transfer (Main Account)";
-          } else {
-            const foremanName = (c.receivedBy && c.receivedBy !== 'Main Bank Account') ? c.receivedBy : (c.recordedByName || 'Foreman (General)');
-            channelKey = `Cash / UPI (${foremanName})`;
-          }
+            let channelKey = "";
+            if (p.paymentMethod === 'Bank Transfer to Main Account' || p.paymentMethod === 'Bank Transfer') {
+              channelKey = "Bank Transfer (Main Account)";
+            } else {
+              const foremanName = (p.receivedBy && p.receivedBy !== 'Main Bank Account') ? p.receivedBy : (p.recordedByName || 'Foreman (General)');
+              channelKey = `Cash / UPI (${foremanName})`;
+            }
 
-          channelTotals[channelKey] = (channelTotals[channelKey] || 0) + amt;
+            channelTotals[channelKey] = (channelTotals[channelKey] || 0) + amt;
+          });
         });
 
         const statsContainer = document.getElementById('payment-mode-stats');
