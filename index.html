@@ -247,7 +247,7 @@
         </div>
       </section>
 
-      <!-- 3. MEMBER DIRECTORY (Clean Aligned Columns) -->
+      <!-- 3. MEMBER DIRECTORY -->
       <section id="view-members" class="space-y-3 hidden">
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
@@ -1071,7 +1071,7 @@
           .trim();
       }
 
-      // Streamlined Vector PDF Generation (No "Final Settlement", Clean "Cleared" Status)
+      // Streamlined PDF Generation (No "Final Settlement", Clean "Cleared" Status)
       generateReceiptPDF(data) {
         const jsPdfClass = window.jspdf?.jsPDF || window.jsPDF;
         if (!jsPdfClass) throw new Error("jsPDF library not loaded");
