@@ -526,9 +526,27 @@
         </div>
       </section>
 
-      <!-- 8. ACTIVITY LOG (Admin Only) -->
+      <!-- 8. ACTIVITY LOG (Admin Only) with Migration Action Tool -->
       <section id="view-audit" class="space-y-3 hidden">
-        <h2 class="text-base sm:text-lg font-bold text-slate-900">Audit Trail (Read Only)</h2>
+        <div class="flex items-center justify-between">
+          <h2 class="text-base sm:text-lg font-bold text-slate-900">Audit Trail (Read Only)</h2>
+        </div>
+
+        <!-- Temporary Database Migration Card for Mobile -->
+        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+          <div>
+            <div class="flex items-center gap-1.5 text-xs font-bold text-amber-900 uppercase tracking-wider">
+              <i class="ph ph-database text-base"></i> Collections Ledger Migration
+            </div>
+            <p class="text-[11px] text-amber-800 mt-0.5">
+              One-time database utility: Converts legacy flat collections into multi-tranche ledger arrays (-P1 receipts).
+            </p>
+          </div>
+          <button id="migration-btn" onclick="app.runDataMigration()" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 whitespace-nowrap">
+            <i class="ph ph-arrows-clockwise text-sm"></i> Run Migration
+          </button>
+        </div>
+
         <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
           <table class="w-full text-left text-xs whitespace-nowrap">
             <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
@@ -717,7 +735,7 @@
             <span class="font-bold text-slate-900 text-right truncate pl-2" id="rec-member-name">-</span>
           </div>
           <div class="flex justify-between items-center py-2">
-            <span class="text-slate-500 font-medium shrink-0">Member ID</span>
+            <span class="text-slate-500 font-medium shrink-0">Member Identifier</span>
             <span class="font-mono font-bold text-indigo-900 text-right pl-2" id="rec-member-id">-</span>
           </div>
           <div class="flex justify-between items-center py-2">
@@ -1296,7 +1314,6 @@
         document.getElementById('app-container').classList.remove('hidden');
         document.getElementById('user-profile-widget').classList.remove('hidden');
 
-        // Strictly prioritize Firestore displayName, falling back only to email prefix
         const displayName = (this.userProfile?.displayName || this.userProfile?.name || this.currentUser.email.split('@')[0]).trim();
         const initial = displayName.charAt(0).toUpperCase();
 
@@ -1346,7 +1363,6 @@
       }
 
       navigate(tabName, addToHistory = true) {
-        // Enforce strict Admin-only access to Audit Trail
         if (tabName === 'audit' && this.userRole !== 'admin') {
           this.navigate('dashboard', false);
           return;
@@ -1362,7 +1378,6 @@
         const targetView = document.getElementById(`view-${tabName}`);
         if (targetView) targetView.classList.remove('hidden');
 
-        // Maintain Members tab active styling when drilling down into Passbook
         document.querySelectorAll('.tab-btn').forEach(btn => {
           const isActive = btn.dataset.tab === tabName || (tabName === 'passbook' && btn.dataset.tab === 'members');
           if (isActive) {
@@ -1371,7 +1386,6 @@
             btn.className = "tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5";
           }
 
-          // Keep Audit Tab permanently hidden for non-admin accounts across re-renders
           if (btn.id === 'tab-audit' && this.userRole !== 'admin') {
             btn.classList.add('hidden');
           }
@@ -1424,23 +1438,19 @@
           const aucSnap = await getDocs(query(collection(db, "auctions"), where("chitId", "==", this.activeChitId)));
           this.auctions = aucSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-          // Resilient Foremen retrieval: Directly extracts saved displayName across all admin/foreman documents
           try {
             const uSnap = await getDocs(collection(db, "users"));
             this.foremenList = uSnap.docs
               .map(d => {
                 const u = d.data();
                 const role = (u.role || '').toString().trim().toLowerCase();
-                // Exclude only subscribers/members
                 if (role === 'member') return null;
 
-                // Priority: Firestore saved displayName -> name -> email prefix (ensuring all 4 users always appear)
                 const name = (u.displayName || u.DisplayName || u.name || (u.email ? u.email.split('@')[0] : '')).toString().trim();
                 return name || null;
               })
               .filter(name => name && name.length > 0);
 
-            // Deduplicate names
             this.foremenList = Array.from(new Set(this.foremenList));
           } catch(e) {
             console.warn("Could not fetch foremen display names:", e);
@@ -1453,6 +1463,98 @@
           this.populatePassbookSelector();
         } catch (err) {
           console.error("Data load failed", err);
+        }
+      }
+
+      // ================= ONE-TIME DATA MIGRATION METHOD =================
+      async runDataMigration() {
+        if (this.userRole !== 'admin') {
+          this.notify("Unauthorized: Admin privileges required.", true);
+          return;
+        }
+
+        const btn = document.getElementById('migration-btn');
+        if (btn) {
+          btn.disabled = true;
+          btn.innerHTML = `<i class="ph ph-spinner animate-spin text-sm"></i> Migrating...`;
+        }
+
+        this.notify("Starting collections migration...");
+
+        try {
+          const snap = await getDocs(query(collection(db, "collections"), where("chitId", "==", this.activeChitId)));
+          let migratedCount = 0;
+          let skippedCount = 0;
+
+          for (const docSnap of snap.docs) {
+            const data = docSnap.data();
+
+            // Skip records that are already converted
+            if (Array.isArray(data.payments) && data.payments.length > 0) {
+              skippedCount++;
+              continue;
+            }
+
+            const monthNum = Number(data.month);
+            const memberNo = String(data.memberNo);
+            const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
+            const emi = sch ? sch.emi : 12500;
+            const paid = Number(data.amountPaid) || 0;
+
+            const mFormatted = String(monthNum).padStart(2, "0");
+            const memClean = memberNo.replace(/\D/g, "").padStart(2, "0");
+            const receiptNo = `MISR/${memClean}/${mFormatted}-P1`;
+
+            let status = "Pending";
+            if (paid >= emi) {
+              status = "Cleared";
+            } else if (paid > 0) {
+              status = "Partial";
+            }
+
+            const tranche = {
+              paymentId: "P-1",
+              receiptNo: receiptNo,
+              amount: paid,
+              paymentMethod: data.paymentMethod || "Cash / UPI to Foreman",
+              receivedBy: data.receivedBy || data.recordedByName || "Foreman",
+              paymentDate: data.paymentDate || new Date().toISOString().split("T")[0],
+              remarks: data.remarks || "",
+              recordedByUid: data.recordedByUid || this.currentUser.uid,
+              recordedByName: data.recordedByName || "Admin"
+            };
+
+            const newDoc = {
+              chitId: data.chitId || "group_a",
+              month: monthNum,
+              memberNo: memberNo,
+              scheduledEmi: emi,
+              totalPaid: paid,
+              balanceDue: Math.max(0, emi - paid),
+              status: status,
+              lastPaymentDate: tranche.paymentDate,
+              updatedAt: data.updatedAt || new Date().toISOString(),
+              payments: paid > 0 ? [tranche] : []
+            };
+
+            await setDoc(doc(db, "collections", docSnap.id), newDoc, { merge: true });
+            migratedCount++;
+          }
+
+          await this.logActivity("Database", "MIGRATE_COLLECTIONS", null, { migratedCount, skippedCount });
+          this.notify(`Migration finished! ${migratedCount} updated.`);
+          alert(`Migration Complete!\n\n• Converted: ${migratedCount} documents\n• Already in new schema: ${skippedCount} documents`);
+
+          await this.loadData();
+          this.navigate('collections');
+        } catch (err) {
+          console.error("Migration error:", err);
+          this.notify(`Migration failed: ${err.message}`, true);
+        } finally {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<i class="ph ph-arrows-clockwise text-sm"></i> Run Migration`;
+          }
         }
       }
 
@@ -1487,8 +1589,8 @@
         const curSchedule = MASTER_SCHEDULE.find(s => s.m === curM);
         const monthCollections = this.collections.filter(c => c.month === curM);
         const memberCount = this.members.length;
-        const paidCount = new Set(monthCollections.filter(c => c.amountPaid >= curSchedule.emi).map(c => c.memberNo)).size;
-        const totalAmountMonth = monthCollections.reduce((acc, c) => acc + (Number(c.amountPaid) || 0), 0);
+        const paidCount = new Set(monthCollections.filter(c => (c.totalPaid ?? c.amountPaid) >= curSchedule.emi).map(c => c.memberNo)).size;
+        const totalAmountMonth = monthCollections.reduce((acc, c) => acc + (Number(c.totalPaid ?? c.amountPaid) || 0), 0);
         
         document.getElementById('dash-month-name').innerText = `Month ${curM}`;
         document.getElementById('dash-paid-count').innerText = `${paidCount} / ${memberCount} Paid`;
@@ -1501,7 +1603,7 @@
 
         let expectedToDate = 0;
         for (let m = 1; m <= curM; m++) expectedToDate += MASTER_SCHEDULE.find(s => s.m === m).emi;
-        const totalPaidAll = this.collections.reduce((sum, c) => sum + (Number(c.amountPaid) || 0), 0);
+        const totalPaidAll = this.collections.reduce((sum, c) => sum + (Number(c.totalPaid ?? c.amountPaid) || 0), 0);
         const totalPending = Math.max(0, (expectedToDate * memberCount) - totalPaidAll);
         document.getElementById('dash-total-pending').innerText = this.formatINR(totalPending);
       }
@@ -1531,10 +1633,9 @@
           }
         }
 
-        // Mobile Cards: Tap anywhere on member info to inspect details
         const mContainer = document.getElementById('member-mobile-cards');
         mContainer.innerHTML = list.length === 0 ? `<div class="p-6 text-center text-xs text-slate-400 bg-white rounded-2xl">No subscribers found.</div>` : list.map(m => {
-          const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.amountPaid) || 0), 0);
+          const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.totalPaid ?? c.amountPaid) || 0), 0);
           return `
             <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
               <div class="space-y-0.5 flex-1 cursor-pointer pr-2" onclick="app.openMemberModal('${m.memberNo}')">
@@ -1558,10 +1659,9 @@
           `;
         }).join('');
 
-        // Desktop Table: Click on row cells to inspect details
         const dBody = document.getElementById('member-desktop-tbody');
         dBody.innerHTML = list.map(m => {
-          const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.amountPaid) || 0), 0);
+          const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.totalPaid ?? c.amountPaid) || 0), 0);
           return `
             <tr class="hover:bg-slate-50 transition">
               <td class="p-3 font-mono font-bold text-indigo-900 cursor-pointer" onclick="app.openMemberModal('${m.memberNo}')">${m.memberNo}</td>
@@ -1599,14 +1699,13 @@
         }
 
         const exportDate = new Date().toLocaleDateString('en-IN');
-        // Centered title headers across 10 table columns (Column E: 4 leading commas, 5 trailing commas)
         let csv = `\uFEFF,,,,"mis-org Chit Fund Management - Subscriber Master Directory",,,,,\n`;
         csv += `,,,,"Group A (Rs. 5,00,000 • 40 Subscribers • 41 Months) | Export Date: ${exportDate}",,,,,\n`;
         csv += `,,,,,\n\n`;
         csv += "Member ID,Subscriber Name,Phone,Email,Address,Status,Prized Status,Prized Month,Prize Money Received,Total Amount Paid\n";
         
         this.members.forEach(m => {
-          const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.amountPaid) || 0), 0);
+          const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.totalPaid ?? c.amountPaid) || 0), 0);
           csv += `"${m.memberNo}","${m.name}","${m.phone || ''}","${m.email || ''}","${(m.address || '').replace(/"/g, '""')}","${m.isActive ? 'Active' : 'Inactive'}","${m.isPrized ? 'Prized' : 'Non-Prized'}","${m.prizedMonth || '-'}","${m.prizeMoney || 0}","${totalPaid}"\n`;
         });
 
@@ -1642,7 +1741,6 @@
         const saveBtn = document.getElementById('mem-save-btn');
 
         if (memberNo) {
-          // Open in Clean Read-Only Mode for everyone initially
           const m = this.members.find(x => x.memberNo === memberNo);
           document.getElementById('member-modal-title').innerText = `Subscriber Details (${m.memberNo})`;
           document.getElementById('mem-edit-id').value = m.memberNo;
@@ -1664,14 +1762,12 @@
           saveBtn.classList.add('hidden');
           cancelBtn.innerText = "Close";
 
-          // Only Admin gets the inside "Edit Details" trigger button
           if (isAdmin) {
             editToggleBtn.classList.remove('hidden');
           } else {
             editToggleBtn.classList.add('hidden');
           }
         } else {
-          // Admin "Add New Member" Mode: Open directly in Edit Mode
           const nextId = this.generateNextMemberId();
           if (!nextId) {
             this.notify("Maximum subscriber limit reached (40 subscribers).", true);
@@ -1735,7 +1831,6 @@
 
         const num = document.getElementById('mem-number').value.trim();
 
-        // Standardize phone input to Indian +91 format
         let rawPhone = document.getElementById('mem-phone').value.trim().replace(/\D/g, '');
         if (rawPhone.length > 10 && rawPhone.startsWith('91')) {
           rawPhone = rawPhone.slice(2);
@@ -1792,7 +1887,8 @@
         const mCards = document.getElementById('collection-mobile-cards');
         mCards.innerHTML = this.members.map(m => {
           const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
-          const isPaid = entry && entry.amountPaid > 0;
+          const totalPaid = Number(entry?.totalPaid ?? entry?.amountPaid) || 0;
+          const isPaid = totalPaid > 0;
           const isCreator = entry && entry.recordedByUid === this.currentUser?.uid;
           const canEdit = !isPastMonth && (this.userRole === 'admin' || isCreator || !entry);
 
@@ -1815,7 +1911,7 @@
                 </div>
                 <div class="text-[11px] text-slate-500 mt-0.5">Scheduled EMI: <span class="font-semibold text-slate-700">${this.formatINR(sch.emi)}</span></div>
                 <div class="text-xs font-extrabold ${isPaid ? 'text-emerald-600' : 'text-slate-400'} mt-0.5">
-                  Paid: ${entry ? this.formatINR(entry.amountPaid) : '₹0'} • ${channelBadge}
+                  Paid: ${this.formatINR(totalPaid)} • ${channelBadge}
                 </div>
               </div>
               <div class="flex items-center gap-1">
@@ -1825,7 +1921,7 @@
                   </button>
                 ` : ''}
                 ${canEdit ? `
-                  <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}', ${entry?.amountPaid || sch.emi})" class="px-3 py-2 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow-sm">
+                  <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}', ${totalPaid || sch.emi})" class="px-3 py-2 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow-sm">
                     ${entry ? 'Update' : 'Record'}
                   </button>
                 ` : `<span class="text-[11px] text-slate-400 font-semibold italic">Locked</span>`}
@@ -1837,7 +1933,8 @@
         const dBody = document.getElementById('collection-desktop-tbody');
         dBody.innerHTML = this.members.map(m => {
           const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
-          const isPaid = entry && entry.amountPaid > 0;
+          const totalPaid = Number(entry?.totalPaid ?? entry?.amountPaid) || 0;
+          const isPaid = totalPaid > 0;
           const isCreator = entry && entry.recordedByUid === this.currentUser?.uid;
           const canEdit = !isPastMonth && (this.userRole === 'admin' || isCreator || !entry);
 
@@ -1854,9 +1951,9 @@
               <td class="p-3 font-mono font-bold text-indigo-900">${m.memberNo}</td>
               <td class="p-3 font-semibold text-slate-800">${m.name}</td>
               <td class="p-3 text-right font-medium">${this.formatINR(sch.emi)}</td>
-              <td class="p-3 text-right font-bold ${isPaid ? 'text-emerald-600' : 'text-slate-400'}">${entry ? this.formatINR(entry.amountPaid) : '₹0'}</td>
+              <td class="p-3 text-right font-bold ${isPaid ? 'text-emerald-600' : 'text-slate-400'}">${this.formatINR(totalPaid)}</td>
               <td class="p-3 text-xs font-medium text-slate-700">${channelDisplay}</td>
-              <td class="p-3 text-slate-500">${this.formatDate(entry?.paymentDate)}</td>
+              <td class="p-3 text-slate-500">${this.formatDate(entry?.lastPaymentDate || entry?.paymentDate)}</td>
               <td class="p-3 text-right space-x-1">
                 ${isPaid ? `
                   <button onclick="app.viewReceipt(${monthNum}, '${m.memberNo}')" class="px-2 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg font-bold text-xs inline-flex items-center gap-1" title="View Receipt">
@@ -1864,7 +1961,7 @@
                   </button>
                 ` : ''}
                 ${canEdit ? `
-                  <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}', ${entry?.amountPaid || sch.emi})" class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg font-bold text-xs">
+                  <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}', ${totalPaid || sch.emi})" class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg font-bold text-xs">
                     ${entry ? 'Update' : 'Record'}
                   </button>
                 ` : '<span class="text-slate-400 text-xs italic">Locked</span>'}
@@ -1882,12 +1979,10 @@
         document.getElementById('coll-modal-subtitle').innerText = `${memberNo} - ${mem.name}`;
         document.getElementById('coll-member-id').value = memberNo;
         document.getElementById('coll-month').value = monthNum;
-        document.getElementById('coll-amount').value = existing ? existing.amountPaid : defaultAmt;
+        document.getElementById('coll-amount').value = existing ? (existing.totalPaid ?? existing.amountPaid) : defaultAmt;
         
-        // Strictly resolve logged-in user display name from Firestore profile
         const myDisplayName = (this.userProfile?.displayName || this.userProfile?.name || this.currentUser.email.split('@')[0]).trim();
 
-        // Build list guaranteed to include all foremen and current user
         const optionsSet = new Set(this.foremenList);
         if (myDisplayName) optionsSet.add(myDisplayName);
         if (existing?.receivedBy && existing.receivedBy !== 'Main Bank Account') {
@@ -1901,7 +1996,6 @@
         document.getElementById('coll-method').value = currentMethod;
         this.onPaymentMethodChange(currentMethod);
 
-        // Security: Enabled for Admin; Locked/Disabled for Foremen
         if (this.userRole === 'admin') {
           fSelect.disabled = false;
           if (existing?.receivedBy && existing.receivedBy !== 'Main Bank Account') {
@@ -1914,7 +2008,7 @@
           fSelect.value = myDisplayName || (fSelect.options[0]?.value || '');
         }
 
-        document.getElementById('coll-date').value = existing?.paymentDate || new Date().toISOString().split('T')[0];
+        document.getElementById('coll-date').value = existing?.lastPaymentDate || existing?.paymentDate || new Date().toISOString().split('T')[0];
         document.getElementById('coll-remarks').value = existing?.remarks || "";
 
         document.getElementById('collection-modal').classList.remove('hidden');
@@ -1941,23 +2035,44 @@
         const method = document.getElementById('coll-method').value;
         const myDisplayName = (this.userProfile?.displayName || this.userProfile?.name || this.currentUser.email.split('@')[0]).trim();
 
-        // Backend security guarantee: Admin can choose; Foreman is locked to their own displayName
         const receivedBy = (this.userRole === 'admin')
           ? document.getElementById('coll-foreman-select').value
           : myDisplayName;
 
-        const payload = {
-          chitId: this.activeChitId,
-          month: monthNum,
-          memberNo: memberNo,
-          amountPaid: amount,
+        const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
+        const emi = sch ? sch.emi : 12500;
+        const mFormatted = String(monthNum).padStart(2, "0");
+        const memClean = memberNo.replace(/\D/g, "").padStart(2, "0");
+        const receiptNo = `MISR/${memClean}/${mFormatted}-P1`;
+
+        const tranche = {
+          paymentId: "P-1",
+          receiptNo: receiptNo,
+          amount: amount,
           paymentMethod: method,
           receivedBy: receivedBy,
           paymentDate: document.getElementById('coll-date').value,
           remarks: document.getElementById('coll-remarks').value,
           recordedByUid: existing ? existing.recordedByUid : this.currentUser.uid,
+          recordedByName: myDisplayName
+        };
+
+        const payload = {
+          chitId: this.activeChitId,
+          month: monthNum,
+          memberNo: memberNo,
+          scheduledEmi: emi,
+          totalPaid: amount,
+          balanceDue: Math.max(0, emi - amount),
+          status: amount >= emi ? "Cleared" : (amount > 0 ? "Partial" : "Pending"),
+          paymentMethod: method,
+          receivedBy: receivedBy,
+          lastPaymentDate: tranche.paymentDate,
+          remarks: document.getElementById('coll-remarks').value,
+          recordedByUid: existing ? existing.recordedByUid : this.currentUser.uid,
           recordedByName: myDisplayName,
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
+          payments: amount > 0 ? [tranche] : []
         };
 
         try {
@@ -1977,15 +2092,17 @@
         const entry = this.collections.find(c => c.month === monthNum && c.memberNo === memberNo);
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
 
-        if (!entry || entry.amountPaid <= 0) {
+        const totalPaid = Number(entry?.totalPaid ?? entry?.amountPaid) || 0;
+        if (!entry || totalPaid <= 0) {
           this.notify("No payment recorded for this installment.", true);
           return;
         }
 
         const mFormatted = String(monthNum).padStart(2, '0');
         const memClean = memberNo.replace(/\D/g, '').padStart(2, '0');
-        const recId = `MISR/${memClean}/${mFormatted}`;
-        const dateStr = this.formatDate(entry.paymentDate);
+        const recId = (entry.payments && entry.payments[0]?.receiptNo) ? entry.payments[0].receiptNo : `MISR/${memClean}/${mFormatted}-P1`;
+        const paymentDate = entry.payments?.[0]?.paymentDate || entry.lastPaymentDate || entry.paymentDate;
+        const dateStr = this.formatDate(paymentDate);
         const verifier = (entry.receivedBy && entry.receivedBy !== 'Main Bank Account') ? entry.receivedBy : (entry.recordedByName || 'Foreman');
 
         this.currentReceiptData = {
@@ -1996,8 +2113,8 @@
           monthNum,
           monthName: `Month ${monthNum} (${this.getMonthLabel(monthNum)})`,
           scheduledEmi: this.formatINR(sch.emi),
-          amountPaid: this.formatINR(entry.amountPaid),
-          rawAmount: entry.amountPaid,
+          amountPaid: this.formatINR(totalPaid),
+          rawAmount: totalPaid,
           method: entry.paymentMethod,
           recipient: verifier,
           date: dateStr
@@ -2045,7 +2162,7 @@
 
         tbody.innerHTML = MASTER_SCHEDULE.map(sch => {
           const entry = this.collections.find(c => c.memberNo === memberNo && c.month === sch.m);
-          const paid = entry ? Number(entry.amountPaid) : 0;
+          const paid = Number(entry?.totalPaid ?? entry?.amountPaid) || 0;
           const excessShort = paid - sch.emi;
           runningBalance += excessShort;
           totalPaidAll += paid;
@@ -2137,7 +2254,7 @@
             <tr class="hover:bg-slate-50">
               <td class="p-2.5 font-bold">Month ${sch.m}</td>
               <td class="p-2.5 text-right font-extrabold text-indigo-900">${this.formatINR(sch.net)}</td>
-              <td class="p-2.5 font-semibold">${winner ? `${winner.memberNo} - ${winner.name}` : '<span class="text-slate-400 italic">Not Awarded</span>'}</td>
+              <td class="p-2.5 font-semibold">${winner ? `${winner.memberNo} -${winner.name}` : '<span class="text-slate-400 italic">Not Awarded</span>'}</td>
               <td class="p-2.5 text-slate-500">${this.formatDate(auc?.auctionDate)}</td>
               <td class="p-2.5 text-right">
                 ${!auc && this.userRole === 'admin' ? `
@@ -2218,7 +2335,6 @@
           }
         });
 
-        // Toggle Export Pending button: strictly visible when Pending filter is active
         const pendingExportBtn = document.getElementById('rep-export-pending-btn');
         if (pendingExportBtn) {
           if (filterType === 'pending') {
@@ -2255,14 +2371,13 @@
         const totalMembers = this.members.length;
         const expectedTarget = (sch?.emi || 0) * totalMembers;
 
-        // Dynamic Header Title: Compact to prevent wrapping on mobile
         const headingEl = document.getElementById('report-heading-title');
         if (headingEl) {
           headingEl.innerText = `Collection Report • Month ${monthNum}`;
         }
 
         const monthCols = this.collections.filter(c => c.month === monthNum);
-        const totalRealized = monthCols.reduce((sum, c) => sum + (Number(c.amountPaid) || 0), 0);
+        const totalRealized = monthCols.reduce((sum, c) => sum + (Number(c.totalPaid ?? c.amountPaid) || 0), 0);
 
         let paidCount = 0;
         let pendingCount = 0;
@@ -2270,7 +2385,7 @@
 
         this.members.forEach(m => {
           const entry = monthCols.find(c => c.memberNo === m.memberNo);
-          const paid = entry ? Number(entry.amountPaid) : 0;
+          const paid = Number(entry?.totalPaid ?? entry?.amountPaid) || 0;
           let statusText = "Pending";
           let statusClass = "bg-rose-100 text-rose-800";
 
@@ -2322,6 +2437,8 @@
             ? item.entry.receivedBy 
             : (item.entry?.recordedByName || '-');
 
+          const paymentDate = item.entry?.lastPaymentDate || item.entry?.paymentDate;
+
           return `
             <tr class="hover:bg-slate-50 transition">
               <td class="p-2.5 font-mono font-bold text-indigo-900">${item.member.memberNo}</td>
@@ -2330,7 +2447,7 @@
               <td class="p-2.5 text-right font-extrabold ${item.paid > 0 ? 'text-emerald-600' : 'text-slate-300'}">
                 ${item.paid > 0 ? this.formatINR(item.paid) : '₹0'}
               </td>
-              <td class="p-2.5 text-slate-600">${this.formatDate(item.entry?.paymentDate)}</td>
+              <td class="p-2.5 text-slate-600">${this.formatDate(paymentDate)}</td>
               <td class="p-2.5 text-slate-700">${item.entry?.paymentMethod || '-'}</td>
               <td class="p-2.5 text-slate-700 font-medium">${verifier}</td>
               <td class="p-2.5 text-center">
@@ -2341,14 +2458,12 @@
         }).join('');
       }
 
-      // Exports full monthly statement with centered headings and verified foreman name
       exportMonthlyReportCSV() {
         const monthNum = this.reportSelectedMonth;
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
         const monthLabel = this.getMonthLabel(monthNum);
         const exportDate = new Date().toLocaleDateString('en-IN');
 
-        // Total 8 columns -> Center in Column D (3 leading commas, 4 trailing commas)
         let csv = `\uFEFF,,,"mis-org Chit Fund Management - Monthly Collection Statement",,,,\n`;
         csv += `,,,"Installment: Month ${monthNum} (${monthLabel}) | Scheduled EMI: Rs. ${sch.emi} | Group: Group A (Rs. 5,00,000) | Date: ${exportDate}",,,,\n`;
         csv += `,,,,\n\n`;
@@ -2356,7 +2471,7 @@
         
         this.members.forEach(m => {
           const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
-          const paid = entry ? Number(entry.amountPaid) : 0;
+          const paid = Number(entry?.totalPaid ?? entry?.amountPaid) || 0;
           let statusText = "Pending";
           if (paid >= (sch?.emi || 0)) statusText = "Cleared";
           else if (paid > 0) statusText = "Partial";
@@ -2365,7 +2480,9 @@
             ? entry.receivedBy 
             : (entry?.recordedByName || '-');
 
-          csv += `"${m.memberNo}","${m.name}","${sch.emi}","${paid}","${entry?.paymentDate ? this.formatDate(entry.paymentDate) : '-'}","${entry?.paymentMethod || '-'}","${verifier}","${statusText}"\n`;
+          const paymentDate = entry?.lastPaymentDate || entry?.paymentDate;
+
+          csv += `"${m.memberNo}","${m.name}","${sch.emi}","${paid}","${paymentDate ? this.formatDate(paymentDate) : '-'}","${entry?.paymentMethod || '-'}","${verifier}","${statusText}"\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -2376,7 +2493,6 @@
         this.notify(`Downloaded Month ${monthNum} collection statement`);
       }
 
-      // Exports pending defaulters list with centered headings (triggered via inline button)
       exportMonthlyPendingCSV() {
         const monthNum = this.reportSelectedMonth;
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
@@ -2386,7 +2502,7 @@
         const pendingList = [];
         this.members.forEach(m => {
           const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
-          const paid = entry ? Number(entry.amountPaid) : 0;
+          const paid = Number(entry?.totalPaid ?? entry?.amountPaid) || 0;
           const due = (sch?.emi || 0) - paid;
           if (due > 0) {
             pendingList.push({
@@ -2403,7 +2519,6 @@
           return;
         }
 
-        // Total 7 columns -> Center in Column D (3 leading commas, 3 trailing commas)
         let csv = `\uFEFF,,,"mis-org Chit Fund Management - Pending Installments Statement",,,\n`;
         csv += `,,,"Installment: Month ${monthNum} (${monthLabel}) | Scheduled EMI: Rs. ${sch.emi} | Pending: ${pendingList.length} Members | Date: ${exportDate}",,,\n`;
         csv += `,,,\n\n`;
@@ -2430,7 +2545,7 @@
         let grandTotal = 0;
 
         targetCols.forEach(c => {
-          const amt = Number(c.amountPaid) || 0;
+          const amt = Number(c.totalPaid ?? c.amountPaid) || 0;
           if (amt <= 0) return;
           grandTotal += amt;
 
