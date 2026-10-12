@@ -247,7 +247,7 @@
         </div>
       </section>
 
-      <!-- 3. MEMBER DIRECTORY -->
+      <!-- 3. MEMBER DIRECTORY (Clean Aligned Columns) -->
       <section id="view-members" class="space-y-3 hidden">
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
@@ -368,12 +368,11 @@
         </div>
       </section>
 
-      <!-- 5. MONTHLY COLLECTIONS (Compact & Beautified) -->
+      <!-- 5. MONTHLY COLLECTIONS (Clean Header) -->
       <section id="view-collections" class="space-y-3 hidden">
         <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
             <h2 class="text-base sm:text-lg font-bold text-slate-900">Monthly Collections</h2>
-            <p class="text-[11px] text-slate-400">Past months locked. Cut-off: 15th of every month.</p>
           </div>
           <div class="w-full sm:w-auto">
             <select id="collection-month-select" onchange="app.loadCollectionsGrid(parseInt(this.value))" class="w-full border rounded-xl px-3 py-2 text-xs font-semibold bg-slate-50">
@@ -423,10 +422,10 @@
         </div>
       </section>
 
-      <!-- 7. RESTRUCTURED & CLEAN REPORTS -->
-      <section id="view-reports" class="space-y-3.5 hidden">
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-3.5">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-3">
+      <!-- 7. RESTRUCTURED & CLEAN REPORTS (Tightened Margins & Grid Filter) -->
+      <section id="view-reports" class="space-y-2.5 hidden">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-3 sm:p-5 space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
             <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2 min-w-0">
               <i class="ph ph-receipt text-indigo-900 text-lg shrink-0"></i>
               <span id="report-heading-title" class="truncate">Collection Report</span>
@@ -461,8 +460,8 @@
             </div>
           </div>
 
-          <!-- Collections by Channel Strip -->
-          <div class="bg-slate-50/70 p-3 rounded-xl border border-slate-200/70 space-y-2">
+          <!-- Collections by Channel Strip with Tightened Margins -->
+          <div class="bg-slate-50/70 p-2.5 sm:p-3 rounded-xl border border-slate-200/70 space-y-2">
             <div class="flex items-center justify-between gap-2">
               <span class="font-bold text-[11px] text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                 <i class="ph ph-wallet text-indigo-900 text-sm"></i>
@@ -476,29 +475,30 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="payment-mode-stats"></div>
           </div>
 
-          <!-- Integrated Subscriber Statement Section -->
-          <div class="border-t border-slate-200/80 pt-3 space-y-2.5">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-bold text-slate-800 flex items-center gap-1">
-                  <i class="ph ph-users-three text-indigo-900"></i>
-                  Subscribers
-                </span>
-                <div class="inline-flex p-0.5 bg-slate-100 rounded-lg text-xs font-semibold border border-slate-200/60">
-                  <button id="rep-filter-all" onclick="app.setReportFilter('all')" class="px-2.5 py-1 rounded-md text-xs font-bold bg-white text-indigo-950 shadow-2xs transition">
-                    All (<span id="rep-cnt-all">0</span>)
-                  </button>
-                  <button id="rep-filter-paid" onclick="app.setReportFilter('paid')" class="px-2.5 py-1 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 transition">
-                    Paid (<span id="rep-cnt-paid">0</span>)
-                  </button>
-                  <button id="rep-filter-pending" onclick="app.setReportFilter('pending')" class="px-2.5 py-1 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 transition">
-                    Pending (<span id="rep-cnt-pending">0</span>)
-                  </button>
-                </div>
-              </div>
+          <!-- Restructured Subscriber Statement Section -->
+          <div class="border-t border-slate-200/80 pt-2.5 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <i class="ph ph-users-three text-indigo-900"></i>
+                Subscribers
+              </span>
               
+              <!-- Contextual Export Pending Button Docked Neatly on the Title Line -->
               <button id="rep-export-pending-btn" onclick="app.exportMonthlyPendingCSV()" class="hidden px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold items-center gap-1 shadow-2xs transition" title="Export Pending List CSV">
                 <i class="ph ph-file-csv text-sm"></i> Export Pending
+              </button>
+            </div>
+
+            <!-- Balanced Full-Width 3-Column Segmented Tabs Grid -->
+            <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold border border-slate-200/60">
+              <button id="rep-filter-all" onclick="app.setReportFilter('all')" class="py-1.5 px-2 rounded-lg text-xs font-bold bg-white text-indigo-950 shadow-2xs transition text-center">
+                All (<span id="rep-cnt-all">0</span>)
+              </button>
+              <button id="rep-filter-paid" onclick="app.setReportFilter('paid')" class="py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition text-center">
+                Paid (<span id="rep-cnt-paid">0</span>)
+              </button>
+              <button id="rep-filter-pending" onclick="app.setReportFilter('pending')" class="py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition text-center">
+                Pending (<span id="rep-cnt-pending">0</span>)
               </button>
             </div>
 
@@ -548,7 +548,7 @@
   </div>
 
   <!-- ================= MODALS ================= -->
-  <!-- Record Collection Modal (Multi-Tranche & Joint Split Support) -->
+  <!-- Record Collection Modal -->
   <div id="collection-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto space-y-3.5">
       <div class="flex justify-between items-start">
@@ -577,7 +577,7 @@
         </div>
       </div>
 
-      <!-- Joint Co-Payers Status Banner (Visible only for Joint Tickets) -->
+      <!-- Joint Co-Payers Status Banner -->
       <div id="coll-joint-status-box" class="hidden bg-indigo-50/70 border border-indigo-100 rounded-xl p-2.5 space-y-1.5 text-xs">
         <span class="text-[10px] font-bold text-indigo-950 uppercase tracking-wider flex items-center gap-1">
           <i class="ph ph-users-three"></i> Joint Share Allocation (50–50 Split)
@@ -591,15 +591,14 @@
         <div id="coll-tranches-list" class="space-y-1.5"></div>
       </div>
 
-      <!-- Locked Banner when Full Payment is Cleared -->
-      <div id="coll-cleared-banner" class="hidden p-3.5 bg-emerald-50/90 border border-emerald-200 rounded-2xl text-center space-y-1">
+      <!-- Clean Cleared Banner without Extra Paragraphs -->
+      <div id="coll-cleared-banner" class="hidden p-2.5 bg-emerald-50/90 border border-emerald-200 rounded-2xl text-center">
         <div class="flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-900">
-          <i class="ph ph-check-circle text-base text-emerald-600"></i> Installment Cleared (Nil Due)
+          <i class="ph ph-check-circle text-base text-emerald-600"></i> Installment Cleared
         </div>
-        <p class="text-[11px] text-emerald-700">Full payment received for this ticket. No further receipts can be added.</p>
       </div>
 
-      <!-- Add New Payment Form (Active only when balanceDue > 0) -->
+      <!-- Add New Payment Form -->
       <form id="collection-form" onsubmit="app.saveCollection(event)" class="space-y-3 border-t border-slate-200/70 pt-3">
         <input type="hidden" id="coll-member-id" />
         <input type="hidden" id="coll-month" />
@@ -651,7 +650,7 @@
     </div>
   </div>
 
-  <!-- Subscriber Modal (Single & Joint Ticket Profiles) -->
+  <!-- Subscriber Modal -->
   <div id="member-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto">
       <div class="flex justify-between items-start mb-3">
@@ -681,7 +680,7 @@
           </label>
         </div>
 
-        <!-- 1. Single Member Section -->
+        <!-- Single Member Section -->
         <div id="mem-single-fields" class="space-y-3">
           <div>
             <label class="block text-xs font-semibold text-slate-500 mb-1">Subscriber Full Name</label>
@@ -704,7 +703,7 @@
           </div>
         </div>
 
-        <!-- 2. Joint Members Section (Co-Payer 1 & 2) -->
+        <!-- Joint Members Section (Co-Payer 1 & 2) -->
         <div id="mem-joint-fields" class="space-y-3 hidden">
           <!-- Co-Payer 1 -->
           <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2">
@@ -767,7 +766,7 @@
     </div>
   </div>
 
-  <!-- ================= PAYMENT RECEIPT MODAL (Streamlined & Non-Redundant) ================= -->
+  <!-- ================= PAYMENT RECEIPT MODAL ================= -->
   <div id="receipt-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
     <div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 my-auto">
       
@@ -788,7 +787,7 @@
         </div>
       </div>
 
-      <!-- Structured Ledger Alignment (No Duplicate Amount Rows) -->
+      <!-- Structured Ledger Alignment -->
       <div class="space-y-3">
         <div class="border border-indigo-100 bg-indigo-50/80 p-3.5 rounded-2xl flex justify-between items-center">
           <div>
@@ -1072,7 +1071,7 @@
           .trim();
       }
 
-      // Streamlined PDF Generation (No "Final Settlement", No Duplicate Amounts)
+      // Streamlined Vector PDF Generation (No "Final Settlement", Clean "Cleared" Status)
       generateReceiptPDF(data) {
         const jsPdfClass = window.jspdf?.jsPDF || window.jsPDF;
         if (!jsPdfClass) throw new Error("jsPDF library not loaded");
@@ -1309,7 +1308,6 @@
                 } catch(e) {}
               }
 
-              // Checks subscriber profiles, including joint co-payers
               if (!profile) {
                 const cleanEmail = (user.email || '').trim().toLowerCase();
                 try {
@@ -1639,6 +1637,7 @@
         document.getElementById('dash-total-pending').innerText = this.formatINR(totalPending);
       }
 
+      // Render Members with Fixed Grid Alignment for Co-Payers
       renderMembers(list = this.members) {
         const isAdmin = this.userRole === 'admin';
         const isFull = this.members.length >= 40;
@@ -1664,12 +1663,10 @@
           }
         }
 
+        // Mobile Cards: Clean, Stacked Alignment for Joint Subscribers
         const mContainer = document.getElementById('member-mobile-cards');
         mContainer.innerHTML = list.length === 0 ? `<div class="p-6 text-center text-xs text-slate-400 bg-white rounded-2xl">No subscribers found.</div>` : list.map(m => {
           const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.totalPaid) || 0), 0);
-          const contactInfo = m.isJoint 
-            ? `${m.coPayers?.payer1?.name || 'CP1'}: ${m.coPayers?.payer1?.phone || '-'} • ${m.coPayers?.payer2?.name || 'CP2'}: ${m.coPayers?.payer2?.phone || '-'}`
-            : (m.phone || '-');
 
           return `
             <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
@@ -1679,7 +1676,16 @@
                   <span class="font-bold text-xs text-slate-800 hover:text-indigo-900">${m.name}</span>
                   ${m.isJoint ? `<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Joint (50-50)</span>` : ''}
                 </div>
-                <div class="text-[11px] text-slate-500 truncate max-w-xs">${contactInfo}</div>
+
+                ${m.isJoint ? `
+                  <div class="text-[11px] text-slate-500 pt-1 space-y-0.5">
+                    <div class="flex items-center gap-1.5"><span class="font-semibold text-slate-700 truncate max-w-[120px]">${m.coPayers?.payer1?.name || 'Payer 1'}:</span> <span class="font-mono text-slate-600">${m.coPayers?.payer1?.phone || '-'}</span></div>
+                    <div class="flex items-center gap-1.5"><span class="font-semibold text-slate-700 truncate max-w-[120px]">${m.coPayers?.payer2?.name || 'Payer 2'}:</span> <span class="font-mono text-slate-600">${m.coPayers?.payer2?.phone || '-'}</span></div>
+                  </div>
+                ` : `
+                  <div class="text-[11px] text-slate-500 font-mono">${m.phone || '-'}</div>
+                `}
+
                 <div class="text-[11px] text-emerald-600 font-bold">Total Paid: ${this.formatINR(totalPaid)}</div>
                 ${m.isPrized ? `<span class="inline-block bg-amber-100 text-amber-900 text-[10px] font-bold px-1.5 py-0.5 rounded">Prized (M${m.prizedMonth})</span>` : ''}
               </div>
@@ -1695,12 +1701,10 @@
           `;
         }).join('');
 
+        // Desktop Table: Multi-line structured contact column for Co-Payers
         const dBody = document.getElementById('member-desktop-tbody');
         dBody.innerHTML = list.map(m => {
           const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.totalPaid) || 0), 0);
-          const contactDisplay = m.isJoint 
-            ? `${m.coPayers?.payer1?.name} & ${m.coPayers?.payer2?.name}` 
-            : (m.phone || '-');
 
           return `
             <tr class="hover:bg-slate-50 transition">
@@ -1709,7 +1713,16 @@
                 ${m.name}
                 ${m.isJoint ? `<span class="ml-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Joint</span>` : ''}
               </td>
-              <td class="p-3 text-slate-600 cursor-pointer" onclick="app.openMemberModal('${m.memberNo}')">${contactDisplay}</td>
+              <td class="p-3 text-slate-600 cursor-pointer whitespace-nowrap" onclick="app.openMemberModal('${m.memberNo}')">
+                ${m.isJoint ? `
+                  <div class="space-y-1 text-xs">
+                    <div><span class="font-semibold text-slate-700">${m.coPayers?.payer1?.name || 'Payer 1'}:</span> <span class="font-mono text-slate-600 ml-1">${m.coPayers?.payer1?.phone || '-'}</span></div>
+                    <div><span class="font-semibold text-slate-700">${m.coPayers?.payer2?.name || 'Payer 2'}:</span> <span class="font-mono text-slate-600 ml-1">${m.coPayers?.payer2?.phone || '-'}</span></div>
+                  </div>
+                ` : `
+                  <span class="font-mono">${m.phone || '-'}</span>
+                `}
+              </td>
               <td class="p-3 text-center cursor-pointer" onclick="app.openMemberModal('${m.memberNo}')">${m.isPrized ? `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-bold">Month ${m.prizedMonth}</span>` : '<span class="text-slate-400">Non-prized</span>'}</td>
               <td class="p-3 text-right font-bold text-emerald-600 cursor-pointer" onclick="app.openMemberModal('${m.memberNo}')">${this.formatINR(totalPaid)}</td>
               <td class="p-3 text-right space-x-1">
@@ -1776,7 +1789,6 @@
           singleBox.classList.add('hidden');
           jointBox.classList.remove('hidden');
 
-          // Seed Co-Payer 1 with current single data if empty
           if (!document.getElementById('mem-cp1-name').value) {
             document.getElementById('mem-cp1-name').value = document.getElementById('mem-name').value;
             document.getElementById('mem-cp1-phone').value = document.getElementById('mem-phone').value;
@@ -1824,13 +1836,11 @@
           jointToggle.checked = Boolean(m.isJoint);
           jointToggle.disabled = true;
 
-          // Single fields
           document.getElementById('mem-name').value = m.name || '';
           document.getElementById('mem-phone').value = (m.phone || '').replace(/\D/g, '').slice(-10);
           document.getElementById('mem-email').value = m.email || '';
           document.getElementById('mem-address').value = m.address || '';
 
-          // Joint fields
           if (m.isJoint && m.coPayers) {
             document.getElementById('mem-cp1-name').value = m.coPayers.payer1?.name || '';
             document.getElementById('mem-cp1-phone').value = (m.coPayers.payer1?.phone || '').replace(/\D/g, '').slice(-10);
@@ -1996,7 +2006,7 @@
         }
       }
 
-      // ================= BEAUTIFIED COLLECTIONS GRID & RECEIPT BADGES =================
+      // ================= COLLECTIONS GRID & RECEIPT BADGES =================
       loadCollectionsGrid(monthNum) {
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
         const isPastMonth = monthNum < this.currentMonthIdx;
@@ -2010,7 +2020,6 @@
           const isPartial = totalPaid > 0 && !isCleared;
           const payments = Array.isArray(entry?.payments) ? entry.payments : [];
 
-          // Clean, Compact Receipt Badges (Floating Mini 1, 2 Numbers)
           let receiptsBadgeList = payments.length > 0 ? `
             <div class="flex items-center gap-1.5 flex-wrap">
               ${payments.map((p, pIdx) => `
@@ -2022,7 +2031,6 @@
             </div>
           ` : `<span class="text-[11px] text-slate-300">-</span>`;
 
-          // Concise channel hint
           let channelSnippet = "Pending";
           if (payments.length > 0) {
             const lastP = payments[payments.length - 1];
@@ -2032,7 +2040,6 @@
 
           return `
             <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
-              <!-- Row 1: Identity + Financial Status -->
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-1.5 min-w-0 pr-2">
                   <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-1.5 py-0.5 rounded shrink-0">${m.memberNo}</span>
@@ -2048,13 +2055,11 @@
                 </div>
               </div>
 
-              <!-- Inline Summary Subline -->
               <div class="flex items-center justify-between text-[11px] text-slate-500">
                 <span>EMI: <b class="text-slate-700">${this.formatINR(sch.emi)}</b> • Paid: <b class="${totalPaid > 0 ? 'text-emerald-700' : 'text-slate-400'}">${this.formatINR(totalPaid)}</b></span>
                 <span class="text-[10px] text-slate-400 truncate max-w-[120px]">${channelSnippet}</span>
               </div>
 
-              <!-- Row 2: Micro Receipt Badges + Compact Action -->
               <div class="flex items-center justify-between pt-1 border-t border-slate-100 gap-2">
                 <div class="flex-1">${receiptsBadgeList}</div>
                 <div>
@@ -2107,7 +2112,7 @@
               </td>
               <td class="p-3 text-right font-medium">${this.formatINR(sch.emi)}</td>
               <td class="p-3 text-right font-bold ${totalPaid > 0 ? 'text-emerald-600' : 'text-slate-400'}">${this.formatINR(totalPaid)}</td>
-              <td class="p-3 text-right font-bold ${balanceDue > 0 ? 'text-rose-600' : 'text-slate-400'}">${this.formatINR(balanceDue)}</td>
+              <td class="p-3 text-right font-bold ${balanceDue > 0 ? 'text-rose-600' : 'text-slate-400'}">${balanceDue > 0 ? this.formatINR(balanceDue) : 'Cleared'}</td>
               <td class="p-3 text-xs text-slate-600">${channelDisplay}</td>
               <td class="p-3 text-center">${receiptsBadgeList}</td>
               <td class="p-3 text-right">
@@ -2176,7 +2181,6 @@
             <option value="${cp2.name}" data-due="${Math.max(0, halfEmi - cp2Paid)}">${cp2.name} (Due: ${this.formatINR(Math.max(0, halfEmi - cp2Paid))})</option>
           `;
 
-          // Auto-select partner with unpaid balance
           if (cp1Paid >= halfEmi && cp2Paid < halfEmi) {
             jointPayerSelect.value = cp2.name;
           }
@@ -2221,7 +2225,7 @@
           }).join('');
         }
 
-        // Lock form when full ticket is cleared
+        // Lock form when full ticket is cleared (clean banner with no redundant explanation)
         const clearedBanner = document.getElementById('coll-cleared-banner');
         const formEl = document.getElementById('collection-form');
 
@@ -2430,7 +2434,7 @@
         let subscriberDisplayName = mem.name;
         let isJoint = Boolean(mem.isJoint && mem.coPayers);
         let shareTargetText = "";
-        let statusText = "Cleared (Nil Due)";
+        let statusText = "Cleared";
         let balanceDueAmount = 0;
 
         if (isJoint) {
@@ -2443,10 +2447,10 @@
 
           const payerTotalPaid = entry.payments.filter(p => p.payerName === pName).reduce((s, p) => s + (Number(p.amount) || 0), 0);
           balanceDueAmount = Math.max(0, halfEmi - payerTotalPaid);
-          statusText = balanceDueAmount === 0 ? "Share Cleared (Nil Due)" : `Part Payment (${this.formatINR(balanceDueAmount)} due)`;
+          statusText = balanceDueAmount === 0 ? "Share Cleared" : `Part Payment (${this.formatINR(balanceDueAmount)} due)`;
         } else {
           balanceDueAmount = Math.max(0, sch.emi - entry.totalPaid);
-          statusText = balanceDueAmount === 0 ? "Cleared (Nil Due)" : `Part Payment (${this.formatINR(balanceDueAmount)} due)`;
+          statusText = balanceDueAmount === 0 ? "Cleared" : `Part Payment (${this.formatINR(balanceDueAmount)} due)`;
         }
 
         this.currentReceiptData = {
@@ -2614,7 +2618,7 @@
           pill.innerText = `Due: -${this.formatINR(Math.abs(runningBalance))}`;
         } else {
           pill.className = "text-xs font-extrabold px-2.5 py-0.5 rounded-md bg-slate-200 text-slate-800";
-          pill.innerText = "Settled (Nil Due)";
+          pill.innerText = "Settled";
         }
       }
 
@@ -2720,8 +2724,8 @@
           const btn = document.getElementById(`rep-filter-${f}`);
           if (btn) {
             btn.className = f === filterType 
-              ? "px-2.5 py-1 rounded-md text-xs font-bold bg-white text-indigo-950 shadow-2xs transition" 
-              : "px-2.5 py-1 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 transition";
+              ? "py-1.5 px-2 rounded-lg text-xs font-bold bg-white text-indigo-950 shadow-2xs transition text-center" 
+              : "py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition text-center";
           }
         });
 
@@ -2844,7 +2848,7 @@
                 ${item.paid > 0 ? this.formatINR(item.paid) : '₹0'}
               </td>
               <td class="p-2.5 text-right font-bold ${item.balanceDue > 0 ? 'text-rose-600' : 'text-slate-400'}">
-                ${this.formatINR(item.balanceDue)}
+                ${item.balanceDue > 0 ? this.formatINR(item.balanceDue) : 'Cleared'}
               </td>
               <td class="p-2.5 text-slate-600">${this.formatDate(item.entry?.lastPaymentDate)}</td>
               <td class="p-2.5 text-slate-700">${channelSummary}</td>
