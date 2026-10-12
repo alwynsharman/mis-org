@@ -247,7 +247,7 @@
         </div>
       </section>
 
-      <!-- 3. MEMBER DIRECTORY -->
+      <!-- 3. MEMBER DIRECTORY (Clean Alignment without Tile Phone Numbers) -->
       <section id="view-members" class="space-y-3 hidden">
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
@@ -255,13 +255,13 @@
               <h2 class="text-base sm:text-lg font-bold text-slate-900">Member Directory</h2>
               <span id="member-count-pill" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-900 border border-indigo-100">0 / 40</span>
             </div>
-            <p class="text-xs text-slate-500 mt-0.5">Subscriber records, joint shares & ledgers</p>
+            <p class="text-xs text-slate-500 mt-0.5">Subscriber records, joint tickets & ledgers</p>
           </div>
 
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <div class="relative flex-1 sm:w-60">
               <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-              <input type="text" id="member-search" placeholder="Search by name, phone, ID..." oninput="app.filterMembers(this.value)" class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-600 bg-slate-50/50" />
+              <input type="text" id="member-search" placeholder="Search name, phone, ID..." oninput="app.filterMembers(this.value)" class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-600 bg-slate-50/50" />
             </div>
             <div class="flex items-center gap-2">
               <button onclick="app.exportMembersCSV()" class="flex-1 sm:flex-none px-3.5 py-2 border border-emerald-600/30 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 active:scale-95 rounded-xl text-xs font-bold whitespace-nowrap shadow-xs transition flex items-center justify-center gap-1.5" title="Export to Excel / CSV">
@@ -274,15 +274,17 @@
           </div>
         </div>
 
-        <div id="member-mobile-cards" class="sm:hidden space-y-2.5"></div>
+        <!-- Mobile Cards -->
+        <div id="member-mobile-cards" class="sm:hidden space-y-2"></div>
 
+        <!-- Desktop Table -->
         <div class="hidden sm:block bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
           <table class="w-full text-left text-xs">
             <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
               <tr>
                 <th class="p-3">ID</th>
                 <th class="p-3">Subscriber</th>
-                <th class="p-3">Contact</th>
+                <th class="p-3 text-center">Ticket Type</th>
                 <th class="p-3 text-center">Prized Month</th>
                 <th class="p-3 text-right">Total Paid</th>
                 <th class="p-3 text-right">Actions</th>
@@ -914,7 +916,7 @@
       { m: 10, emi: 12500, div: 0,    disc: 0,     net: 500000, note: "Special Chit" },
       { m: 11, emi: 10650, div: 1850, disc: 74000, net: 426000, note: "" },
       { m: 12, emi: 10700, div: 1800, disc: 72000, net: 428000, note: "" },
-      { m: 13, emi: 10750, div: 1750, disc: 70000, net: 430000, note: "" },
+      { m: 13, emi: 10750, div: 1850, disc: 70000, net: 430000, note: "" },
       { m: 14, emi: 10800, div: 1700, disc: 68000, net: 432000, note: "" },
       { m: 15, emi: 10850, div: 1650, disc: 66000, net: 434000, note: "" },
       { m: 16, emi: 10900, div: 1600, disc: 64000, net: 436000, note: "" },
@@ -1071,7 +1073,6 @@
           .trim();
       }
 
-      // Streamlined PDF Generation (No "Final Settlement", Clean "Cleared" Status)
       generateReceiptPDF(data) {
         const jsPdfClass = window.jspdf?.jsPDF || window.jsPDF;
         if (!jsPdfClass) throw new Error("jsPDF library not loaded");
@@ -1637,7 +1638,7 @@
         document.getElementById('dash-total-pending').innerText = this.formatINR(totalPending);
       }
 
-      // Render Members with Fixed Grid Alignment for Co-Payers
+      // Render Members (Clean Tiles without Phone Numbers; Detail Modal shows all info)
       renderMembers(list = this.members) {
         const isAdmin = this.userRole === 'admin';
         const isFull = this.members.length >= 40;
@@ -1663,45 +1664,37 @@
           }
         }
 
-        // Mobile Cards: Clean, Stacked Alignment for Joint Subscribers
+        // Mobile Cards: Clean, Compact 2-Row Alignment
         const mContainer = document.getElementById('member-mobile-cards');
         mContainer.innerHTML = list.length === 0 ? `<div class="p-6 text-center text-xs text-slate-400 bg-white rounded-2xl">No subscribers found.</div>` : list.map(m => {
           const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.totalPaid) || 0), 0);
 
           return `
-            <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-              <div class="space-y-0.5 flex-1 cursor-pointer pr-2" onclick="app.openMemberModal('${m.memberNo}')">
+            <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-2xs flex items-center justify-between">
+              <div class="space-y-1 flex-1 cursor-pointer pr-2 min-w-0" onclick="app.openMemberModal('${m.memberNo}')">
                 <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-1.5 py-0.5 rounded">${m.memberNo}</span>
-                  <span class="font-bold text-xs text-slate-800 hover:text-indigo-900">${m.name}</span>
-                  ${m.isJoint ? `<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Joint (50-50)</span>` : ''}
+                  <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-1.5 py-0.5 rounded shrink-0">${m.memberNo}</span>
+                  <span class="font-bold text-xs text-slate-800 hover:text-indigo-900 truncate">${m.name}</span>
+                  ${m.isJoint ? `<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200 shrink-0">Joint</span>` : ''}
                 </div>
-
-                ${m.isJoint ? `
-                  <div class="text-[11px] text-slate-500 pt-1 space-y-0.5">
-                    <div class="flex items-center gap-1.5"><span class="font-semibold text-slate-700 truncate max-w-[120px]">${m.coPayers?.payer1?.name || 'Payer 1'}:</span> <span class="font-mono text-slate-600">${m.coPayers?.payer1?.phone || '-'}</span></div>
-                    <div class="flex items-center gap-1.5"><span class="font-semibold text-slate-700 truncate max-w-[120px]">${m.coPayers?.payer2?.name || 'Payer 2'}:</span> <span class="font-mono text-slate-600">${m.coPayers?.payer2?.phone || '-'}</span></div>
-                  </div>
-                ` : `
-                  <div class="text-[11px] text-slate-500 font-mono">${m.phone || '-'}</div>
-                `}
-
-                <div class="text-[11px] text-emerald-600 font-bold">Total Paid: ${this.formatINR(totalPaid)}</div>
-                ${m.isPrized ? `<span class="inline-block bg-amber-100 text-amber-900 text-[10px] font-bold px-1.5 py-0.5 rounded">Prized (M${m.prizedMonth})</span>` : ''}
+                <div class="flex items-center gap-2 text-[11px]">
+                  <span class="text-emerald-600 font-bold">Total Paid: ${this.formatINR(totalPaid)}</span>
+                  ${m.isPrized ? `<span class="bg-amber-100 text-amber-900 text-[10px] font-bold px-1.5 py-0.2 rounded">Prized (M${m.prizedMonth})</span>` : ''}
+                </div>
               </div>
-              <div class="flex items-center gap-1.5">
-                <button onclick="app.viewPassbookForMember('${m.memberNo}')" class="p-2 rounded-xl bg-indigo-50 text-indigo-900 hover:bg-indigo-100 active:scale-90 font-bold text-xs flex items-center gap-1" title="Passbook">
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button onclick="app.viewPassbookForMember('${m.memberNo}')" class="px-2.5 py-1.5 rounded-xl bg-indigo-50 text-indigo-900 hover:bg-indigo-100 active:scale-95 font-bold text-xs flex items-center gap-1" title="Passbook">
                   <i class="ph ph-book-open text-sm"></i> Ledger
                 </button>
                 ${isAdmin ? `
-                  <button onclick="app.deleteMember('${m.memberNo}')" class="p-2 rounded-xl bg-rose-50 text-rose-600 active:scale-90 hover:bg-rose-100" title="Delete Subscriber"><i class="ph ph-trash"></i></button>
+                  <button onclick="app.deleteMember('${m.memberNo}')" class="p-1.5 rounded-xl bg-rose-50 text-rose-600 active:scale-90 hover:bg-rose-100" title="Delete Subscriber"><i class="ph ph-trash text-sm"></i></button>
                 ` : ''}
               </div>
             </div>
           `;
         }).join('');
 
-        // Desktop Table: Multi-line structured contact column for Co-Payers
+        // Desktop Table: Structured Alignment
         const dBody = document.getElementById('member-desktop-tbody');
         dBody.innerHTML = list.map(m => {
           const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.totalPaid) || 0), 0);
@@ -1711,17 +1704,9 @@
               <td class="p-3 font-mono font-bold text-indigo-900 cursor-pointer" onclick="app.openMemberModal('${m.memberNo}')">${m.memberNo}</td>
               <td class="p-3 font-semibold text-slate-800 cursor-pointer hover:text-indigo-900" onclick="app.openMemberModal('${m.memberNo}')">
                 ${m.name}
-                ${m.isJoint ? `<span class="ml-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Joint</span>` : ''}
               </td>
-              <td class="p-3 text-slate-600 cursor-pointer whitespace-nowrap" onclick="app.openMemberModal('${m.memberNo}')">
-                ${m.isJoint ? `
-                  <div class="space-y-1 text-xs">
-                    <div><span class="font-semibold text-slate-700">${m.coPayers?.payer1?.name || 'Payer 1'}:</span> <span class="font-mono text-slate-600 ml-1">${m.coPayers?.payer1?.phone || '-'}</span></div>
-                    <div><span class="font-semibold text-slate-700">${m.coPayers?.payer2?.name || 'Payer 2'}:</span> <span class="font-mono text-slate-600 ml-1">${m.coPayers?.payer2?.phone || '-'}</span></div>
-                  </div>
-                ` : `
-                  <span class="font-mono">${m.phone || '-'}</span>
-                `}
+              <td class="p-3 text-center cursor-pointer" onclick="app.openMemberModal('${m.memberNo}')">
+                ${m.isJoint ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Joint (50-50)</span>` : `<span class="text-slate-400 text-xs">Single</span>`}
               </td>
               <td class="p-3 text-center cursor-pointer" onclick="app.openMemberModal('${m.memberNo}')">${m.isPrized ? `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-bold">Month ${m.prizedMonth}</span>` : '<span class="text-slate-400">Non-prized</span>'}</td>
               <td class="p-3 text-right font-bold text-emerald-600 cursor-pointer" onclick="app.openMemberModal('${m.memberNo}')">${this.formatINR(totalPaid)}</td>
@@ -1745,7 +1730,9 @@
           m.memberNo.toLowerCase().includes(q) || 
           (m.phone && m.phone.includes(q)) ||
           (m.coPayers?.payer1?.name && m.coPayers.payer1.name.toLowerCase().includes(q)) ||
-          (m.coPayers?.payer2?.name && m.coPayers.payer2.name.toLowerCase().includes(q))
+          (m.coPayers?.payer2?.name && m.coPayers.payer2.name.toLowerCase().includes(q)) ||
+          (m.coPayers?.payer1?.phone && m.coPayers.payer1.phone.includes(q)) ||
+          (m.coPayers?.payer2?.phone && m.coPayers.payer2.phone.includes(q))
         );
         this.renderMembers(filtered);
       }
@@ -2043,7 +2030,7 @@
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-1.5 min-w-0 pr-2">
                   <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-1.5 py-0.5 rounded shrink-0">${m.memberNo}</span>
-                  <span class="font-bold text-xs text-slate-800 truncate">${m.name}</span>
+                  <span class="font-bold text-xs text-slate-800 hover:text-indigo-900 truncate">${m.name}</span>
                   ${m.isJoint ? `<span class="px-1.5 py-0.2 rounded text-[8px] font-bold bg-amber-50 text-amber-800 border border-amber-200 shrink-0">Joint</span>` : ''}
                 </div>
                 <div>
@@ -2225,7 +2212,7 @@
           }).join('');
         }
 
-        // Lock form when full ticket is cleared (clean banner with no redundant explanation)
+        // Lock form when full ticket is cleared
         const clearedBanner = document.getElementById('coll-cleared-banner');
         const formEl = document.getElementById('collection-form');
 
@@ -2778,7 +2765,7 @@
         const reportData = [];
 
         this.members.forEach(m => {
-          const entry = monthCols.find(c => c.memberNo === m.memberNo);
+          const entry = monthCols.find(c => c.month === monthNum && c.memberNo === m.memberNo);
           const paid = Number(entry?.totalPaid) || 0;
           const balanceDue = Math.max(0, (sch?.emi || 0) - paid);
           let statusText = "Pending";
