@@ -290,11 +290,11 @@
           </table>
         </div>
 
-        <!-- Relocated Directory Footer Bar -->
+        <!-- Relocated Directory Footer Bar (True Merged Excel Export) -->
         <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
           <span id="member-footer-count" class="text-slate-500 font-medium">Showing 40 of 40 Active Accounts</span>
-          <button onclick="app.exportMembersCSV()" class="w-full sm:w-auto px-4 py-2 border border-emerald-600/30 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 active:scale-95 rounded-xl font-bold transition flex items-center justify-center gap-1.5 shadow-2xs">
-            <i class="ph ph-file-csv text-base"></i> Export Member Directory to Excel (CSV)
+          <button onclick="app.exportMembersExcel()" class="w-full sm:w-auto px-4 py-2 border border-emerald-600/30 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 active:scale-95 rounded-xl font-bold transition flex items-center justify-center gap-1.5 shadow-2xs">
+            <i class="ph ph-file-xls text-base"></i> Export Member Directory to Excel (.xls)
           </button>
         </div>
       </section>
@@ -374,7 +374,7 @@
         </div>
       </section>
 
-      <!-- 5. MONTHLY COLLECTIONS (Compact Month Chip & 2-Row Accent Cards Without Tiles Receipt Icons) -->
+      <!-- 5. MONTHLY COLLECTIONS (Compact Month Chip & 2-Row Accent Cards Without Tile Receipt Icons) -->
       <section id="view-collections" class="space-y-3 hidden">
         <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
           <!-- Row 1: Title & Compact Month Chip -->
@@ -439,7 +439,7 @@
         </div>
       </section>
 
-      <!-- 7. RESTRUCTURED & CLEAN REPORTS -->
+      <!-- 7. RESTRUCTURED & CLEAN REPORTS (With Merged-Cell Excel Exports) -->
       <section id="view-reports" class="space-y-2.5 hidden">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-3 sm:p-5 space-y-3">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
@@ -451,8 +451,8 @@
             <div class="flex items-center gap-2 self-end sm:self-auto shrink-0">
               <select id="report-month-select" onchange="app.onReportMonthChange(parseInt(this.value))" class="border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold bg-slate-50 text-slate-800 focus:ring-2 focus:ring-indigo-600 focus:outline-none shadow-xs">
               </select>
-              <button onclick="app.exportMonthlyReportCSV()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition whitespace-nowrap" title="Export Monthly Statement CSV">
-                <i class="ph ph-file-csv text-base"></i> Export
+              <button onclick="app.exportMonthlyReportExcel()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition whitespace-nowrap" title="Export Monthly Statement to Excel (.xls)">
+                <i class="ph ph-file-xls text-base"></i> Export Excel
               </button>
             </div>
           </div>
@@ -500,8 +500,8 @@
                 Subscribers
               </span>
               
-              <button id="rep-export-pending-btn" onclick="app.exportMonthlyPendingCSV()" class="hidden px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold items-center gap-1 shadow-2xs transition" title="Export Pending List CSV">
-                <i class="ph ph-file-csv text-sm"></i> Export Pending
+              <button id="rep-export-pending-btn" onclick="app.exportMonthlyPendingExcel()" class="hidden px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold items-center gap-1 shadow-2xs transition" title="Export Pending List to Excel (.xls)">
+                <i class="ph ph-file-xls text-sm"></i> Export Pending
               </button>
             </div>
 
@@ -1758,45 +1758,106 @@
         this.renderMembers(filtered);
       }
 
-      // Member Directory Export (Single-row with in-cell line breaks for joint accounts)
-      exportMembersCSV() {
+      // Member Directory Excel Export (True Merged Cells with rowspan="2")
+      exportMembersExcel() {
         if (!this.members || this.members.length === 0) {
           this.notify("No subscribers to export.", true);
           return;
         }
 
         const exportDate = new Date().toLocaleDateString('en-IN');
-        let csv = `\uFEFF,,,,"mis-org Chit Fund Management - Subscriber Master Directory",,,,\n`;
-        csv += `,,,,"Group A (Rs. 5,00,000 • 40 Subscribers • 41 Months) | Export Date: ${exportDate}",,,,\n`;
-        csv += `,,,,,\n\n`;
-        csv += "Member ID,Account Name,Account Type,Member / Co-Members,Phone Numbers,Addresses,Prized Status,Total Paid\n";
-        
+        let rowsHtml = '';
+
         this.members.forEach(m => {
           const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.totalPaid) || 0), 0);
           const prizedLabel = m.isPrized ? `Prized (Month ${m.prizedMonth})` : 'Non-prized';
-          const ticketType = m.isJoint ? 'Joint (50-50)' : 'Single';
-
-          let membersCol = m.name;
-          let phonesCol = m.phone || '-';
-          let addressCol = m.address || '-';
 
           if (m.isJoint && m.coPayers) {
             const cp1 = m.coPayers.payer1;
             const cp2 = m.coPayers.payer2;
-            membersCol = `1. ${cp1?.name || '-'}\n2. ${cp2?.name || '-'}`;
-            phonesCol = `1. ${cp1?.phone || '-'}\n2. ${cp2?.phone || '-'}`;
-            addressCol = `1. ${cp1?.address || '-'}\n2. ${cp2?.address || '-'}`;
-          }
 
-          csv += `"${m.memberNo}","${m.name}","${ticketType}","${membersCol}","${phonesCol}","${addressCol}","${prizedLabel}","${totalPaid}"\n`;
+            rowsHtml += `
+              <tr>
+                <td rowspan="2" class="bold text-center">${m.memberNo}</td>
+                <td rowspan="2" class="bold">${m.name}</td>
+                <td rowspan="2" class="text-center">Joint (50-50)</td>
+                <td>${cp1?.name || '-'} (Co-Payer 1)</td>
+                <td>${cp1?.phone || '-'}</td>
+                <td>${cp1?.email || '-'}</td>
+                <td>${cp1?.address || '-'}</td>
+                <td rowspan="2" class="text-center">${prizedLabel}</td>
+                <td rowspan="2" class="num bold">${this.formatINR(totalPaid)}</td>
+              </tr>
+              <tr>
+                <td>${cp2?.name || '-'} (Co-Payer 2)</td>
+                <td>${cp2?.phone || '-'}</td>
+                <td>${cp2?.email || '-'}</td>
+                <td>${cp2?.address || '-'}</td>
+              </tr>
+            `;
+          } else {
+            rowsHtml += `
+              <tr>
+                <td class="bold text-center">${m.memberNo}</td>
+                <td class="bold">${m.name}</td>
+                <td class="text-center">Single</td>
+                <td>${m.name}</td>
+                <td>${m.phone || '-'}</td>
+                <td>${m.email || '-'}</td>
+                <td>${m.address || '-'}</td>
+                <td class="text-center">${prizedLabel}</td>
+                <td class="num bold">${this.formatINR(totalPaid)}</td>
+              </tr>
+            `;
+          }
         });
 
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const excelHtml = `
+          <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+          <head>
+            <meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8">
+            <style>
+              table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; font-size: 11px; }
+              th { background-color: #1e1b4b; color: #ffffff; font-weight: bold; border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; }
+              td { border: 1px solid #cbd5e1; padding: 6px 10px; vertical-align: middle; }
+              .bold { font-weight: bold; }
+              .text-center { text-align: center; }
+              .num { text-align: right; }
+              .header-title { font-size: 14px; font-weight: bold; color: #1e1b4b; padding: 8px 0 2px 0; }
+              .header-sub { font-size: 11px; color: #64748b; padding-bottom: 8px; }
+            </style>
+          </head>
+          <body>
+            <div class="header-title">mis-org Chit Fund Management • Subscriber Master Directory</div>
+            <div class="header-sub">Group A (Rs. 5,00,000 • 40 Subscribers • 41 Months) | Export Date: ${exportDate}</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Member ID</th>
+                  <th>Account Name</th>
+                  <th>Account Type</th>
+                  <th>Person / Partner Name</th>
+                  <th>Phone Number</th>
+                  <th>Google Email</th>
+                  <th>Physical Address</th>
+                  <th>Prized Status</th>
+                  <th style="text-align: right;">Total Paid</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+            </table>
+          </body>
+          </html>
+        `;
+
+        const blob = new Blob([excelHtml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `mis_org_subscribers_${new Date().toISOString().split('T')[0]}.csv`;
+        link.download = `mis_org_subscribers_${new Date().toISOString().split('T')[0]}.xls`;
         link.click();
-        this.notify("Downloaded subscribers directory");
+        this.notify("Downloaded subscribers directory (.xls)");
       }
 
       onJointToggleChange() {
@@ -2934,8 +2995,8 @@
         }).join('');
       }
 
-      // Monthly Collection Statement CSV (With in-cell line breaks & summary bottom row)
-      exportMonthlyReportCSV() {
+      // Monthly Collection Statement Excel Export (True Merged Cells with rowspan="2")
+      exportMonthlyReportExcel() {
         const monthNum = this.reportSelectedMonth;
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
         const monthLabel = this.getMonthLabel(monthNum);
@@ -2948,128 +3009,335 @@
         let partialCount = 0;
         let pendingCount = 0;
 
-        let csv = `\uFEFF,,,"mis-org Chit Fund Management - Monthly Collection Statement",,,,,,,\n`;
-        csv += `,,,"Installment: Month ${monthNum} (${monthLabel}) | Scheduled EMI: Rs. ${sch.emi} | Group: Group A (Rs. 5,00,000) | Date: ${exportDate}",,,,,,,\n`;
-        csv += `,,,,,,,,,,\n\n`;
-        csv += "Member ID,Account Name,Account Type,Member / Co-Payers,Partner Share & Payment,Scheduled EMI,Total Amount Paid,Balance Due,Parts Count,Last Payment Date,Status\n";
-        
+        let rowsHtml = '';
+
         this.members.forEach(m => {
           const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
-          const paid = Number(entry?.totalPaid) || 0;
-          const balanceDue = Math.max(0, (sch?.emi || 0) - paid);
-          let statusText = "Pending";
-          if (paid >= (sch?.emi || 0)) {
-            statusText = "Cleared";
-            clearedCount++;
-          } else if (paid > 0) {
-            statusText = "Partial";
-            partialCount++;
-          } else {
-            pendingCount++;
-          }
-
-          totalScheduledSum += (sch?.emi || 0);
-          totalPaidSum += paid;
-          totalDueSum += balanceDue;
-
-          const ticketType = m.isJoint ? "Joint (50-50)" : "Single";
-          let payersCol = m.name;
-          let partnerShareCol = "Full Share (100%)";
+          const payments = Array.isArray(entry?.payments) ? entry.payments : [];
 
           if (m.isJoint && m.coPayers) {
+            const halfEmi = (sch?.emi || 0) / 2;
             const cp1 = m.coPayers.payer1;
             const cp2 = m.coPayers.payer2;
-            const halfEmi = (sch?.emi || 0) / 2;
-            const payments = Array.isArray(entry?.payments) ? entry.payments : [];
-            const cp1Paid = payments.filter(p => p.payerName === cp1?.name).reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
-            const cp2Paid = payments.filter(p => p.payerName === cp2?.name).reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
 
-            payersCol = `1. ${cp1?.name || '-'}\n2. ${cp2?.name || '-'}`;
-            partnerShareCol = `1. Rs. ${cp1Paid} Paid (${cp1Paid >= halfEmi ? 'Cleared' : `Due Rs. ${halfEmi - cp1Paid}`})\n2. Rs. ${cp2Paid} Paid (${cp2Paid >= halfEmi ? 'Cleared' : `Due Rs. ${halfEmi - cp2Paid}`})`;
+            // Co-Payer 1 calculations
+            const cp1Payments = payments.filter(p => p.payerName === cp1?.name);
+            const cp1Paid = cp1Payments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+            const cp1Due = Math.max(0, halfEmi - cp1Paid);
+            const cp1Date = cp1Payments.length > 0 ? this.formatDate(cp1Payments[cp1Payments.length - 1].paymentDate) : '-';
+            const cp1Status = cp1Paid >= halfEmi ? 'Cleared' : (cp1Paid > 0 ? 'Partial' : 'Pending');
+            const cp1Color = cp1Paid >= halfEmi ? '#047857' : (cp1Paid > 0 ? '#b45309' : '#b91c1c');
+
+            // Co-Payer 2 calculations
+            const cp2Payments = payments.filter(p => p.payerName === cp2?.name);
+            const cp2Paid = cp2Payments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+            const cp2Due = Math.max(0, halfEmi - cp2Paid);
+            const cp2Date = cp2Payments.length > 0 ? this.formatDate(cp2Payments[cp2Payments.length - 1].paymentDate) : '-';
+            const cp2Status = cp2Paid >= halfEmi ? 'Cleared' : (cp2Paid > 0 ? 'Partial' : 'Pending');
+            const cp2Color = cp2Paid >= halfEmi ? '#047857' : (cp2Paid > 0 ? '#b45309' : '#b91c1c');
+
+            totalScheduledSum += (halfEmi * 2);
+            totalPaidSum += (cp1Paid + cp2Paid);
+            totalDueSum += (cp1Due + cp2Due);
+
+            if (cp1Status === 'Cleared') clearedCount++; else if (cp1Status === 'Partial') partialCount++; else pendingCount++;
+            if (cp2Status === 'Cleared') clearedCount++; else if (cp2Status === 'Partial') partialCount++; else pendingCount++;
+
+            rowsHtml += `
+              <tr>
+                <td rowspan="2" class="bold text-center">${m.memberNo}</td>
+                <td rowspan="2" class="bold">${m.name}</td>
+                <td rowspan="2" class="text-center">Joint (50-50)</td>
+                <td>${cp1?.name || '-'} (Co-Payer 1)</td>
+                <td class="num">${this.formatINR(halfEmi)}</td>
+                <td class="num bold">${this.formatINR(cp1Paid)}</td>
+                <td class="num bold" style="color: ${cp1Due > 0 ? '#b91c1c' : '#64748b'};">${cp1Due > 0 ? this.formatINR(cp1Due) : '₹0'}</td>
+                <td class="text-center">${cp1Payments.length}</td>
+                <td class="text-center">${cp1Date}</td>
+                <td class="text-center bold" style="color: ${cp1Color};">${cp1Status}</td>
+              </tr>
+              <tr>
+                <td>${cp2?.name || '-'} (Co-Payer 2)</td>
+                <td class="num">${this.formatINR(halfEmi)}</td>
+                <td class="num bold">${this.formatINR(cp2Paid)}</td>
+                <td class="num bold" style="color: ${cp2Due > 0 ? '#b91c1c' : '#64748b'};">${cp2Due > 0 ? this.formatINR(cp2Due) : '₹0'}</td>
+                <td class="text-center">${cp2Payments.length}</td>
+                <td class="text-center">${cp2Date}</td>
+                <td class="text-center bold" style="color: ${cp2Color};">${cp2Status}</td>
+              </tr>
+            `;
+          } else {
+            const paid = Number(entry?.totalPaid) || 0;
+            const balanceDue = Math.max(0, (sch?.emi || 0) - paid);
+            const statusText = paid >= (sch?.emi || 0) ? 'Cleared' : (paid > 0 ? 'Partial' : 'Pending');
+            const statusColor = paid >= (sch?.emi || 0) ? '#047857' : (paid > 0 ? '#b45309' : '#b91c1c');
+            const lastDate = entry?.lastPaymentDate ? this.formatDate(entry.lastPaymentDate) : '-';
+
+            totalScheduledSum += (sch?.emi || 0);
+            totalPaidSum += paid;
+            totalDueSum += balanceDue;
+
+            if (statusText === 'Cleared') clearedCount++;
+            else if (statusText === 'Partial') partialCount++;
+            else pendingCount++;
+
+            rowsHtml += `
+              <tr>
+                <td class="bold text-center">${m.memberNo}</td>
+                <td class="bold">${m.name}</td>
+                <td class="text-center">Single</td>
+                <td>${m.name}</td>
+                <td class="num">${this.formatINR(sch.emi)}</td>
+                <td class="num bold">${this.formatINR(paid)}</td>
+                <td class="num bold" style="color: ${balanceDue > 0 ? '#b91c1c' : '#64748b'};">${balanceDue > 0 ? this.formatINR(balanceDue) : '₹0'}</td>
+                <td class="text-center">${payments.length}</td>
+                <td class="text-center">${lastDate}</td>
+                <td class="text-center bold" style="color: ${statusColor};">${statusText}</td>
+              </tr>
+            `;
           }
-
-          const partsCount = Array.isArray(entry?.payments) ? entry.payments : [];
-          const paymentDate = entry?.lastPaymentDate ? this.formatDate(entry.lastPaymentDate) : '-';
-
-          csv += `"${m.memberNo}","${m.name}","${ticketType}","${payersCol}","${partnerShareCol}","${sch.emi}","${paid}","${balanceDue}","${partsCount}","${paymentDate}","${statusText}"\n`;
         });
 
-        // Summary Total Row
-        csv += `,,,,,,,,,,\n`;
-        csv += `"TOTALS","${this.members.length} Accounts","-","-","-","${totalScheduledSum}","${totalPaidSum}","${totalDueSum}","-","-","${clearedCount} Cleared / ${pendingCount + partialCount} Due"\n`;
+        const excelHtml = `
+          <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+          <head>
+            <meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8">
+            <style>
+              table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; font-size: 11px; }
+              th { background-color: #1e1b4b; color: #ffffff; font-weight: bold; border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; }
+              td { border: 1px solid #cbd5e1; padding: 6px 10px; vertical-align: middle; }
+              .bold { font-weight: bold; }
+              .text-center { text-align: center; }
+              .num { text-align: right; }
+              .header-title { font-size: 14px; font-weight: bold; color: #1e1b4b; padding: 8px 0 2px 0; }
+              .header-sub { font-size: 11px; color: #64748b; padding-bottom: 8px; }
+              .total-row { background-color: #f1f5f9; font-weight: bold; }
+            </style>
+          </head>
+          <body>
+            <div class="header-title">mis-org Chit Fund Management • Monthly Collection Statement</div>
+            <div class="header-sub">Installment: Month ${monthNum} (${monthLabel}) | Chit Target: ${this.formatINR(totalScheduledSum)} | Date: ${exportDate}</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Member ID</th>
+                  <th>Account Name</th>
+                  <th>Account Type</th>
+                  <th>Subscriber / Co-Payer</th>
+                  <th style="text-align: right;">Scheduled Share</th>
+                  <th style="text-align: right;">Amount Paid</th>
+                  <th style="text-align: right;">Balance Due</th>
+                  <th style="text-align: center;">Parts Count</th>
+                  <th style="text-align: center;">Last Payment Date</th>
+                  <th style="text-align: center;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+                <tr class="total-row">
+                  <td colspan="4" class="bold text-center">TOTALS (${this.members.length} Accounts)</td>
+                  <td class="num bold">${this.formatINR(totalScheduledSum)}</td>
+                  <td class="num bold" style="color: #047857;">${this.formatINR(totalPaidSum)}</td>
+                  <td class="num bold" style="color: #b91c1c;">${this.formatINR(totalDueSum)}</td>
+                  <td colspan="3" class="text-center bold">${clearedCount} Cleared / ${pendingCount + partialCount} Due</td>
+                </tr>
+              </tbody>
+            </table>
+          </body>
+          </html>
+        `;
 
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob([excelHtml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `mis_org_month_${monthNum}_collection_statement.csv`;
+        link.download = `mis_org_month_${monthNum}_collection_statement.xls`;
         link.click();
-        this.notify(`Downloaded Month ${monthNum} collection statement`);
+        this.notify(`Downloaded Month ${monthNum} collection statement (.xls)`);
       }
 
-      // Monthly Pending Statement CSV (With in-cell line breaks & summary bottom row)
-      exportMonthlyPendingCSV() {
+      // Monthly Pending Statement Excel Export (True Merged Cells with rowspan="2")
+      exportMonthlyPendingExcel() {
         const monthNum = this.reportSelectedMonth;
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
         const monthLabel = this.getMonthLabel(monthNum);
         const exportDate = new Date().toLocaleDateString('en-IN');
 
-        const pendingList = [];
+        let totalPendingScheduled = 0;
+        let totalPendingPaid = 0;
+        let totalPendingDue = 0;
+        let rowsHtml = '';
+        let pendingCount = 0;
+
         this.members.forEach(m => {
           const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
-          const paid = Number(entry?.totalPaid) || 0;
-          const due = (sch?.emi || 0) - paid;
-          if (due > 0) {
-            pendingList.push({
-              member: m,
-              paid: paid,
-              due: due,
-              status: paid > 0 ? "Partial" : "Pending"
-            });
+          const payments = Array.isArray(entry?.payments) ? entry.payments : [];
+
+          if (m.isJoint && m.coPayers) {
+            const halfEmi = (sch?.emi || 0) / 2;
+            const cp1 = m.coPayers.payer1;
+            const cp2 = m.coPayers.payer2;
+
+            const cp1Paid = payments.filter(p => p.payerName === cp1?.name).reduce((s, p) => s + (Number(p.amount) || 0), 0);
+            const cp1Due = Math.max(0, halfEmi - cp1Paid);
+
+            const cp2Paid = payments.filter(p => p.payerName === cp2?.name).reduce((s, p) => s + (Number(p.amount) || 0), 0);
+            const cp2Due = Math.max(0, halfEmi - cp2Paid);
+
+            const cp1IsPending = cp1Due > 0;
+            const cp2IsPending = cp2Due > 0;
+
+            if (cp1IsPending && cp2IsPending) {
+              pendingCount += 2;
+              totalPendingScheduled += (halfEmi * 2);
+              totalPendingPaid += (cp1Paid + cp2Paid);
+              totalPendingDue += (cp1Due + cp2Due);
+
+              rowsHtml += `
+                <tr>
+                  <td rowspan="2" class="bold text-center">${m.memberNo}</td>
+                  <td rowspan="2" class="bold">${m.name}</td>
+                  <td rowspan="2" class="text-center">Joint (50-50)</td>
+                  <td>${cp1?.name || '-'} (Co-Payer 1)</td>
+                  <td>${cp1?.phone || '-'}</td>
+                  <td class="num">${this.formatINR(halfEmi)}</td>
+                  <td class="num bold">${this.formatINR(cp1Paid)}</td>
+                  <td class="num bold" style="color: #b91c1c;">${this.formatINR(cp1Due)}</td>
+                  <td class="text-center bold" style="color: ${cp1Paid > 0 ? '#b45309' : '#b91c1c'};">${cp1Paid > 0 ? 'Partial' : 'Pending'}</td>
+                </tr>
+                <tr>
+                  <td>${cp2?.name || '-'} (Co-Payer 2)</td>
+                  <td>${cp2?.phone || '-'}</td>
+                  <td class="num">${this.formatINR(halfEmi)}</td>
+                  <td class="num bold">${this.formatINR(cp2Paid)}</td>
+                  <td class="num bold" style="color: #b91c1c;">${this.formatINR(cp2Due)}</td>
+                  <td class="text-center bold" style="color: ${cp2Paid > 0 ? '#b45309' : '#b91c1c'};">${cp2Paid > 0 ? 'Partial' : 'Pending'}</td>
+                </tr>
+              `;
+            } else if (cp1IsPending) {
+              pendingCount += 1;
+              totalPendingScheduled += halfEmi;
+              totalPendingPaid += cp1Paid;
+              totalPendingDue += cp1Due;
+
+              rowsHtml += `
+                <tr>
+                  <td class="bold text-center">${m.memberNo}</td>
+                  <td class="bold">${m.name}</td>
+                  <td class="text-center">Joint (50-50)</td>
+                  <td>${cp1?.name || '-'} (Co-Payer 1)</td>
+                  <td>${cp1?.phone || '-'}</td>
+                  <td class="num">${this.formatINR(halfEmi)}</td>
+                  <td class="num bold">${this.formatINR(cp1Paid)}</td>
+                  <td class="num bold" style="color: #b91c1c;">${this.formatINR(cp1Due)}</td>
+                  <td class="text-center bold" style="color: ${cp1Paid > 0 ? '#b45309' : '#b91c1c'};">${cp1Paid > 0 ? 'Partial' : 'Pending'}</td>
+                </tr>
+              `;
+            } else if (cp2IsPending) {
+              pendingCount += 1;
+              totalPendingScheduled += halfEmi;
+              totalPendingPaid += cp2Paid;
+              totalPendingDue += cp2Due;
+
+              rowsHtml += `
+                <tr>
+                  <td class="bold text-center">${m.memberNo}</td>
+                  <td class="bold">${m.name}</td>
+                  <td class="text-center">Joint (50-50)</td>
+                  <td>${cp2?.name || '-'} (Co-Payer 2)</td>
+                  <td>${cp2?.phone || '-'}</td>
+                  <td class="num">${this.formatINR(halfEmi)}</td>
+                  <td class="num bold">${this.formatINR(cp2Paid)}</td>
+                  <td class="num bold" style="color: #b91c1c;">${this.formatINR(cp2Due)}</td>
+                  <td class="text-center bold" style="color: ${cp2Paid > 0 ? '#b45309' : '#b91c1c'};">${cp2Paid > 0 ? 'Partial' : 'Pending'}</td>
+                </tr>
+              `;
+            }
+          } else {
+            const paid = Number(entry?.totalPaid) || 0;
+            const due = (sch?.emi || 0) - paid;
+
+            if (due > 0) {
+              pendingCount += 1;
+              totalPendingScheduled += (sch?.emi || 0);
+              totalPendingPaid += paid;
+              totalPendingDue += due;
+
+              rowsHtml += `
+                <tr>
+                  <td class="bold text-center">${m.memberNo}</td>
+                  <td class="bold">${m.name}</td>
+                  <td class="text-center">Single</td>
+                  <td>${m.name}</td>
+                  <td>${m.phone || '-'}</td>
+                  <td class="num">${this.formatINR(sch.emi)}</td>
+                  <td class="num bold">${this.formatINR(paid)}</td>
+                  <td class="num bold" style="color: #b91c1c;">${this.formatINR(due)}</td>
+                  <td class="text-center bold" style="color: ${paid > 0 ? '#b45309' : '#b91c1c'};">${paid > 0 ? 'Partial' : 'Pending'}</td>
+                </tr>
+              `;
+            }
           }
         });
 
-        if (pendingList.length === 0) {
+        if (pendingCount === 0) {
           this.notify(`All subscribers have cleared payments for Month ${monthNum}!`, false);
           return;
         }
 
-        let totalPendingScheduled = 0;
-        let totalPendingPaid = 0;
-        let totalPendingDue = 0;
+        const excelHtml = `
+          <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+          <head>
+            <meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8">
+            <style>
+              table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; font-size: 11px; }
+              th { background-color: #991b1b; color: #ffffff; font-weight: bold; border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; }
+              td { border: 1px solid #cbd5e1; padding: 6px 10px; vertical-align: middle; }
+              .bold { font-weight: bold; }
+              .text-center { text-align: center; }
+              .num { text-align: right; }
+              .header-title { font-size: 14px; font-weight: bold; color: #991b1b; padding: 8px 0 2px 0; }
+              .header-sub { font-size: 11px; color: #64748b; padding-bottom: 8px; }
+              .total-row { background-color: #fee2e2; font-weight: bold; }
+            </style>
+          </head>
+          <body>
+            <div class="header-title">mis-org Chit Fund Management • Pending Installments Statement</div>
+            <div class="header-sub">Installment: Month ${monthNum} (${monthLabel}) | Pending Entries: ${pendingCount} | Date: ${exportDate}</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Member ID</th>
+                  <th>Account Name</th>
+                  <th>Account Type</th>
+                  <th>Subscriber / Co-Payer</th>
+                  <th>Contact Number</th>
+                  <th style="text-align: right;">Scheduled Share</th>
+                  <th style="text-align: right;">Total Paid</th>
+                  <th style="text-align: right;">Pending Due</th>
+                  <th style="text-align: center;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+                <tr class="total-row">
+                  <td colspan="5" class="bold text-center">TOTALS (${pendingCount} Pending Payers)</td>
+                  <td class="num bold">${this.formatINR(totalPendingScheduled)}</td>
+                  <td class="num bold">${this.formatINR(totalPendingPaid)}</td>
+                  <td class="num bold" style="color: #991b1b;">${this.formatINR(totalPendingDue)}</td>
+                  <td class="text-center bold" style="color: #991b1b;">Total Due</td>
+                </tr>
+              </tbody>
+            </table>
+          </body>
+          </html>
+        `;
 
-        let csv = `\uFEFF,,,,"mis-org Chit Fund Management - Pending Installments Statement",,,,,\n`;
-        csv += `,,,,"Installment: Month ${monthNum} (${monthLabel}) | Scheduled EMI: Rs. ${sch.emi} | Pending: ${pendingList.length} Accounts | Date: ${exportDate}",,,,,\n`;
-        csv += `,,,,,,,,\n\n`;
-        csv += "Member ID,Account Name,Account Type,Member / Co-Payers,Contact Numbers,Scheduled EMI,Total Amount Paid,Pending Due,Status\n";
-
-        pendingList.forEach(item => {
-          const m = item.member;
-          const ticketType = m.isJoint ? "Joint (50-50)" : "Single";
-          let payersCol = m.name;
-          let phonesCol = m.phone || '-';
-
-          if (m.isJoint && m.coPayers) {
-            payersCol = `1. ${m.coPayers.payer1?.name || '-'}\n2. ${m.coPayers.payer2?.name || '-'}`;
-            phonesCol = `1. ${m.coPayers.payer1?.phone || '-'}\n2. ${m.coPayers.payer2?.phone || '-'}`;
-          }
-
-          totalPendingScheduled += (sch?.emi || 0);
-          totalPendingPaid += item.paid;
-          totalPendingDue += item.due;
-
-          csv += `"${m.memberNo}","${m.name}","${ticketType}","${payersCol}","${phonesCol}","${sch.emi}","${item.paid}","${item.due}","${item.status}"\n`;
-        });
-
-        // Summary Total Row
-        csv += `,,,,,,,,\n`;
-        csv += `"TOTALS","${pendingList.length} Accounts Pending","-","-","-","${totalPendingScheduled}","${totalPendingPaid}","${totalPendingDue}","Total Due"\n`;
-
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob([excelHtml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `mis_org_month_${monthNum}_pending_statement.csv`;
+        link.download = `mis_org_month_${monthNum}_pending_statement.xls`;
         link.click();
-        this.notify(`Downloaded Month ${monthNum} pending statement`);
+        this.notify(`Downloaded Month ${monthNum} pending statement (.xls)`);
       }
 
       renderChannelStats() {
