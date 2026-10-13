@@ -374,7 +374,7 @@
         </div>
       </section>
 
-      <!-- 5. MONTHLY COLLECTIONS (Compact Month Chip & 2-Row Accent Cards) -->
+      <!-- 5. MONTHLY COLLECTIONS (Compact Month Chip & 2-Row Accent Cards Without Tiles Receipt Icons) -->
       <section id="view-collections" class="space-y-3 hidden">
         <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
           <!-- Row 1: Title & Compact Month Chip -->
@@ -397,7 +397,7 @@
           </div>
         </div>
 
-        <!-- Mobile View: Ultra-Slim 2-Row Accent Cards -->
+        <!-- Mobile View: Ultra-Slim 2-Row Accent Cards (Clean & Tap-friendly) -->
         <div id="collection-mobile-cards" class="sm:hidden space-y-2"></div>
 
         <!-- Desktop View: Sleek Table -->
@@ -2072,7 +2072,7 @@
           );
         }
 
-        // Mobile View: Slim 2-Row Accent Cards
+        // Mobile View: Slim 2-Row Accent Cards (Clean & Tap-friendly without tile receipt micro-buttons)
         const mCards = document.getElementById('collection-mobile-cards');
         if (displayMembers.length === 0) {
           mCards.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 bg-white rounded-2xl">No subscribers found matching search for Month ${monthNum}.</div>`;
@@ -2083,21 +2083,6 @@
             const balanceDue = Math.max(0, sch.emi - totalPaid);
             const isCleared = totalPaid >= sch.emi;
             const isPartial = totalPaid > 0 && !isCleared;
-            const payments = Array.isArray(entry?.payments) ? entry.payments : [];
-
-            // Floating numeric micro-receipt badges
-            const receiptsHtml = payments.length > 0 ? `
-              <div class="inline-flex items-center gap-1">
-                ${payments.map((p, pIdx) => `
-                  <button onclick="event.stopPropagation(); app.viewReceipt(${monthNum}, '${m.memberNo}', '${p.paymentId}')" 
-                    class="relative w-5 h-5 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 active:scale-95 flex items-center justify-center transition" 
-                    title="Receipt ${pIdx + 1} (${this.formatINR(p.amount)})">
-                    <i class="ph ph-receipt text-[11px]"></i>
-                    <span class="absolute -top-1 -right-1 bg-emerald-700 text-white text-[7px] font-black w-3 h-3 rounded-full flex items-center justify-center ring-1 ring-white">${pIdx + 1}</span>
-                  </button>
-                `).join('')}
-              </div>
-            ` : '';
 
             // Left status accent stripe
             const borderAccent = isCleared 
@@ -2108,17 +2093,15 @@
             let row2Financials = '';
             if (isCleared) {
               row2Financials = `
-                <div class="flex items-center gap-1.5 flex-wrap">
+                <div class="flex items-center gap-1.5">
                   <span class="font-bold text-slate-800 text-xs">${this.formatINR(totalPaid)}</span>
-                  ${receiptsHtml}
                   <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800">Cleared</span>
                 </div>
               `;
             } else if (isPartial) {
               row2Financials = `
-                <div class="flex items-center gap-1.5 flex-wrap">
+                <div class="flex items-center gap-1.5">
                   <span class="font-medium text-slate-600 text-xs">Paid: <b class="text-slate-900">${this.formatINR(totalPaid)}</b></span>
-                  ${receiptsHtml}
                   <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800">Due: ${this.formatINR(balanceDue)}</span>
                 </div>
               `;
@@ -2142,7 +2125,7 @@
                   <span class="font-bold text-xs sm:text-sm text-slate-800 truncate leading-snug">${m.name}</span>
                 </div>
 
-                <!-- Row 2: Streamlined Financials + Micro Receipts + Action Button -->
+                <!-- Row 2: Streamlined Financials + Action Button -->
                 <div class="flex items-center justify-between gap-2 pt-0.5">
                   ${row2Financials}
 
@@ -2869,7 +2852,7 @@
         const reportData = [];
 
         this.members.forEach(m => {
-          const entry = monthCols.find(c => c.memberNo === m.memberNo);
+          const entry = monthCols.find(c => c.month === monthNum && c.memberNo === m.memberNo);
           const paid = Number(entry?.totalPaid) || 0;
           const balanceDue = Math.max(0, (sch?.emi || 0) - paid);
           let statusText = "Pending";
@@ -3005,7 +2988,7 @@
             partnerShareCol = `1. Rs. ${cp1Paid} Paid (${cp1Paid >= halfEmi ? 'Cleared' : `Due Rs. ${halfEmi - cp1Paid}`})\n2. Rs. ${cp2Paid} Paid (${cp2Paid >= halfEmi ? 'Cleared' : `Due Rs. ${halfEmi - cp2Paid}`})`;
           }
 
-          const partsCount = Array.isArray(entry?.payments) ? entry.payments.length : 0;
+          const partsCount = Array.isArray(entry?.payments) ? entry.payments : [];
           const paymentDate = entry?.lastPaymentDate ? this.formatDate(entry.lastPaymentDate) : '-';
 
           csv += `"${m.memberNo}","${m.name}","${ticketType}","${payersCol}","${partnerShareCol}","${sch.emi}","${paid}","${balanceDue}","${partsCount}","${paymentDate}","${statusText}"\n`;
