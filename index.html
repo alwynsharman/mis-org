@@ -23,7 +23,10 @@
   <style>
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    input, select, textarea, button { font-size: 16px !important; }
+    
+    @media (max-width: 640px) {
+      input, select, textarea { font-size: 16px !important; }
+    }
 
     @media print {
       @page {
@@ -247,7 +250,7 @@
         </div>
       </section>
 
-      <!-- 3. MEMBER DIRECTORY (Clean Top Bar + Footer Export) -->
+      <!-- 3. MEMBER DIRECTORY (Clean Daily Action Toolbar + Excel Export Footer) -->
       <section id="view-members" class="space-y-3 hidden">
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
@@ -258,7 +261,7 @@
             <p class="text-xs text-slate-500 mt-0.5">Subscriber records, joint accounts & ledgers</p>
           </div>
 
-          <!-- Clean Daily Action Toolbar -->
+          <!-- Daily Action Toolbar -->
           <div class="flex items-center gap-2 w-full md:w-auto">
             <div class="relative flex-1 md:w-64">
               <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
@@ -335,17 +338,17 @@
               </div>
 
               <div class="grid grid-cols-3 gap-2 w-full md:w-auto">
-                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 text-center min-w-[90px]">
+                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 text-center min-w-[85px] sm:min-w-[95px]">
                   <span class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Scheduled</span>
-                  <span id="pb-stat-scheduled" class="text-xs font-bold text-slate-800 mt-0.5 block">₹0</span>
+                  <span id="pb-stat-scheduled" class="text-xs font-bold text-slate-800 mt-0.5 block truncate">₹0</span>
                 </div>
-                <div class="bg-emerald-50/60 p-2.5 rounded-xl border border-emerald-100 text-center min-w-[90px]">
+                <div class="bg-emerald-50/60 p-2.5 rounded-xl border border-emerald-100 text-center min-w-[85px] sm:min-w-[95px]">
                   <span class="text-[9px] uppercase font-bold text-emerald-700 block tracking-wider">Total Paid</span>
-                  <span id="pb-stat-paid" class="text-xs font-bold text-emerald-800 mt-0.5 block">₹0</span>
+                  <span id="pb-stat-paid" class="text-xs font-bold text-emerald-800 mt-0.5 block truncate">₹0</span>
                 </div>
-                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 text-center min-w-[110px]">
+                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 text-center min-w-[95px] sm:min-w-[110px]">
                   <span class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Net Status</span>
-                  <div id="pb-balance-pill" class="text-xs font-extrabold px-2 py-0.5 rounded-md bg-slate-200 text-slate-800 mt-0.5 inline-block">Settled</div>
+                  <div id="pb-balance-pill" class="text-xs font-extrabold px-2 py-0.5 rounded-md bg-slate-200 text-slate-800 mt-0.5 inline-block truncate max-w-full">Settled</div>
                 </div>
               </div>
             </div>
@@ -374,7 +377,7 @@
         </div>
       </section>
 
-      <!-- 5. MONTHLY COLLECTIONS (Compact Month Chip & 2-Row Accent Cards Without Tile Receipt Icons) -->
+      <!-- 5. MONTHLY COLLECTIONS (Compact Month Chip & 2-Row Left Accent Cards) -->
       <section id="view-collections" class="space-y-3 hidden">
         <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
           <!-- Row 1: Title & Compact Month Chip -->
@@ -397,7 +400,7 @@
           </div>
         </div>
 
-        <!-- Mobile View: Ultra-Slim 2-Row Accent Cards (Clean & Tap-friendly) -->
+        <!-- Mobile View: Ultra-Slim 2-Row Accent Cards (Clean & Tap-Friendly) -->
         <div id="collection-mobile-cards" class="sm:hidden space-y-2"></div>
 
         <!-- Desktop View: Sleek Table -->
@@ -439,19 +442,29 @@
         </div>
       </section>
 
-      <!-- 7. RESTRUCTURED & CLEAN REPORTS (With Merged-Cell Excel Exports) -->
+      <!-- 7. RESTRUCTURED & CLEAN REPORTS (With Aligned Controls & Merged-Cell Excel Exports) -->
       <section id="view-reports" class="space-y-2.5 hidden">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-3 sm:p-5 space-y-3">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+          
+          <!-- Perfectly Aligned Controls Header -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-2.5">
             <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2 min-w-0">
               <i class="ph ph-receipt text-indigo-900 text-lg shrink-0"></i>
               <span id="report-heading-title" class="truncate">Collection Report</span>
             </h3>
 
-            <div class="flex items-center gap-2 self-end sm:self-auto shrink-0">
-              <select id="report-month-select" onchange="app.onReportMonthChange(parseInt(this.value))" class="border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold bg-slate-50 text-slate-800 focus:ring-2 focus:ring-indigo-600 focus:outline-none shadow-xs">
-              </select>
-              <button onclick="app.exportMonthlyReportExcel()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition whitespace-nowrap" title="Export Monthly Statement to Excel (.xls)">
+            <!-- Matched Height & Aligned Controls -->
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              <div class="relative flex-1 sm:flex-initial">
+                <select id="report-month-select" onchange="app.onReportMonthChange(parseInt(this.value))" 
+                  class="w-full sm:w-auto h-9 appearance-none pl-3 pr-8 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-600 focus:outline-none shadow-2xs cursor-pointer">
+                </select>
+                <i class="ph ph-caret-down absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+              </div>
+
+              <button onclick="app.exportMonthlyReportExcel()" 
+                class="h-9 px-3.5 bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition whitespace-nowrap shrink-0" 
+                title="Export Monthly Statement to Excel (.xls)">
                 <i class="ph ph-file-xls text-base"></i> Export Excel
               </button>
             </div>
@@ -494,7 +507,7 @@
 
           <!-- Statement Section -->
           <div class="border-t border-slate-200/80 pt-2.5 space-y-2">
-            <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
               <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                 <i class="ph ph-users-three text-indigo-900"></i>
                 Subscribers
@@ -659,8 +672,8 @@
         </div>
 
         <div class="flex gap-2 pt-1">
-          <button type="button" onclick="app.closeCollectionModal()" class="w-1/2 py-2.5 border rounded-xl text-xs font-semibold text-slate-600">Close</button>
-          <button type="submit" id="coll-submit-btn" class="w-1/2 py-2.5 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow">Add Payment</button>
+          <button type="button" onclick="app.closeCollectionModal()" class="w-1/2 h-10 border rounded-xl text-xs font-semibold text-slate-600 flex items-center justify-center">Close</button>
+          <button type="submit" id="coll-submit-btn" class="w-1/2 h-10 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow flex items-center justify-center">Add Payment</button>
         </div>
       </form>
     </div>
@@ -747,11 +760,11 @@
         </div>
 
         <div class="flex items-center gap-2 pt-1" id="mem-modal-actions">
-          <button type="button" id="mem-cancel-btn" onclick="app.closeMemberModal()" class="flex-1 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold transition">Close</button>
-          <button type="button" id="mem-edit-toggle-btn" onclick="app.enableMemberEdit()" class="hidden flex-1 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition">
+          <button type="button" id="mem-cancel-btn" onclick="app.closeMemberModal()" class="flex-1 h-10 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold flex items-center justify-center transition">Close</button>
+          <button type="button" id="mem-edit-toggle-btn" onclick="app.enableMemberEdit()" class="hidden flex-1 h-10 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition">
             <i class="ph ph-pencil-simple text-sm"></i> Edit Details
           </button>
-          <button type="submit" id="mem-save-btn" class="hidden flex-1 py-2.5 bg-indigo-900 hover:bg-indigo-800 text-white rounded-xl text-xs font-bold active:scale-95 shadow transition">
+          <button type="submit" id="mem-save-btn" class="hidden flex-1 h-10 bg-indigo-900 hover:bg-indigo-800 text-white rounded-xl text-xs font-bold active:scale-95 shadow flex items-center justify-center transition">
             Save Changes
           </button>
         </div>
@@ -775,8 +788,8 @@
           <input type="date" id="auc-date" required class="w-full border rounded-xl px-3 py-2.5 text-xs" />
         </div>
         <div class="flex gap-2 pt-2">
-          <button type="button" onclick="document.getElementById('auction-modal').classList.add('hidden')" class="w-1/2 py-2.5 border rounded-xl text-xs font-semibold">Cancel</button>
-          <button type="submit" class="w-1/2 py-2.5 bg-indigo-900 text-white rounded-xl text-xs font-bold">Confirm</button>
+          <button type="button" onclick="document.getElementById('auction-modal').classList.add('hidden')" class="w-1/2 h-10 border rounded-xl text-xs font-semibold flex items-center justify-center">Cancel</button>
+          <button type="submit" class="w-1/2 h-10 bg-indigo-900 text-white rounded-xl text-xs font-bold flex items-center justify-center">Confirm</button>
         </div>
       </form>
     </div>
@@ -1656,7 +1669,7 @@
         document.getElementById('dash-total-pending').innerText = this.formatINR(totalPending);
       }
 
-      // Render Members (Clean Cards & Desktop Table)
+      // Render Members (Clean Daily List & Desktop Table)
       renderMembers(list = this.members) {
         const isAdmin = this.userRole === 'admin';
         const isFull = this.members.length >= 40;
@@ -2133,7 +2146,7 @@
           );
         }
 
-        // Mobile View: Slim 2-Row Accent Cards (Clean & Tap-friendly without tile receipt micro-buttons)
+        // Mobile View: Slim 2-Row Left Accent Cards (Clean & Tap-Friendly)
         const mCards = document.getElementById('collection-mobile-cards');
         if (displayMembers.length === 0) {
           mCards.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 bg-white rounded-2xl">No subscribers found matching search for Month ${monthNum}.</div>`;
