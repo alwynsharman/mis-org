@@ -247,7 +247,7 @@
         </div>
       </section>
 
-      <!-- 3. MEMBER DIRECTORY -->
+      <!-- 3. MEMBER DIRECTORY (Clean Daily Bar + Footer Export) -->
       <section id="view-members" class="space-y-3 hidden">
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
@@ -255,22 +255,18 @@
               <h2 class="text-base sm:text-lg font-bold text-slate-900">Member Directory</h2>
               <span id="member-count-pill" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-900 border border-indigo-100">0 / 40</span>
             </div>
-            <p class="text-xs text-slate-500 mt-0.5">Subscriber records, joint tickets & ledgers</p>
+            <p class="text-xs text-slate-500 mt-0.5">Subscriber records, joint accounts & ledgers</p>
           </div>
 
-          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            <div class="relative flex-1 sm:w-60">
+          <!-- Clean Toolbar: Search & Add Member Only -->
+          <div class="flex items-center gap-2 w-full md:w-auto">
+            <div class="relative flex-1 md:w-64">
               <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
               <input type="text" id="member-search" placeholder="Search name, phone, ID..." oninput="app.filterMembers(this.value)" class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-600 bg-slate-50/50" />
             </div>
-            <div class="flex items-center gap-2">
-              <button onclick="app.exportMembersCSV()" class="flex-1 sm:flex-none px-3.5 py-2 border border-emerald-600/30 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 active:scale-95 rounded-xl text-xs font-bold whitespace-nowrap shadow-xs transition flex items-center justify-center gap-1.5" title="Export to Excel / CSV">
-                <i class="ph ph-file-csv text-base"></i> Export Excel
-              </button>
-              <button id="add-member-btn" onclick="app.openMemberModal()" class="flex-1 sm:flex-none px-4 py-2 bg-indigo-900 hover:bg-indigo-800 active:scale-95 text-white rounded-xl text-xs font-bold whitespace-nowrap shadow-sm transition flex items-center justify-center gap-1">
-                <i class="ph ph-plus-circle text-sm"></i> Add Member
-              </button>
-            </div>
+            <button id="add-member-btn" onclick="app.openMemberModal()" class="px-4 py-2 bg-indigo-900 hover:bg-indigo-800 active:scale-95 text-white rounded-xl text-xs font-bold whitespace-nowrap shadow-sm transition flex items-center justify-center gap-1 shrink-0">
+              <i class="ph ph-plus-circle text-sm"></i> Add Member
+            </button>
           </div>
         </div>
 
@@ -283,8 +279,8 @@
             <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
               <tr>
                 <th class="p-3">ID</th>
-                <th class="p-3">Subscriber</th>
-                <th class="p-3 text-center">Ticket Type</th>
+                <th class="p-3">Account Name</th>
+                <th class="p-3 text-center">Account Type</th>
                 <th class="p-3 text-center">Prized Month</th>
                 <th class="p-3 text-right">Total Paid</th>
                 <th class="p-3 text-right">Actions</th>
@@ -292,6 +288,14 @@
             </thead>
             <tbody id="member-desktop-tbody" class="divide-y divide-slate-100"></tbody>
           </table>
+        </div>
+
+        <!-- Relocated Directory Footer Bar -->
+        <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <span id="member-footer-count" class="text-slate-500 font-medium">Showing 40 of 40 Active Accounts</span>
+          <button onclick="app.exportMembersCSV()" class="w-full sm:w-auto px-4 py-2 border border-emerald-600/30 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 active:scale-95 rounded-xl font-bold transition flex items-center justify-center gap-1.5 shadow-2xs">
+            <i class="ph ph-file-csv text-base"></i> Export Member Directory to Excel (CSV)
+          </button>
         </div>
       </section>
 
@@ -370,15 +374,26 @@
         </div>
       </section>
 
-      <!-- 5. MONTHLY COLLECTIONS (3-Row Layout) -->
+      <!-- 5. MONTHLY COLLECTIONS (Compact Month Chip & Live Search Header) -->
       <section id="view-collections" class="space-y-3 hidden">
-        <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-          <div>
-            <h2 class="text-base sm:text-lg font-bold text-slate-900">Monthly Collections</h2>
+        <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
+          <!-- Row 1: Title & Compact Month Chip -->
+          <div class="flex items-center justify-between">
+            <h2 class="text-base sm:text-lg font-bold text-slate-900 leading-none">Monthly Collections</h2>
+            <div class="relative">
+              <select id="collection-month-select" onchange="app.onCollectionMonthChange(parseInt(this.value))" class="appearance-none pl-3 pr-7 py-1.5 text-xs font-bold text-indigo-950 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-2xs cursor-pointer">
+              </select>
+              <i class="ph ph-caret-down absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+            </div>
           </div>
-          <div class="w-full sm:w-auto">
-            <select id="collection-month-select" onchange="app.loadCollectionsGrid(parseInt(this.value))" class="w-full border rounded-xl px-3 py-2 text-xs font-semibold bg-slate-50">
-            </select>
+
+          <!-- Row 2: Full-Width Real-Time Search Bar -->
+          <div class="relative">
+            <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="text" id="collection-search" placeholder="Search name, phone, M-ID..." oninput="app.filterCollections(this.value)" class="w-full pl-9 pr-8 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-600 bg-slate-50/50" />
+            <button id="coll-search-clear" onclick="app.clearCollectionSearch()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5">
+              <i class="ph ph-x-circle text-sm"></i>
+            </button>
           </div>
         </div>
 
@@ -391,7 +406,7 @@
             <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
               <tr>
                 <th class="p-3">ID</th>
-                <th class="p-3">Subscriber Name</th>
+                <th class="p-3">Account Name</th>
                 <th class="p-3 text-right">EMI</th>
                 <th class="p-3 text-right">Total Paid</th>
                 <th class="p-3 text-right">Due</th>
@@ -477,7 +492,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="payment-mode-stats"></div>
           </div>
 
-          <!-- Integrated Subscriber Statement Section -->
+          <!-- Statement Section -->
           <div class="border-t border-slate-200/80 pt-2.5 space-y-2">
             <div class="flex items-center justify-between gap-2">
               <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
@@ -509,7 +524,7 @@
                 <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
                   <tr>
                     <th class="p-2.5">ID</th>
-                    <th class="p-2.5">Subscriber</th>
+                    <th class="p-2.5">Account Name</th>
                     <th class="p-2.5 text-right">Scheduled EMI</th>
                     <th class="p-2.5 text-right">Total Paid</th>
                     <th class="p-2.5 text-right">Balance Due</th>
@@ -581,7 +596,7 @@
       <!-- Joint Co-Payers Status Banner -->
       <div id="coll-joint-status-box" class="hidden bg-indigo-50/70 border border-indigo-100 rounded-xl p-2.5 space-y-1.5 text-xs">
         <span class="text-[10px] font-bold text-indigo-950 uppercase tracking-wider flex items-center gap-1">
-          <i class="ph ph-users-three"></i> Joint Share Allocation (50–50 Split)
+          <i class="ph ph-users-three"></i> Joint Account Allocation (50–50 Split)
         </span>
         <div class="grid grid-cols-2 gap-2 text-[11px]" id="coll-joint-pills-container"></div>
       </div>
@@ -608,7 +623,7 @@
           <i class="ph ph-plus-circle text-base text-indigo-600"></i> Add Payment Tranche
         </div>
 
-        <!-- Co-Payer Selector for Joint Tickets -->
+        <!-- Co-Payer Selector for Joint Accounts -->
         <div id="coll-joint-select-container" class="hidden">
           <label class="block text-xs font-semibold text-slate-500 mb-1">Paying Subscriber / Partner</label>
           <select id="coll-joint-payer-select" onchange="app.onJointPayerChange()" class="w-full border rounded-xl px-3 py-2 text-xs bg-white font-medium focus:ring-2 focus:ring-indigo-600"></select>
@@ -669,10 +684,10 @@
           <input type="text" id="mem-number" readonly required class="w-full border rounded-xl px-3 py-2 text-sm font-mono font-bold bg-slate-100 text-indigo-950 cursor-not-allowed select-none" />
         </div>
 
-        <!-- Joint Ticket Toggle Switch -->
+        <!-- Joint Account Toggle Switch -->
         <div class="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100 flex items-center justify-between">
           <div>
-            <span class="text-xs font-bold text-indigo-950 block">Joint Ticket (50–50 Shared)</span>
+            <span class="text-xs font-bold text-indigo-950 block">Joint Account (50–50 Shared)</span>
             <span class="text-[10px] text-indigo-600">Split ticket between two subscribers</span>
           </div>
           <label class="relative inline-flex items-center cursor-pointer">
@@ -684,7 +699,7 @@
         <!-- Single Member Section -->
         <div id="mem-single-fields" class="space-y-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-1">Subscriber Full Name</label>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Subscriber Full Name (Account Name)</label>
             <input type="text" id="mem-name" required placeholder="Full Name" class="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
           </div>
           <div>
@@ -915,7 +930,7 @@
       { m: 10, emi: 12500, div: 0,    disc: 0,     net: 500000, note: "Special Chit" },
       { m: 11, emi: 10650, div: 1850, disc: 74000, net: 426000, note: "" },
       { m: 12, emi: 10700, div: 1800, disc: 72000, net: 428000, note: "" },
-      { m: 13, emi: 10750, div: 1750, disc: 70000, net: 430000, note: "" },
+      { m: 13, emi: 10750, div: 1850, disc: 70000, net: 430000, note: "" },
       { m: 14, emi: 10800, div: 1700, disc: 68000, net: 432000, note: "" },
       { m: 15, emi: 10850, div: 1650, disc: 66000, net: 434000, note: "" },
       { m: 16, emi: 10900, div: 1600, disc: 64000, net: 436000, note: "" },
@@ -956,6 +971,7 @@
         this.reportSelectedMonth = 1;
         this.reportFilter = 'all';
         this.channelReportScope = 'month';
+        this.collectionSearchQuery = '';
         this.startYear = 2026;
         this.startMonth = 10;
         this.navigationStack = [];
@@ -1514,7 +1530,10 @@
 
         if (tabName === 'dashboard') this.renderDashboard();
         if (tabName === 'members') this.renderMembers();
-        if (tabName === 'collections') this.loadCollectionsGrid(this.currentMonthIdx);
+        if (tabName === 'collections') {
+          this.clearCollectionSearch();
+          this.loadCollectionsGrid(this.currentMonthIdx);
+        }
         if (tabName === 'passbook') this.renderPassbook(document.getElementById('passbook-member-select').value || (this.members[0]?.memberNo));
         if (tabName === 'auctions') this.renderAuctions();
         if (tabName === 'reports') this.renderReports();
@@ -1637,7 +1656,7 @@
         document.getElementById('dash-total-pending').innerText = this.formatINR(totalPending);
       }
 
-      // Render Members (Clean Tiles without Phone Numbers)
+      // Render Members (Clean Cards & Desktop Table)
       renderMembers(list = this.members) {
         const isAdmin = this.userRole === 'admin';
         const isFull = this.members.length >= 40;
@@ -1645,17 +1664,20 @@
         const countPill = document.getElementById('member-count-pill');
         if (countPill) countPill.innerText = `${this.members.length} / 40`;
 
+        const footerCount = document.getElementById('member-footer-count');
+        if (footerCount) footerCount.innerText = `Showing ${list.length} of ${this.members.length} Active Accounts`;
+
         const addBtn = document.getElementById('add-member-btn');
         if (addBtn) {
           if (isAdmin) {
             addBtn.classList.remove('hidden');
             if (isFull) {
               addBtn.disabled = true;
-              addBtn.className = "flex-1 sm:flex-none px-4 py-2 bg-slate-300 text-slate-500 rounded-xl text-xs font-bold whitespace-nowrap shadow-none cursor-not-allowed";
+              addBtn.className = "px-4 py-2 bg-slate-300 text-slate-500 rounded-xl text-xs font-bold whitespace-nowrap shadow-none cursor-not-allowed shrink-0";
               addBtn.title = "Maximum limit of 40 subscribers reached";
             } else {
               addBtn.disabled = false;
-              addBtn.className = "flex-1 sm:flex-none px-4 py-2 bg-indigo-900 hover:bg-indigo-800 text-white rounded-xl text-xs font-bold whitespace-nowrap shadow-sm";
+              addBtn.className = "px-4 py-2 bg-indigo-900 hover:bg-indigo-800 text-white rounded-xl text-xs font-bold whitespace-nowrap shadow-sm shrink-0";
               addBtn.title = "Add Subscriber";
             }
           } else {
@@ -1674,7 +1696,7 @@
                 <div class="flex items-center gap-1.5 flex-wrap">
                   <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-1.5 py-0.5 rounded shrink-0">${m.memberNo}</span>
                   <span class="font-bold text-xs text-slate-800 hover:text-indigo-900 truncate">${m.name}</span>
-                  ${m.isJoint ? `<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200 shrink-0">Joint</span>` : ''}
+                  ${m.isJoint ? `<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200 shrink-0">Joint Account</span>` : ''}
                 </div>
                 <div class="flex items-center gap-2 text-[11px]">
                   <span class="text-emerald-600 font-bold">Total Paid: ${this.formatINR(totalPaid)}</span>
@@ -1736,6 +1758,7 @@
         this.renderMembers(filtered);
       }
 
+      // Member Directory Export (Single-row with in-cell line breaks for joint accounts)
       exportMembersCSV() {
         if (!this.members || this.members.length === 0) {
           this.notify("No subscribers to export.", true);
@@ -1743,19 +1766,29 @@
         }
 
         const exportDate = new Date().toLocaleDateString('en-IN');
-        let csv = `\uFEFF,,,,"mis-org Chit Fund Management - Subscriber Master Directory",,,,,\n`;
-        csv += `,,,,"Group A (Rs. 5,00,000 • 40 Subscribers • 41 Months) | Export Date: ${exportDate}",,,,,\n`;
+        let csv = `\uFEFF,,,,"mis-org Chit Fund Management - Subscriber Master Directory",,,,\n`;
+        csv += `,,,,"Group A (Rs. 5,00,000 • 40 Subscribers • 41 Months) | Export Date: ${exportDate}",,,,\n`;
         csv += `,,,,,\n\n`;
-        csv += "Member ID,Ticket Name,Ticket Type,Co-Payer 1 Name,Co-Payer 1 Phone,Co-Payer 2 Name,Co-Payer 2 Phone,Prized Month,Total Paid\n";
+        csv += "Member ID,Account Name,Account Type,Member / Co-Members,Phone Numbers,Addresses,Prized Status,Total Paid\n";
         
         this.members.forEach(m => {
           const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.totalPaid) || 0), 0);
-          const cp1Name = m.isJoint ? (m.coPayers?.payer1?.name || '') : m.name;
-          const cp1Phone = m.isJoint ? (m.coPayers?.payer1?.phone || '') : (m.phone || '');
-          const cp2Name = m.isJoint ? (m.coPayers?.payer2?.name || '') : '';
-          const cp2Phone = m.isJoint ? (m.coPayers?.payer2?.phone || '') : '';
+          const prizedLabel = m.isPrized ? `Prized (Month ${m.prizedMonth})` : 'Non-prized';
+          const ticketType = m.isJoint ? 'Joint (50-50)' : 'Single';
 
-          csv += `"${m.memberNo}","${m.name}","${m.isJoint ? 'Joint (50-50)' : 'Single'}","${cp1Name}","${cp1Phone}","${cp2Name}","${cp2Phone}","${m.prizedMonth || '-'}","${totalPaid}"\n`;
+          let membersCol = m.name;
+          let phonesCol = m.phone || '-';
+          let addressCol = m.address || '-';
+
+          if (m.isJoint && m.coPayers) {
+            const cp1 = m.coPayers.payer1;
+            const cp2 = m.coPayers.payer2;
+            membersCol = `1. ${cp1?.name || '-'}\n2. ${cp2?.name || '-'}`;
+            phonesCol = `1. ${cp1?.phone || '-'}\n2. ${cp2?.phone || '-'}`;
+            addressCol = `1. ${cp1?.address || '-'}\n2. ${cp2?.address || '-'}`;
+          }
+
+          csv += `"${m.memberNo}","${m.name}","${ticketType}","${membersCol}","${phonesCol}","${addressCol}","${prizedLabel}","${totalPaid}"\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1931,7 +1964,7 @@
           const cp2Name = document.getElementById('mem-cp2-name').value.trim();
 
           if (!cp1Name || !cp2Name) {
-            this.notify("Both co-payers must have valid names for joint tickets.", true);
+            this.notify("Both co-payers must have valid names for joint accounts.", true);
             return;
           }
 
@@ -1992,126 +2025,177 @@
         }
       }
 
-      // ================= COLLECTIONS GRID (Clean 3-Row Layout) =================
+      // ================= COLLECTIONS GRID & LIVE SEARCH =================
+      onCollectionMonthChange(monthNum) {
+        this.clearCollectionSearch();
+        this.loadCollectionsGrid(monthNum);
+      }
+
+      clearCollectionSearch() {
+        const inp = document.getElementById('collection-search');
+        if (inp) inp.value = '';
+        this.collectionSearchQuery = '';
+        const clrBtn = document.getElementById('coll-search-clear');
+        if (clrBtn) clrBtn.classList.add('hidden');
+        const sel = document.getElementById('collection-month-select');
+        const mNum = sel ? parseInt(sel.value) : this.currentMonthIdx;
+        this.loadCollectionsGrid(mNum);
+      }
+
+      filterCollections(queryStr) {
+        this.collectionSearchQuery = (queryStr || '').toLowerCase().trim();
+        const clrBtn = document.getElementById('coll-search-clear');
+        if (clrBtn) {
+          if (this.collectionSearchQuery) clrBtn.classList.remove('hidden');
+          else clrBtn.classList.add('hidden');
+        }
+        const sel = document.getElementById('collection-month-select');
+        const mNum = sel ? parseInt(sel.value) : this.currentMonthIdx;
+        this.loadCollectionsGrid(mNum);
+      }
+
       loadCollectionsGrid(monthNum) {
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
         const isPastMonth = monthNum < this.currentMonthIdx;
 
+        let displayMembers = this.members;
+        if (this.collectionSearchQuery) {
+          const q = this.collectionSearchQuery;
+          displayMembers = this.members.filter(m => 
+            m.name.toLowerCase().includes(q) || 
+            m.memberNo.toLowerCase().includes(q) || 
+            (m.phone && m.phone.includes(q)) ||
+            (m.coPayers?.payer1?.name && m.coPayers.payer1.name.toLowerCase().includes(q)) ||
+            (m.coPayers?.payer2?.name && m.coPayers.payer2.name.toLowerCase().includes(q)) ||
+            (m.coPayers?.payer1?.phone && m.coPayers.payer1.phone.includes(q)) ||
+            (m.coPayers?.payer2?.phone && m.coPayers.payer2.phone.includes(q))
+          );
+        }
+
+        // Mobile View: Clean 3-Row Cards
         const mCards = document.getElementById('collection-mobile-cards');
-        mCards.innerHTML = this.members.map(m => {
-          const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
-          const totalPaid = Number(entry?.totalPaid) || 0;
-          const balanceDue = Math.max(0, sch.emi - totalPaid);
-          const isCleared = totalPaid >= sch.emi;
-          const isPartial = totalPaid > 0 && !isCleared;
-          const payments = Array.isArray(entry?.payments) ? entry.payments : [];
+        if (displayMembers.length === 0) {
+          mCards.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 bg-white rounded-2xl">No subscribers found matching search for Month ${monthNum}.</div>`;
+        } else {
+          mCards.innerHTML = displayMembers.map(m => {
+            const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
+            const totalPaid = Number(entry?.totalPaid) || 0;
+            const balanceDue = Math.max(0, sch.emi - totalPaid);
+            const isCleared = totalPaid >= sch.emi;
+            const isPartial = totalPaid > 0 && !isCleared;
+            const payments = Array.isArray(entry?.payments) ? entry.payments : [];
 
-          // Receipt Badges
-          const receiptsHtml = payments.length > 0 ? `
-            <div class="inline-flex items-center gap-1.5 ml-2">
-              ${payments.map((p, pIdx) => `
-                <button onclick="app.viewReceipt(${monthNum}, '${m.memberNo}', '${p.paymentId}')" 
-                  class="relative w-6 h-6 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 active:scale-95 flex items-center justify-center transition" 
-                  title="Receipt ${pIdx + 1} (${this.formatINR(p.amount)})">
-                  <i class="ph ph-receipt text-xs"></i>
-                  <span class="absolute -top-1 -right-1 bg-emerald-700 text-white text-[7px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center ring-1 ring-white">${pIdx + 1}</span>
-                </button>
-              `).join('')}
-            </div>
-          ` : '';
+            const receiptsHtml = payments.length > 0 ? `
+              <div class="inline-flex items-center gap-1.5 ml-2">
+                ${payments.map((p, pIdx) => `
+                  <button onclick="app.viewReceipt(${monthNum}, '${m.memberNo}', '${p.paymentId}')" 
+                    class="relative w-6 h-6 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 active:scale-95 flex items-center justify-center transition" 
+                    title="Receipt ${pIdx + 1} (${this.formatINR(p.amount)})">
+                    <i class="ph ph-receipt text-xs"></i>
+                    <span class="absolute -top-1 -right-1 bg-emerald-700 text-white text-[7px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center ring-1 ring-white">${pIdx + 1}</span>
+                  </button>
+                `).join('')}
+              </div>
+            ` : '';
 
-          return `
-            <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
-              <!-- Row 1: ID, Joint Badge & Due Status -->
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-1.5">
-                  <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-2 py-0.5 rounded-md">${m.memberNo}</span>
-                  ${m.isJoint ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Joint</span>` : ''}
+            return `
+              <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
+                <!-- Row 1: ID, Joint Badge & Due Status -->
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-2 py-0.5 rounded-md">${m.memberNo}</span>
+                    ${m.isJoint ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Joint Account</span>` : ''}
+                  </div>
+                  <div>
+                    ${isCleared 
+                      ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800">Cleared</span>`
+                      : (isPartial 
+                          ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800">Due: ${this.formatINR(balanceDue)}</span>`
+                          : `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600">Pending</span>`)}
+                  </div>
                 </div>
-                <div>
-                  ${isCleared 
-                    ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800">Cleared</span>`
-                    : (isPartial 
-                        ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800">Due: ${this.formatINR(balanceDue)}</span>`
-                        : `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600">Pending</span>`)}
+
+                <!-- Row 2: Full Subscriber Account Name -->
+                <div class="font-bold text-sm text-slate-800 leading-tight">
+                  ${m.name}
+                </div>
+
+                <!-- Row 3: Financial Progress, Receipt Badges & Action -->
+                <div class="flex items-center justify-between pt-1 border-t border-slate-100">
+                  <div class="flex items-center text-xs text-slate-500 font-medium">
+                    <span>Paid: <b class="${totalPaid > 0 ? 'text-slate-900' : 'text-slate-400'}">${this.formatINR(totalPaid)}</b> / ${this.formatINR(sch.emi)}</span>
+                    ${receiptsHtml}
+                  </div>
+                  <div>
+                    ${!isPastMonth ? `
+                      <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}')" 
+                        class="px-3 py-1.5 ${isCleared ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-indigo-900 hover:bg-indigo-800 text-white'} rounded-xl text-xs font-bold active:scale-95 transition shadow-2xs">
+                        ${isCleared ? 'Details' : 'Collect'}
+                      </button>
+                    ` : `<span class="text-[11px] text-slate-400 italic">Locked</span>`}
+                  </div>
                 </div>
               </div>
+            `;
+          }).join('');
+        }
 
-              <!-- Row 2: Full Subscriber Name -->
-              <div class="font-bold text-sm text-slate-800 leading-tight">
-                ${m.name}
+        // Desktop View: Table
+        const dBody = document.getElementById('collection-desktop-tbody');
+        if (displayMembers.length === 0) {
+          dBody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-xs text-slate-400">No subscribers found matching search for Month ${monthNum}.</td></tr>`;
+        } else {
+          dBody.innerHTML = displayMembers.map(m => {
+            const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
+            const totalPaid = Number(entry?.totalPaid) || 0;
+            const balanceDue = Math.max(0, sch.emi - totalPaid);
+            const isCleared = totalPaid >= sch.emi;
+            const isPartial = totalPaid > 0 && !isCleared;
+            const payments = Array.isArray(entry?.payments) ? entry.payments : [];
+
+            let channelDisplay = "-";
+            if (payments.length > 0) {
+              const list = payments.map(p => {
+                const verifier = (p.receivedBy && p.receivedBy !== 'Main Bank Account') ? p.receivedBy : (p.recordedByName || 'Foreman');
+                return p.paymentMethod === 'Bank Transfer to Main Account' ? `Bank (${verifier})` : `Cash (${verifier})`;
+              });
+              channelDisplay = Array.from(new Set(list)).join(', ');
+            }
+
+            let receiptsBadgeList = payments.length > 0 ? `
+              <div class="flex items-center justify-center gap-1 flex-wrap">
+                ${payments.map((p, pIdx) => `
+                  <button onclick="app.viewReceipt(${monthNum}, '${m.memberNo}', '${p.paymentId}')" class="relative w-6 h-6 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 active:scale-95 flex items-center justify-center transition" title="Receipt ${pIdx + 1} (${p.receiptNo})">
+                    <i class="ph ph-receipt text-[11px]"></i>
+                    <span class="absolute -top-1 -right-1 bg-emerald-700 text-white text-[7px] font-black w-3 h-3 rounded-full flex items-center justify-center ring-1 ring-white">${pIdx + 1}</span>
+                  </button>
+                `).join('')}
               </div>
+            ` : `<span class="text-slate-300">-</span>`;
 
-              <!-- Row 3: Financial Progress, Receipt Badges & Action -->
-              <div class="flex items-center justify-between pt-1 border-t border-slate-100">
-                <div class="flex items-center text-xs text-slate-500 font-medium">
-                  <span>Paid: <b class="${totalPaid > 0 ? 'text-slate-900' : 'text-slate-400'}">${this.formatINR(totalPaid)}</b> / ${this.formatINR(sch.emi)}</span>
-                  ${receiptsHtml}
-                </div>
-                <div>
+            return `
+              <tr class="hover:bg-slate-50 transition">
+                <td class="p-3 font-mono font-bold text-indigo-900">${m.memberNo}</td>
+                <td class="p-3 font-semibold text-slate-800">
+                  ${m.name}
+                  ${m.isJoint ? `<span class="ml-1 px-1 py-0.2 rounded text-[8px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Joint Account</span>` : ''}
+                </td>
+                <td class="p-3 text-right font-medium">${this.formatINR(sch.emi)}</td>
+                <td class="p-3 text-right font-bold ${totalPaid > 0 ? 'text-emerald-600' : 'text-slate-400'}">${this.formatINR(totalPaid)}</td>
+                <td class="p-3 text-right font-bold ${balanceDue > 0 ? 'text-rose-600' : 'text-slate-400'}">${balanceDue > 0 ? this.formatINR(balanceDue) : 'Cleared'}</td>
+                <td class="p-3 text-xs text-slate-600">${channelDisplay}</td>
+                <td class="p-3 text-center">${receiptsBadgeList}</td>
+                <td class="p-3 text-right">
                   ${!isPastMonth ? `
-                    <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}')" 
-                      class="px-3 py-1.5 ${isCleared ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-indigo-900 hover:bg-indigo-800 text-white'} rounded-xl text-xs font-bold active:scale-95 transition shadow-2xs">
+                    <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}')" class="px-2.5 py-1 ${isCleared ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'} rounded-lg font-bold text-xs transition">
                       ${isCleared ? 'Details' : 'Collect'}
                     </button>
-                  ` : `<span class="text-[11px] text-slate-400 italic">Locked</span>`}
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('');
-
-        const dBody = document.getElementById('collection-desktop-tbody');
-        dBody.innerHTML = this.members.map(m => {
-          const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
-          const totalPaid = Number(entry?.totalPaid) || 0;
-          const balanceDue = Math.max(0, sch.emi - totalPaid);
-          const isCleared = totalPaid >= sch.emi;
-          const isPartial = totalPaid > 0 && !isCleared;
-          const payments = Array.isArray(entry?.payments) ? entry.payments : [];
-
-          let channelDisplay = "-";
-          if (payments.length > 0) {
-            const list = payments.map(p => {
-              const verifier = (p.receivedBy && p.receivedBy !== 'Main Bank Account') ? p.receivedBy : (p.recordedByName || 'Foreman');
-              return p.paymentMethod === 'Bank Transfer to Main Account' ? `Bank (${verifier})` : `Cash (${verifier})`;
-            });
-            channelDisplay = Array.from(new Set(list)).join(', ');
-          }
-
-          let receiptsBadgeList = payments.length > 0 ? `
-            <div class="flex items-center justify-center gap-1 flex-wrap">
-              ${payments.map((p, pIdx) => `
-                <button onclick="app.viewReceipt(${monthNum}, '${m.memberNo}', '${p.paymentId}')" class="relative w-6 h-6 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 active:scale-95 flex items-center justify-center transition" title="Receipt ${pIdx + 1} (${p.receiptNo})">
-                  <i class="ph ph-receipt text-[11px]"></i>
-                  <span class="absolute -top-1 -right-1 bg-emerald-700 text-white text-[7px] font-black w-3 h-3 rounded-full flex items-center justify-center ring-1 ring-white">${pIdx + 1}</span>
-                </button>
-              `).join('')}
-            </div>
-          ` : `<span class="text-slate-300">-</span>`;
-
-          return `
-            <tr class="hover:bg-slate-50 transition">
-              <td class="p-3 font-mono font-bold text-indigo-900">${m.memberNo}</td>
-              <td class="p-3 font-semibold text-slate-800">
-                ${m.name}
-                ${m.isJoint ? `<span class="ml-1 px-1 py-0.2 rounded text-[8px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Joint</span>` : ''}
-              </td>
-              <td class="p-3 text-right font-medium">${this.formatINR(sch.emi)}</td>
-              <td class="p-3 text-right font-bold ${totalPaid > 0 ? 'text-emerald-600' : 'text-slate-400'}">${this.formatINR(totalPaid)}</td>
-              <td class="p-3 text-right font-bold ${balanceDue > 0 ? 'text-rose-600' : 'text-slate-400'}">${balanceDue > 0 ? this.formatINR(balanceDue) : 'Cleared'}</td>
-              <td class="p-3 text-xs text-slate-600">${channelDisplay}</td>
-              <td class="p-3 text-center">${receiptsBadgeList}</td>
-              <td class="p-3 text-right">
-                ${!isPastMonth ? `
-                  <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}')" class="px-2.5 py-1 ${isCleared ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'} rounded-lg font-bold text-xs transition">
-                    ${isCleared ? 'Details' : 'Collect'}
-                  </button>
-                ` : '<span class="text-slate-400 text-xs italic">Locked</span>'}
-              </td>
-            </tr>
-          `;
-        }).join('');
+                  ` : '<span class="text-slate-400 text-xs italic">Locked</span>'}
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
       }
 
       openCollectionModal(monthNum, memberNo) {
@@ -2522,7 +2606,7 @@
 
         document.getElementById('pb-member-name').innerText = mem.name;
         document.getElementById('pb-member-id').innerText = mem.memberNo;
-        document.getElementById('pb-member-prized').innerText = mem.isPrized ? `Prized in Month ${mem.prizedMonth} (${this.formatINR(mem.prizeMoney)})` : (mem.isJoint ? "Joint Ticket (50-50 Split)" : "Non-Prized Subscriber");
+        document.getElementById('pb-member-prized').innerText = mem.isPrized ? `Prized in Month ${mem.prizedMonth} (${this.formatINR(mem.prizeMoney)})` : (mem.isJoint ? "Joint Account (50-50 Split)" : "Non-Prized Subscriber");
 
         let runningBalance = 0;
         let totalPaidAll = 0;
@@ -2635,7 +2719,7 @@
             <tr class="hover:bg-slate-50">
               <td class="p-2.5 font-bold">Month ${sch.m}</td>
               <td class="p-2.5 text-right font-extrabold text-indigo-900">${this.formatINR(sch.net)}</td>
-              <td class="p-2.5 font-semibold">${winner ? `${winner.memberNo} -${winner.name}` : '<span class="text-slate-400 italic">Not Awarded</span>'}</td>
+              <td class="p-2.5 font-semibold">${winner ? `${winner.memberNo} - ${winner.name}` : '<span class="text-slate-400 italic">Not Awarded</span>'}</td>
               <td class="p-2.5 text-slate-500">${this.formatDate(auc?.auctionDate)}</td>
               <td class="p-2.5 text-right">
                 ${!auc && this.userRole === 'admin' ? `
@@ -2765,7 +2849,7 @@
         const reportData = [];
 
         this.members.forEach(m => {
-          const entry = monthCols.find(c => c.memberNo === m.memberNo);
+          const entry = monthCols.find(c => c.month === monthNum && c.memberNo === m.memberNo);
           const paid = Number(entry?.totalPaid) || 0;
           const balanceDue = Math.max(0, (sch?.emi || 0) - paid);
           let statusText = "Pending";
@@ -2847,93 +2931,143 @@
         }).join('');
       }
 
+      // Monthly Collection Statement CSV (With in-cell line breaks & summary bottom row)
       exportMonthlyReportCSV() {
-  const monthNum = this.reportSelectedMonth;
-  const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
-  const monthLabel = this.getMonthLabel(monthNum);
-  const exportDate = new Date().toLocaleDateString('en-IN');
+        const monthNum = this.reportSelectedMonth;
+        const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
+        const monthLabel = this.getMonthLabel(monthNum);
+        const exportDate = new Date().toLocaleDateString('en-IN');
 
-  let csv = `\uFEFF,,,"mis-org Chit Fund Management - Monthly Collection Statement",,,,,,\n`;
-  csv += `,,,"Installment: Month ${monthNum} (${monthLabel}) | Scheduled EMI: Rs. ${sch.emi} | Group: Group A (Rs. 5,00,000) | Date: ${exportDate}",,,,,,\n`;
-  csv += `,,,,,,,\n\n`;
-  csv += "Member ID,Ticket Type,Subscriber Name,Co-Payer Breakdown,Scheduled EMI,Total Amount Paid,Balance Due,Parts Count,Last Payment Date,Status\n";
-  
-  this.members.forEach(m => {
-    const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
-    const paid = Number(entry?.totalPaid) || 0;
-    const balanceDue = Math.max(0, (sch?.emi || 0) - paid);
-    let statusText = "Pending";
-    if (paid >= (sch?.emi || 0)) statusText = "Cleared";
-    else if (paid > 0) statusText = "Partial";
+        let totalScheduledSum = 0;
+        let totalPaidSum = 0;
+        let totalDueSum = 0;
+        let clearedCount = 0;
+        let partialCount = 0;
+        let pendingCount = 0;
 
-    const ticketType = m.isJoint ? "Joint (50-50)" : "Single";
-    const coPayers = m.isJoint && m.coPayers 
-      ? `Payer 1: ${m.coPayers.payer1?.name || '-'} (50%) | Payer 2: ${m.coPayers.payer2?.name || '-'} (50%)`
-      : "-";
+        let csv = `\uFEFF,,,"mis-org Chit Fund Management - Monthly Collection Statement",,,,,,,\n`;
+        csv += `,,,"Installment: Month ${monthNum} (${monthLabel}) | Scheduled EMI: Rs. ${sch.emi} | Group: Group A (Rs. 5,00,000) | Date: ${exportDate}",,,,,,,\n`;
+        csv += `,,,,,,,,,,\n\n`;
+        csv += "Member ID,Account Name,Account Type,Member / Co-Payers,Partner Share & Payment,Scheduled EMI,Total Amount Paid,Balance Due,Parts Count,Last Payment Date,Status\n";
+        
+        this.members.forEach(m => {
+          const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
+          const paid = Number(entry?.totalPaid) || 0;
+          const balanceDue = Math.max(0, (sch?.emi || 0) - paid);
+          let statusText = "Pending";
+          if (paid >= (sch?.emi || 0)) {
+            statusText = "Cleared";
+            clearedCount++;
+          } else if (paid > 0) {
+            statusText = "Partial";
+            partialCount++;
+          } else {
+            pendingCount++;
+          }
 
-    const partsCount = Array.isArray(entry?.payments) ? entry.payments.length : 0;
-    const paymentDate = entry?.lastPaymentDate ? this.formatDate(entry.lastPaymentDate) : '-';
+          totalScheduledSum += (sch?.emi || 0);
+          totalPaidSum += paid;
+          totalDueSum += balanceDue;
 
-    csv += `"${m.memberNo}","${ticketType}","${m.name}","${coPayers}","${sch.emi}","${paid}","${balanceDue}","${partsCount}","${paymentDate}","${statusText}"\n`;
-  });
+          const ticketType = m.isJoint ? "Joint (50-50)" : "Single";
+          let payersCol = m.name;
+          let partnerShareCol = "Full Share (100%)";
 
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = `mis_org_month_${monthNum}_collection_statement.csv`;
-  link.click();
-  this.notify(`Downloaded Month ${monthNum} collection statement`);
-}
+          if (m.isJoint && m.coPayers) {
+            const cp1 = m.coPayers.payer1;
+            const cp2 = m.coPayers.payer2;
+            const halfEmi = (sch?.emi || 0) / 2;
+            const payments = Array.isArray(entry?.payments) ? entry.payments : [];
+            const cp1Paid = payments.filter(p => p.payerName === cp1?.name).reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+            const cp2Paid = payments.filter(p => p.payerName === cp2?.name).reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
 
-exportMonthlyPendingCSV() {
-  const monthNum = this.reportSelectedMonth;
-  const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
-  const monthLabel = this.getMonthLabel(monthNum);
-  const exportDate = new Date().toLocaleDateString('en-IN');
+            payersCol = `1. ${cp1?.name || '-'}\n2. ${cp2?.name || '-'}`;
+            partnerShareCol = `1. Rs. ${cp1Paid} Paid (${cp1Paid >= halfEmi ? 'Cleared' : `Due Rs. ${halfEmi - cp1Paid}`})\n2. Rs. ${cp2Paid} Paid (${cp2Paid >= halfEmi ? 'Cleared' : `Due Rs. ${halfEmi - cp2Paid}`})`;
+          }
 
-  const pendingList = [];
-  this.members.forEach(m => {
-    const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
-    const paid = Number(entry?.totalPaid) || 0;
-    const due = (sch?.emi || 0) - paid;
-    if (due > 0) {
-      pendingList.push({
-        member: m,
-        paid: paid,
-        due: due,
-        status: paid > 0 ? "Partial" : "Pending"
-      });
-    }
-  });
+          const partsCount = Array.isArray(entry?.payments) ? entry.payments.length : 0;
+          const paymentDate = entry?.lastPaymentDate ? this.formatDate(entry.lastPaymentDate) : '-';
 
-  if (pendingList.length === 0) {
-    this.notify(`All subscribers have cleared payments for Month ${monthNum}!`, false);
-    return;
-  }
+          csv += `"${m.memberNo}","${m.name}","${ticketType}","${payersCol}","${partnerShareCol}","${sch.emi}","${paid}","${balanceDue}","${partsCount}","${paymentDate}","${statusText}"\n`;
+        });
 
-  let csv = `\uFEFF,,,,"mis-org Chit Fund Management - Pending Installments Statement",,,,\n`;
-  csv += `,,,,"Installment: Month ${monthNum} (${monthLabel}) | Scheduled EMI: Rs. ${sch.emi} | Pending: ${pendingList.length} Members | Date: ${exportDate}",,,,\n`;
-  csv += `,,,,,\n\n`;
-  csv += "Member ID,Ticket Type,Subscriber Name,Co-Payer Breakdown,Phone,Scheduled EMI,Total Amount Paid,Pending Due,Status\n";
+        // Summary Total Row
+        csv += `,,,,,,,,,,\n`;
+        csv += `"TOTALS","${this.members.length} Accounts","-","-","-","${totalScheduledSum}","${totalPaidSum}","${totalDueSum}","-","-","${clearedCount} Cleared / ${pendingCount + partialCount} Due"\n`;
 
-  pendingList.forEach(item => {
-    const m = item.member;
-    const ticketType = m.isJoint ? "Joint (50-50)" : "Single";
-    const coPayers = m.isJoint && m.coPayers 
-      ? `Payer 1: ${m.coPayers.payer1?.name || '-'} (50%) | Payer 2: ${m.coPayers.payer2?.name || '-'} (50%)`
-      : "-";
-    const phone = m.phone || '-';
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `mis_org_month_${monthNum}_collection_statement.csv`;
+        link.click();
+        this.notify(`Downloaded Month ${monthNum} collection statement`);
+      }
 
-    csv += `"${m.memberNo}","${ticketType}","${m.name}","${coPayers}","${phone}","${sch.emi}","${item.paid}","${item.due}","${item.status}"\n`;
-  });
+      // Monthly Pending Statement CSV (With in-cell line breaks & summary bottom row)
+      exportMonthlyPendingCSV() {
+        const monthNum = this.reportSelectedMonth;
+        const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
+        const monthLabel = this.getMonthLabel(monthNum);
+        const exportDate = new Date().toLocaleDateString('en-IN');
 
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = `mis_org_month_${monthNum}_pending_statement.csv`;
-  link.click();
-  this.notify(`Downloaded Month ${monthNum} pending statement`);
-}
+        const pendingList = [];
+        this.members.forEach(m => {
+          const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
+          const paid = Number(entry?.totalPaid) || 0;
+          const due = (sch?.emi || 0) - paid;
+          if (due > 0) {
+            pendingList.push({
+              member: m,
+              paid: paid,
+              due: due,
+              status: paid > 0 ? "Partial" : "Pending"
+            });
+          }
+        });
+
+        if (pendingList.length === 0) {
+          this.notify(`All subscribers have cleared payments for Month ${monthNum}!`, false);
+          return;
+        }
+
+        let totalPendingScheduled = 0;
+        let totalPendingPaid = 0;
+        let totalPendingDue = 0;
+
+        let csv = `\uFEFF,,,,"mis-org Chit Fund Management - Pending Installments Statement",,,,,\n`;
+        csv += `,,,,"Installment: Month ${monthNum} (${monthLabel}) | Scheduled EMI: Rs. ${sch.emi} | Pending: ${pendingList.length} Accounts | Date: ${exportDate}",,,,,\n`;
+        csv += `,,,,,,,,\n\n`;
+        csv += "Member ID,Account Name,Account Type,Member / Co-Payers,Contact Numbers,Scheduled EMI,Total Amount Paid,Pending Due,Status\n";
+
+        pendingList.forEach(item => {
+          const m = item.member;
+          const ticketType = m.isJoint ? "Joint (50-50)" : "Single";
+          let payersCol = m.name;
+          let phonesCol = m.phone || '-';
+
+          if (m.isJoint && m.coPayers) {
+            payersCol = `1. ${m.coPayers.payer1?.name || '-'}\n2. ${m.coPayers.payer2?.name || '-'}`;
+            phonesCol = `1. ${m.coPayers.payer1?.phone || '-'}\n2. ${m.coPayers.payer2?.phone || '-'}`;
+          }
+
+          totalPendingScheduled += (sch?.emi || 0);
+          totalPendingPaid += item.paid;
+          totalPendingDue += item.due;
+
+          csv += `"${m.memberNo}","${m.name}","${ticketType}","${payersCol}","${phonesCol}","${sch.emi}","${item.paid}","${item.due}","${item.status}"\n`;
+        });
+
+        // Summary Total Row
+        csv += `,,,,,,,,\n`;
+        csv += `"TOTALS","${pendingList.length} Accounts Pending","-","-","-","${totalPendingScheduled}","${totalPendingPaid}","${totalPendingDue}","Total Due"\n`;
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `mis_org_month_${monthNum}_pending_statement.csv`;
+        link.click();
+        this.notify(`Downloaded Month ${monthNum} pending statement`);
+      }
 
       renderChannelStats() {
         const targetCols = (this.channelReportScope === 'month')
