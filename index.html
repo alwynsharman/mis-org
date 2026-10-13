@@ -247,7 +247,7 @@
         </div>
       </section>
 
-      <!-- 3. MEMBER DIRECTORY (Clean Alignment without Tile Phone Numbers) -->
+      <!-- 3. MEMBER DIRECTORY -->
       <section id="view-members" class="space-y-3 hidden">
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
@@ -370,7 +370,7 @@
         </div>
       </section>
 
-      <!-- 5. MONTHLY COLLECTIONS (Clean Header) -->
+      <!-- 5. MONTHLY COLLECTIONS (3-Row Layout) -->
       <section id="view-collections" class="space-y-3 hidden">
         <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
@@ -382,8 +382,8 @@
           </div>
         </div>
 
-        <!-- Mobile View: Beautified 2-Row Compact Cards -->
-        <div id="collection-mobile-cards" class="sm:hidden space-y-2"></div>
+        <!-- Mobile View: Clean 3-Row Cards -->
+        <div id="collection-mobile-cards" class="sm:hidden space-y-2.5"></div>
 
         <!-- Desktop View: Sleek Table -->
         <div class="hidden sm:block bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
@@ -424,7 +424,7 @@
         </div>
       </section>
 
-      <!-- 7. RESTRUCTURED & CLEAN REPORTS (Tightened Margins & Grid Filter) -->
+      <!-- 7. RESTRUCTURED & CLEAN REPORTS -->
       <section id="view-reports" class="space-y-2.5 hidden">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-3 sm:p-5 space-y-3">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
@@ -442,7 +442,7 @@
             </div>
           </div>
 
-          <!-- Ultra-Compact Single-Line 4-Stat Metric Strip -->
+          <!-- Compact Single-Line 4-Stat Metric Strip -->
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50/80 p-1.5 rounded-xl border border-slate-200/60">
             <div class="flex items-center justify-between sm:justify-start sm:gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-slate-100 shadow-2xs">
               <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Target</span>
@@ -462,7 +462,7 @@
             </div>
           </div>
 
-          <!-- Collections by Channel Strip with Tightened Margins -->
+          <!-- Collections by Channel Strip -->
           <div class="bg-slate-50/70 p-2.5 sm:p-3 rounded-xl border border-slate-200/70 space-y-2">
             <div class="flex items-center justify-between gap-2">
               <span class="font-bold text-[11px] text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
@@ -477,7 +477,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="payment-mode-stats"></div>
           </div>
 
-          <!-- Restructured Subscriber Statement Section -->
+          <!-- Integrated Subscriber Statement Section -->
           <div class="border-t border-slate-200/80 pt-2.5 space-y-2">
             <div class="flex items-center justify-between gap-2">
               <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
@@ -485,13 +485,12 @@
                 Subscribers
               </span>
               
-              <!-- Contextual Export Pending Button Docked Neatly on the Title Line -->
               <button id="rep-export-pending-btn" onclick="app.exportMonthlyPendingCSV()" class="hidden px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold items-center gap-1 shadow-2xs transition" title="Export Pending List CSV">
                 <i class="ph ph-file-csv text-sm"></i> Export Pending
               </button>
             </div>
 
-            <!-- Balanced Full-Width 3-Column Segmented Tabs Grid -->
+            <!-- Full-Width 3-Column Segmented Filter -->
             <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold border border-slate-200/60">
               <button id="rep-filter-all" onclick="app.setReportFilter('all')" class="py-1.5 px-2 rounded-lg text-xs font-bold bg-white text-indigo-950 shadow-2xs transition text-center">
                 All (<span id="rep-cnt-all">0</span>)
@@ -593,7 +592,7 @@
         <div id="coll-tranches-list" class="space-y-1.5"></div>
       </div>
 
-      <!-- Clean Cleared Banner without Extra Paragraphs -->
+      <!-- Clean Cleared Banner -->
       <div id="coll-cleared-banner" class="hidden p-2.5 bg-emerald-50/90 border border-emerald-200 rounded-2xl text-center">
         <div class="flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-900">
           <i class="ph ph-check-circle text-base text-emerald-600"></i> Installment Cleared
@@ -916,7 +915,7 @@
       { m: 10, emi: 12500, div: 0,    disc: 0,     net: 500000, note: "Special Chit" },
       { m: 11, emi: 10650, div: 1850, disc: 74000, net: 426000, note: "" },
       { m: 12, emi: 10700, div: 1800, disc: 72000, net: 428000, note: "" },
-      { m: 13, emi: 10750, div: 1850, disc: 70000, net: 430000, note: "" },
+      { m: 13, emi: 10750, div: 1750, disc: 70000, net: 430000, note: "" },
       { m: 14, emi: 10800, div: 1700, disc: 68000, net: 432000, note: "" },
       { m: 15, emi: 10850, div: 1650, disc: 66000, net: 434000, note: "" },
       { m: 16, emi: 10900, div: 1600, disc: 64000, net: 436000, note: "" },
@@ -1638,7 +1637,7 @@
         document.getElementById('dash-total-pending').innerText = this.formatINR(totalPending);
       }
 
-      // Render Members (Clean Tiles without Phone Numbers; Detail Modal shows all info)
+      // Render Members (Clean Tiles without Phone Numbers)
       renderMembers(list = this.members) {
         const isAdmin = this.userRole === 'admin';
         const isFull = this.members.length >= 40;
@@ -1993,7 +1992,7 @@
         }
       }
 
-      // ================= COLLECTIONS GRID & RECEIPT BADGES =================
+      // ================= COLLECTIONS GRID (Clean 3-Row Layout) =================
       loadCollectionsGrid(monthNum) {
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
         const isPastMonth = monthNum < this.currentMonthIdx;
@@ -2007,54 +2006,55 @@
           const isPartial = totalPaid > 0 && !isCleared;
           const payments = Array.isArray(entry?.payments) ? entry.payments : [];
 
-          let receiptsBadgeList = payments.length > 0 ? `
-            <div class="flex items-center gap-1.5 flex-wrap">
+          // Receipt Badges
+          const receiptsHtml = payments.length > 0 ? `
+            <div class="inline-flex items-center gap-1.5 ml-2">
               ${payments.map((p, pIdx) => `
-                <button onclick="app.viewReceipt(${monthNum}, '${m.memberNo}', '${p.paymentId}')" class="relative w-7 h-7 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 active:scale-95 flex items-center justify-center transition" title="Receipt ${pIdx + 1} (${this.formatINR(p.amount)})">
+                <button onclick="app.viewReceipt(${monthNum}, '${m.memberNo}', '${p.paymentId}')" 
+                  class="relative w-6 h-6 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 active:scale-95 flex items-center justify-center transition" 
+                  title="Receipt ${pIdx + 1} (${this.formatINR(p.amount)})">
                   <i class="ph ph-receipt text-xs"></i>
-                  <span class="absolute -top-1 -right-1 bg-emerald-700 text-white text-[8px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center ring-1 ring-white">${pIdx + 1}</span>
+                  <span class="absolute -top-1 -right-1 bg-emerald-700 text-white text-[7px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center ring-1 ring-white">${pIdx + 1}</span>
                 </button>
               `).join('')}
             </div>
-          ` : `<span class="text-[11px] text-slate-300">-</span>`;
-
-          let channelSnippet = "Pending";
-          if (payments.length > 0) {
-            const lastP = payments[payments.length - 1];
-            const verifier = (lastP.receivedBy && lastP.receivedBy !== 'Main Bank Account') ? lastP.receivedBy : (lastP.recordedByName || 'Foreman');
-            channelSnippet = lastP.paymentMethod === 'Bank Transfer to Main Account' ? `Bank (${verifier})` : `Cash/UPI (${verifier})`;
-          }
+          ` : '';
 
           return `
-            <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
+            <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
+              <!-- Row 1: ID, Joint Badge & Due Status -->
               <div class="flex items-center justify-between">
-                <div class="flex items-center gap-1.5 min-w-0 pr-2">
-                  <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-1.5 py-0.5 rounded shrink-0">${m.memberNo}</span>
-                  <span class="font-bold text-xs text-slate-800 hover:text-indigo-900 truncate">${m.name}</span>
-                  ${m.isJoint ? `<span class="px-1.5 py-0.2 rounded text-[8px] font-bold bg-amber-50 text-amber-800 border border-amber-200 shrink-0">Joint</span>` : ''}
+                <div class="flex items-center gap-1.5">
+                  <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-2 py-0.5 rounded-md">${m.memberNo}</span>
+                  ${m.isJoint ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Joint</span>` : ''}
                 </div>
                 <div>
                   ${isCleared 
-                    ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 shrink-0">Cleared</span>`
+                    ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800">Cleared</span>`
                     : (isPartial 
-                        ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 shrink-0">Due: ${this.formatINR(balanceDue)}</span>`
-                        : `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 shrink-0">Pending</span>`)}
+                        ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800">Due: ${this.formatINR(balanceDue)}</span>`
+                        : `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600">Pending</span>`)}
                 </div>
               </div>
 
-              <div class="flex items-center justify-between text-[11px] text-slate-500">
-                <span>EMI: <b class="text-slate-700">${this.formatINR(sch.emi)}</b> • Paid: <b class="${totalPaid > 0 ? 'text-emerald-700' : 'text-slate-400'}">${this.formatINR(totalPaid)}</b></span>
-                <span class="text-[10px] text-slate-400 truncate max-w-[120px]">${channelSnippet}</span>
+              <!-- Row 2: Full Subscriber Name -->
+              <div class="font-bold text-sm text-slate-800 leading-tight">
+                ${m.name}
               </div>
 
-              <div class="flex items-center justify-between pt-1 border-t border-slate-100 gap-2">
-                <div class="flex-1">${receiptsBadgeList}</div>
+              <!-- Row 3: Financial Progress, Receipt Badges & Action -->
+              <div class="flex items-center justify-between pt-1 border-t border-slate-100">
+                <div class="flex items-center text-xs text-slate-500 font-medium">
+                  <span>Paid: <b class="${totalPaid > 0 ? 'text-slate-900' : 'text-slate-400'}">${this.formatINR(totalPaid)}</b> / ${this.formatINR(sch.emi)}</span>
+                  ${receiptsHtml}
+                </div>
                 <div>
                   ${!isPastMonth ? `
-                    <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}')" class="px-2.5 py-1 ${isCleared ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-indigo-900 hover:bg-indigo-800 text-white'} rounded-lg text-xs font-bold active:scale-95 transition">
-                      ${isCleared ? 'Details' : (isPartial ? '+ Add Part' : 'Record')}
+                    <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}')" 
+                      class="px-3 py-1.5 ${isCleared ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-indigo-900 hover:bg-indigo-800 text-white'} rounded-xl text-xs font-bold active:scale-95 transition shadow-2xs">
+                      ${isCleared ? 'Details' : 'Collect'}
                     </button>
-                  ` : `<span class="text-[10px] text-slate-400 italic">Locked</span>`}
+                  ` : `<span class="text-[11px] text-slate-400 italic">Locked</span>`}
                 </div>
               </div>
             </div>
@@ -2105,7 +2105,7 @@
               <td class="p-3 text-right">
                 ${!isPastMonth ? `
                   <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}')" class="px-2.5 py-1 ${isCleared ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'} rounded-lg font-bold text-xs transition">
-                    ${isCleared ? 'Details' : (isPartial ? '+ Add Part' : 'Record')}
+                    ${isCleared ? 'Details' : 'Collect'}
                   </button>
                 ` : '<span class="text-slate-400 text-xs italic">Locked</span>'}
               </td>
@@ -2765,7 +2765,7 @@
         const reportData = [];
 
         this.members.forEach(m => {
-          const entry = monthCols.find(c => c.month === monthNum && c.memberNo === m.memberNo);
+          const entry = monthCols.find(c => c.memberNo === m.memberNo);
           const paid = Number(entry?.totalPaid) || 0;
           const balanceDue = Math.max(0, (sch?.emi || 0) - paid);
           let statusText = "Pending";
