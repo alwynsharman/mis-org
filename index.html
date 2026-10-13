@@ -247,7 +247,7 @@
         </div>
       </section>
 
-      <!-- 3. MEMBER DIRECTORY (Clean Daily Bar + Footer Export) -->
+      <!-- 3. MEMBER DIRECTORY (Clean Top Bar + Footer Export) -->
       <section id="view-members" class="space-y-3 hidden">
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
@@ -258,7 +258,7 @@
             <p class="text-xs text-slate-500 mt-0.5">Subscriber records, joint accounts & ledgers</p>
           </div>
 
-          <!-- Clean Toolbar: Search & Add Member Only -->
+          <!-- Clean Daily Action Toolbar -->
           <div class="flex items-center gap-2 w-full md:w-auto">
             <div class="relative flex-1 md:w-64">
               <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
@@ -374,9 +374,9 @@
         </div>
       </section>
 
-      <!-- 5. MONTHLY COLLECTIONS (Compact Month Chip & Live Search Header) -->
+      <!-- 5. MONTHLY COLLECTIONS (Compact Month Chip & 2-Row Accent Cards) -->
       <section id="view-collections" class="space-y-3 hidden">
-        <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
+        <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
           <!-- Row 1: Title & Compact Month Chip -->
           <div class="flex items-center justify-between">
             <h2 class="text-base sm:text-lg font-bold text-slate-900 leading-none">Monthly Collections</h2>
@@ -397,8 +397,8 @@
           </div>
         </div>
 
-        <!-- Mobile View: Clean 3-Row Cards -->
-        <div id="collection-mobile-cards" class="sm:hidden space-y-2.5"></div>
+        <!-- Mobile View: Ultra-Slim 2-Row Accent Cards -->
+        <div id="collection-mobile-cards" class="sm:hidden space-y-2"></div>
 
         <!-- Desktop View: Sleek Table -->
         <div class="hidden sm:block bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
@@ -2072,7 +2072,7 @@
           );
         }
 
-        // Mobile View: Clean 3-Row Cards
+        // Mobile View: Slim 2-Row Accent Cards
         const mCards = document.getElementById('collection-mobile-cards');
         if (displayMembers.length === 0) {
           mCards.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 bg-white rounded-2xl">No subscribers found matching search for Month ${monthNum}.</div>`;
@@ -2085,51 +2085,71 @@
             const isPartial = totalPaid > 0 && !isCleared;
             const payments = Array.isArray(entry?.payments) ? entry.payments : [];
 
+            // Floating numeric micro-receipt badges
             const receiptsHtml = payments.length > 0 ? `
-              <div class="inline-flex items-center gap-1.5 ml-2">
+              <div class="inline-flex items-center gap-1">
                 ${payments.map((p, pIdx) => `
-                  <button onclick="app.viewReceipt(${monthNum}, '${m.memberNo}', '${p.paymentId}')" 
-                    class="relative w-6 h-6 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 active:scale-95 flex items-center justify-center transition" 
+                  <button onclick="event.stopPropagation(); app.viewReceipt(${monthNum}, '${m.memberNo}', '${p.paymentId}')" 
+                    class="relative w-5 h-5 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 active:scale-95 flex items-center justify-center transition" 
                     title="Receipt ${pIdx + 1} (${this.formatINR(p.amount)})">
-                    <i class="ph ph-receipt text-xs"></i>
-                    <span class="absolute -top-1 -right-1 bg-emerald-700 text-white text-[7px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center ring-1 ring-white">${pIdx + 1}</span>
+                    <i class="ph ph-receipt text-[11px]"></i>
+                    <span class="absolute -top-1 -right-1 bg-emerald-700 text-white text-[7px] font-black w-3 h-3 rounded-full flex items-center justify-center ring-1 ring-white">${pIdx + 1}</span>
                   </button>
                 `).join('')}
               </div>
             ` : '';
 
+            // Left status accent stripe
+            const borderAccent = isCleared 
+              ? 'border-l-4 border-l-emerald-500' 
+              : (isPartial ? 'border-l-4 border-l-amber-500' : 'border-l-4 border-l-slate-300');
+
+            // Streamlined Row 2 math display
+            let row2Financials = '';
+            if (isCleared) {
+              row2Financials = `
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="font-bold text-slate-800 text-xs">${this.formatINR(totalPaid)}</span>
+                  ${receiptsHtml}
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800">Cleared</span>
+                </div>
+              `;
+            } else if (isPartial) {
+              row2Financials = `
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="font-medium text-slate-600 text-xs">Paid: <b class="text-slate-900">${this.formatINR(totalPaid)}</b></span>
+                  ${receiptsHtml}
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800">Due: ${this.formatINR(balanceDue)}</span>
+                </div>
+              `;
+            } else {
+              row2Financials = `
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs text-slate-400 font-medium">Unpaid</span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600">Due: ${this.formatINR(balanceDue)}</span>
+                </div>
+              `;
+            }
+
             return `
-              <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
-                <!-- Row 1: ID, Joint Badge & Due Status -->
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-1.5">
-                    <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-2 py-0.5 rounded-md">${m.memberNo}</span>
-                    ${m.isJoint ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Joint Account</span>` : ''}
-                  </div>
-                  <div>
-                    ${isCleared 
-                      ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800">Cleared</span>`
-                      : (isPartial 
-                          ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800">Due: ${this.formatINR(balanceDue)}</span>`
-                          : `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600">Pending</span>`)}
-                  </div>
+              <div onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}')" 
+                class="bg-white px-3 py-2.5 rounded-2xl border border-slate-200 ${borderAccent} shadow-2xs space-y-1.5 cursor-pointer hover:bg-slate-50/70 transition">
+                
+                <!-- Row 1: ID, Joint Badge & Full Account Name -->
+                <div class="flex items-center gap-1.5">
+                  <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-1.5 py-0.5 rounded shrink-0">${m.memberNo}</span>
+                  ${m.isJoint ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200 shrink-0">Joint</span>` : ''}
+                  <span class="font-bold text-xs sm:text-sm text-slate-800 truncate leading-snug">${m.name}</span>
                 </div>
 
-                <!-- Row 2: Full Subscriber Account Name -->
-                <div class="font-bold text-sm text-slate-800 leading-tight">
-                  ${m.name}
-                </div>
+                <!-- Row 2: Streamlined Financials + Micro Receipts + Action Button -->
+                <div class="flex items-center justify-between gap-2 pt-0.5">
+                  ${row2Financials}
 
-                <!-- Row 3: Financial Progress, Receipt Badges & Action -->
-                <div class="flex items-center justify-between pt-1 border-t border-slate-100">
-                  <div class="flex items-center text-xs text-slate-500 font-medium">
-                    <span>Paid: <b class="${totalPaid > 0 ? 'text-slate-900' : 'text-slate-400'}">${this.formatINR(totalPaid)}</b> / ${this.formatINR(sch.emi)}</span>
-                    ${receiptsHtml}
-                  </div>
-                  <div>
+                  <div class="shrink-0">
                     ${!isPastMonth ? `
-                      <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}')" 
-                        class="px-3 py-1.5 ${isCleared ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-indigo-900 hover:bg-indigo-800 text-white'} rounded-xl text-xs font-bold active:scale-95 transition shadow-2xs">
+                      <button onclick="event.stopPropagation(); app.openCollectionModal(${monthNum}, '${m.memberNo}')" 
+                        class="px-3 py-1 ${isCleared ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-indigo-900 hover:bg-indigo-800 text-white'} rounded-xl text-xs font-bold active:scale-95 transition shadow-2xs">
                         ${isCleared ? 'Details' : 'Collect'}
                       </button>
                     ` : `<span class="text-[11px] text-slate-400 italic">Locked</span>`}
@@ -2849,7 +2869,7 @@
         const reportData = [];
 
         this.members.forEach(m => {
-          const entry = monthCols.find(c => c.month === monthNum && c.memberNo === m.memberNo);
+          const entry = monthCols.find(c => c.memberNo === m.memberNo);
           const paid = Number(entry?.totalPaid) || 0;
           const balanceDue = Math.max(0, (sch?.emi || 0) - paid);
           let statusText = "Pending";
