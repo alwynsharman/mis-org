@@ -2848,80 +2848,92 @@
       }
 
       exportMonthlyReportCSV() {
-        const monthNum = this.reportSelectedMonth;
-        const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
-        const monthLabel = this.getMonthLabel(monthNum);
-        const exportDate = new Date().toLocaleDateString('en-IN');
+  const monthNum = this.reportSelectedMonth;
+  const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
+  const monthLabel = this.getMonthLabel(monthNum);
+  const exportDate = new Date().toLocaleDateString('en-IN');
 
-        let csv = `\uFEFF,,,"mis-org Chit Fund Management - Monthly Collection Statement",,,,\n`;
-        csv += `,,,"Installment: Month ${monthNum} (${monthLabel}) | Scheduled EMI: Rs. ${sch.emi} | Group: Group A (Rs. 5,00,000) | Date: ${exportDate}",,,,\n`;
-        csv += `,,,,\n\n`;
-        csv += "Member ID,Subscriber Name,Scheduled EMI,Total Amount Paid,Balance Due,Parts Count,Last Payment Date,Status\n";
-        
-        this.members.forEach(m => {
-          const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
-          const paid = Number(entry?.totalPaid) || 0;
-          const balanceDue = Math.max(0, (sch?.emi || 0) - paid);
-          let statusText = "Pending";
-          if (paid >= (sch?.emi || 0)) statusText = "Cleared";
-          else if (paid > 0) statusText = "Partial";
+  let csv = `\uFEFF,,,"mis-org Chit Fund Management - Monthly Collection Statement",,,,,,\n`;
+  csv += `,,,"Installment: Month ${monthNum} (${monthLabel}) | Scheduled EMI: Rs. ${sch.emi} | Group: Group A (Rs. 5,00,000) | Date: ${exportDate}",,,,,,\n`;
+  csv += `,,,,,,,\n\n`;
+  csv += "Member ID,Ticket Type,Subscriber Name,Co-Payer Breakdown,Scheduled EMI,Total Amount Paid,Balance Due,Parts Count,Last Payment Date,Status\n";
+  
+  this.members.forEach(m => {
+    const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
+    const paid = Number(entry?.totalPaid) || 0;
+    const balanceDue = Math.max(0, (sch?.emi || 0) - paid);
+    let statusText = "Pending";
+    if (paid >= (sch?.emi || 0)) statusText = "Cleared";
+    else if (paid > 0) statusText = "Partial";
 
-          const partsCount = Array.isArray(entry?.payments) ? entry.payments.length : 0;
-          const paymentDate = entry?.lastPaymentDate ? this.formatDate(entry.lastPaymentDate) : '-';
+    const ticketType = m.isJoint ? "Joint (50-50)" : "Single";
+    const coPayers = m.isJoint && m.coPayers 
+      ? `Payer 1: ${m.coPayers.payer1?.name || '-'} (50%) | Payer 2: ${m.coPayers.payer2?.name || '-'} (50%)`
+      : "-";
 
-          csv += `"${m.memberNo}","${m.name}","${sch.emi}","${paid}","${balanceDue}","${partsCount}","${paymentDate}","${statusText}"\n`;
-        });
+    const partsCount = Array.isArray(entry?.payments) ? entry.payments.length : 0;
+    const paymentDate = entry?.lastPaymentDate ? this.formatDate(entry.lastPaymentDate) : '-';
 
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `mis_org_month_${monthNum}_collection_statement.csv`;
-        link.click();
-        this.notify(`Downloaded Month ${monthNum} collection statement`);
-      }
+    csv += `"${m.memberNo}","${ticketType}","${m.name}","${coPayers}","${sch.emi}","${paid}","${balanceDue}","${partsCount}","${paymentDate}","${statusText}"\n`;
+  });
 
-      exportMonthlyPendingCSV() {
-        const monthNum = this.reportSelectedMonth;
-        const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
-        const monthLabel = this.getMonthLabel(monthNum);
-        const exportDate = new Date().toLocaleDateString('en-IN');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `mis_org_month_${monthNum}_collection_statement.csv`;
+  link.click();
+  this.notify(`Downloaded Month ${monthNum} collection statement`);
+}
 
-        const pendingList = [];
-        this.members.forEach(m => {
-          const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
-          const paid = Number(entry?.totalPaid) || 0;
-          const due = (sch?.emi || 0) - paid;
-          if (due > 0) {
-            pendingList.push({
-              member: m,
-              paid: paid,
-              due: due,
-              status: paid > 0 ? "Partial" : "Pending"
-            });
-          }
-        });
+exportMonthlyPendingCSV() {
+  const monthNum = this.reportSelectedMonth;
+  const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
+  const monthLabel = this.getMonthLabel(monthNum);
+  const exportDate = new Date().toLocaleDateString('en-IN');
 
-        if (pendingList.length === 0) {
-          this.notify(`All subscribers have cleared payments for Month ${monthNum}!`, false);
-          return;
-        }
+  const pendingList = [];
+  this.members.forEach(m => {
+    const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
+    const paid = Number(entry?.totalPaid) || 0;
+    const due = (sch?.emi || 0) - paid;
+    if (due > 0) {
+      pendingList.push({
+        member: m,
+        paid: paid,
+        due: due,
+        status: paid > 0 ? "Partial" : "Pending"
+      });
+    }
+  });
 
-        let csv = `\uFEFF,,,"mis-org Chit Fund Management - Pending Installments Statement",,,\n`;
-        csv += `,,,"Installment: Month ${monthNum} (${monthLabel}) | Scheduled EMI: Rs. ${sch.emi} | Pending: ${pendingList.length} Members | Date: ${exportDate}",,,\n`;
-        csv += `,,,\n\n`;
-        csv += "Member ID,Subscriber Name,Phone,Scheduled EMI,Total Amount Paid,Pending Due,Status\n";
+  if (pendingList.length === 0) {
+    this.notify(`All subscribers have cleared payments for Month ${monthNum}!`, false);
+    return;
+  }
 
-        pendingList.forEach(item => {
-          csv += `"${item.member.memberNo}","${item.member.name}","${item.member.phone || '-'}","${sch.emi}","${item.paid}","${item.due}","${item.status}"\n`;
-        });
+  let csv = `\uFEFF,,,,"mis-org Chit Fund Management - Pending Installments Statement",,,,\n`;
+  csv += `,,,,"Installment: Month ${monthNum} (${monthLabel}) | Scheduled EMI: Rs. ${sch.emi} | Pending: ${pendingList.length} Members | Date: ${exportDate}",,,,\n`;
+  csv += `,,,,,\n\n`;
+  csv += "Member ID,Ticket Type,Subscriber Name,Co-Payer Breakdown,Phone,Scheduled EMI,Total Amount Paid,Pending Due,Status\n";
 
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `mis_org_month_${monthNum}_pending_statement.csv`;
-        link.click();
-        this.notify(`Downloaded Month ${monthNum} pending statement`);
-      }
+  pendingList.forEach(item => {
+    const m = item.member;
+    const ticketType = m.isJoint ? "Joint (50-50)" : "Single";
+    const coPayers = m.isJoint && m.coPayers 
+      ? `Payer 1: ${m.coPayers.payer1?.name || '-'} (50%) | Payer 2: ${m.coPayers.payer2?.name || '-'} (50%)`
+      : "-";
+    const phone = m.phone || '-';
+
+    csv += `"${m.memberNo}","${ticketType}","${m.name}","${coPayers}","${phone}","${sch.emi}","${item.paid}","${item.due}","${item.status}"\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `mis_org_month_${monthNum}_pending_statement.csv`;
+  link.click();
+  this.notify(`Downloaded Month ${monthNum} pending statement`);
+}
 
       renderChannelStats() {
         const targetCols = (this.channelReportScope === 'month')
