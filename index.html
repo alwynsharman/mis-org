@@ -1774,6 +1774,27 @@
         this.renderMembers(filtered);
       }
 
+      // Robust binary writer for native .xlsx that opens in all mobile apps
+      writeExcelFile(workbook, filename) {
+        const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'binary' });
+        const buf = new ArrayBuffer(wbout.length);
+        const view = new Uint8Array(buf);
+        for (let i = 0; i < wbout.length; i++) {
+          view[i] = wbout.charCodeAt(i) & 0xFF;
+        }
+        const blob = new Blob([buf], { 
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+        });
+        
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+      }
+
       // Member Directory Native Excel Export (.xlsx) with True Merged Cells
       exportMembersExcel() {
         if (!this.members || this.members.length === 0) {
@@ -1788,7 +1809,7 @@
 
         const exportDate = new Date().toLocaleDateString('en-IN');
         const data = [
-          ["mis-org Chit Fund Management - Subscriber Master Directory"],
+          ["mis-org Chit Fund Management • Subscriber Master Directory"],
           [`Group A (Rs. 5,00,000 • 40 Subscribers • 41 Months) | Export Date: ${exportDate}`],
           [],
           ["Member ID", "Account Name", "Account Type", "Person / Partner Name", "Phone Number", "Google Email", "Physical Address", "Prized Status", "Total Paid"]
@@ -1833,7 +1854,7 @@
               ""
             ]);
 
-            // Merge Member ID (col 0), Account Name (col 1), Account Type (col 2), Prized Status (col 7), Total Paid (col 8)
+            // Merge Member ID, Account Name, Account Type, Prized Status, Total Paid across the 2 co-payer rows
             merges.push({ s: { r: currentRow, c: 0 }, e: { r: currentRow + 1, c: 0 } });
             merges.push({ s: { r: currentRow, c: 1 }, e: { r: currentRow + 1, c: 1 } });
             merges.push({ s: { r: currentRow, c: 2 }, e: { r: currentRow + 1, c: 2 } });
@@ -1865,7 +1886,7 @@
 
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Subscribers");
-        XLSX.writeFile(wb, `mis_org_subscribers_${new Date().toISOString().split('T')[0]}.xlsx`);
+        this.writeExcelFile(wb, `mis_org_subscribers_${new Date().toISOString().split('T')[0]}.xlsx`);
         this.notify("Downloaded subscribers directory (.xlsx)");
       }
 
@@ -3004,7 +3025,7 @@
         }).join('');
       }
 
-      // Monthly Collection Statement Native Excel Export (.xlsx) with True Merged Cells & Formulas
+      // Monthly Collection Statement Native Excel Export (.xlsx) with True Merged Cells & Totals
       exportMonthlyReportExcel() {
         const monthNum = this.reportSelectedMonth;
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
@@ -3024,8 +3045,8 @@
         let pendingCount = 0;
 
         const data = [
-          ["mis-org Chit Fund Management - Monthly Collection Statement"],
-          [`Installment: Month ${monthNum} (${monthLabel}) | Date: ${exportDate}`],
+          ["mis-org Chit Fund Management • Monthly Collection Statement"],
+          [`Installment: Month ${monthNum} (${monthLabel}) | Total Gross Target: Rs. ${sch.emi * this.members.length} | Date: ${exportDate}`],
           [],
           ["Member ID", "Account Name", "Account Type", "Subscriber / Co-Payer", "Scheduled Share", "Amount Paid", "Balance Due", "Parts Count", "Last Payment Date", "Status"]
         ];
@@ -3091,7 +3112,7 @@
               cp2Status
             ]);
 
-            // Merge Member ID (col 0), Account Name (col 1), Account Type (col 2)
+            // Merge Member ID, Account Name, Account Type across both co-payer rows
             merges.push({ s: { r: currentRow, c: 0 }, e: { r: currentRow + 1, c: 0 } });
             merges.push({ s: { r: currentRow, c: 1 }, e: { r: currentRow + 1, c: 1 } });
             merges.push({ s: { r: currentRow, c: 2 }, e: { r: currentRow + 1, c: 2 } });
@@ -3127,7 +3148,7 @@
           }
         });
 
-        // Append Total Summary Row
+        // Summary Total Row
         data.push([
           "TOTALS",
           `${this.members.length} Accounts`,
@@ -3149,7 +3170,7 @@
 
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, `Month_${monthNum}`);
-        XLSX.writeFile(wb, `mis_org_month_${monthNum}_collection_statement.xlsx`);
+        this.writeExcelFile(wb, `mis_org_month_${monthNum}_collection_statement.xlsx`);
         this.notify(`Downloaded Month ${monthNum} collection statement (.xlsx)`);
       }
 
@@ -3171,7 +3192,7 @@
         let pendingCount = 0;
 
         const data = [
-          ["mis-org Chit Fund Management - Pending Installments Statement"],
+          ["mis-org Chit Fund Management • Pending Installments Statement"],
           [`Installment: Month ${monthNum} (${monthLabel}) | Date: ${exportDate}`],
           [],
           ["Member ID", "Account Name", "Account Type", "Subscriber / Co-Payer", "Contact Number", "Scheduled Share", "Total Paid", "Pending Due", "Status"]
@@ -3325,7 +3346,7 @@
 
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, `Pending_Month_${monthNum}`);
-        XLSX.writeFile(wb, `mis_org_month_${monthNum}_pending_statement.xlsx`);
+        this.writeExcelFile(wb, `mis_org_month_${monthNum}_pending_statement.xlsx`);
         this.notify(`Downloaded Month ${monthNum} pending statement (.xlsx)`);
       }
 
