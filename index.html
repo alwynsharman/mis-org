@@ -44,7 +44,7 @@
         overflow: visible !important;
       }
 
-      header, nav, #auth-screen, #toast, #collection-modal, #member-modal, #auction-modal, #receipt-modal, .no-print {
+      header, nav, #auth-screen, #toast, #collection-modal, #member-modal, #auction-modal, #receipt-modal, #channel-breakdown-modal, .no-print {
         display: none !important;
       }
 
@@ -580,6 +580,40 @@
   </div>
 
   <!-- ================= MODALS ================= -->
+  <!-- Channel Monthly Breakdown Modal -->
+  <div id="channel-breakdown-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 shadow-2xl max-h-[85vh] flex flex-col">
+      <div class="flex justify-between items-start border-b border-slate-100 pb-3 shrink-0">
+        <div class="min-w-0 pr-2">
+          <h3 class="text-base font-bold text-slate-900 truncate" id="channel-modal-title">Channel Breakdown</h3>
+          <p class="text-xs text-slate-500 mt-0.5" id="channel-modal-subtitle">Month Collections</p>
+        </div>
+        <button onclick="document.getElementById('channel-breakdown-modal').classList.add('hidden')" class="p-1 rounded-full text-slate-400 hover:text-slate-600">
+          <i class="ph ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 my-3 p-2 bg-slate-50 rounded-xl border border-slate-200/60 shrink-0 text-center">
+        <div>
+          <span class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Total Received</span>
+          <span id="channel-modal-total" class="text-sm font-extrabold text-emerald-700 mt-0.5 block">₹0</span>
+        </div>
+        <div>
+          <span class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Payments</span>
+          <span id="channel-modal-count" class="text-sm font-extrabold text-slate-800 mt-0.5 block">0</span>
+        </div>
+      </div>
+
+      <div id="channel-modal-list" class="space-y-1.5 overflow-y-auto no-scrollbar flex-1 pr-0.5"></div>
+
+      <div class="pt-3 border-t border-slate-100 mt-2 shrink-0">
+        <button type="button" onclick="document.getElementById('channel-breakdown-modal').classList.add('hidden')" class="w-full h-10 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Record Collection Modal -->
   <div id="collection-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto space-y-3.5">
@@ -2943,7 +2977,7 @@
         const reportData = [];
 
         this.members.forEach(m => {
-          const entry = monthCols.find(c => c.month === monthNum && c.memberNo === m.memberNo);
+          const entry = monthCols.find(c => c.memberNo === m.memberNo);
           const paid = Number(entry?.totalPaid) || 0;
           const balanceDue = Math.max(0, (sch?.emi || 0) - paid);
           let statusText = "Pending";
@@ -2956,7 +2990,7 @@
           } else if (paid > 0) {
             statusText = "Partial";
             statusClass = "bg-amber-100 text-amber-800";
-            paidCount++;
+            pendingCount++;
           } else {
             pendingCount++;
           }
@@ -2982,9 +3016,9 @@
 
         let displayList = reportData;
         if (this.reportFilter === 'paid') {
-          displayList = reportData.filter(item => item.paid > 0);
+          displayList = reportData.filter(item => item.paid >= (sch?.emi || 0));
         } else if (this.reportFilter === 'pending') {
-          displayList = reportData.filter(item => item.paid === 0);
+          displayList = reportData.filter(item => item.balanceDue > 0);
         }
 
         const tbody = document.getElementById('report-statement-tbody');
@@ -3112,7 +3146,6 @@
               cp2Status
             ]);
 
-            // Merge Member ID, Account Name, Account Type across both co-payer rows
             merges.push({ s: { r: currentRow, c: 0 }, e: { r: currentRow + 1, c: 0 } });
             merges.push({ s: { r: currentRow, c: 1 }, e: { r: currentRow + 1, c: 1 } });
             merges.push({ s: { r: currentRow, c: 2 }, e: { r: currentRow + 1, c: 2 } });
@@ -3350,8 +3383,68 @@
         this.notify(`Downloaded Month ${monthNum} pending statement (.xlsx)`);
       }
 
+      showChannelBreakdown(channelName) {
+        const monthNum = this.reportSelectedMonth;
+        const monthCols = this.collections.filter(c => c.month === monthNum);
+
+        const contributors = [];
+
+        monthCols.forEach(c => {
+          const mem = this.members.find(m => m.memberNo === c.memberNo);
+          const payments = Array.isArray(c.payments) ? c.payments : [];
+
+          payments.forEach(p => {
+            const amt = Number(p.amount) || 0;
+            if (amt <= 0) return;
+
+            let key = "";
+            if (p.paymentMethod === 'Bank Transfer to Main Account' || p.paymentMethod === 'Bank Transfer') {
+              key = "Bank Transfer (Main Account)";
+            } else {
+              const foreman = (p.receivedBy && p.receivedBy !== 'Main Bank Account') ? p.receivedBy : (p.recordedByName || 'Foreman (General)');
+              key = `Cash / UPI (${foreman})`;
+            }
+
+            if (key === channelName) {
+              contributors.push({
+                id: c.memberNo,
+                name: p.payerName || mem?.name || 'Subscriber',
+                amount: amt,
+                isJoint: Boolean(mem?.isJoint)
+              });
+            }
+          });
+        });
+
+        document.getElementById('channel-modal-title').innerText = channelName;
+        document.getElementById('channel-modal-subtitle').innerText = `Month ${monthNum} (${this.getMonthLabel(monthNum)}) Collections`;
+
+        const total = contributors.reduce((s, item) => s + item.amount, 0);
+        document.getElementById('channel-modal-total').innerText = this.formatINR(total);
+        document.getElementById('channel-modal-count').innerText = `${contributors.length} Payment(s)`;
+
+        const listEl = document.getElementById('channel-modal-list');
+        if (contributors.length === 0) {
+          listEl.innerHTML = `<div class="p-6 text-center text-xs text-slate-400">No records found for this channel.</div>`;
+        } else {
+          listEl.innerHTML = contributors.map(item => `
+            <div class="flex items-center justify-between px-3 py-2.5 bg-slate-50 hover:bg-slate-100/70 rounded-xl border border-slate-200/60 transition">
+              <div class="flex items-center gap-2 min-w-0 pr-2">
+                <span class="font-mono text-xs font-bold bg-indigo-100/80 text-indigo-950 px-1.5 py-0.5 rounded shrink-0">${item.id}</span>
+                <span class="font-bold text-xs text-slate-800 truncate">${item.name}</span>
+                ${item.isJoint ? `<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200 shrink-0">Joint</span>` : ''}
+              </div>
+              <span class="font-extrabold text-xs text-emerald-700 shrink-0">${this.formatINR(item.amount)}</span>
+            </div>
+          `).join('');
+        }
+
+        document.getElementById('channel-breakdown-modal').classList.remove('hidden');
+      }
+
       renderChannelStats() {
-        const targetCols = (this.channelReportScope === 'month')
+        const isMonthScope = (this.channelReportScope === 'month');
+        const targetCols = isMonthScope
           ? this.collections.filter(c => c.month === this.reportSelectedMonth)
           : this.collections;
 
@@ -3380,7 +3473,7 @@
         const statsContainer = document.getElementById('payment-mode-stats');
         if (!statsContainer) return;
         if (Object.keys(channelTotals).length === 0) {
-          const label = this.channelReportScope === 'month' ? `Month ${this.reportSelectedMonth}` : 'the chit cycle';
+          const label = isMonthScope ? `Month ${this.reportSelectedMonth}` : 'the chit cycle';
           statsContainer.innerHTML = `<div class="text-xs text-slate-400 py-1 col-span-2">No collections recorded for ${label}.</div>`;
           return;
         }
@@ -3388,10 +3481,16 @@
         statsContainer.innerHTML = Object.entries(channelTotals).map(([channel, amt]) => {
           const pct = grandTotal > 0 ? Math.round((amt / grandTotal) * 100) : 0;
           const isBank = channel.includes('Bank Transfer');
+          const clickAttr = isMonthScope ? `onclick="app.showChannelBreakdown('${channel.replace(/'/g, "\\'")}')"` : '';
+          const hoverClasses = isMonthScope ? 'cursor-pointer hover:border-indigo-300 hover:shadow-xs active:scale-[0.99]' : '';
+
           return `
-            <div class="bg-white p-2 rounded-lg border border-slate-200/70 shadow-2xs">
-              <div class="flex justify-between text-[11px] font-semibold mb-1">
-                <span class="${isBank ? 'text-indigo-900 font-bold' : 'text-slate-700'} truncate pr-1">${channel}</span>
+            <div ${clickAttr} class="bg-white p-2 rounded-lg border border-slate-200/70 shadow-2xs transition select-none ${hoverClasses}">
+              <div class="flex justify-between items-center text-[11px] font-semibold mb-1">
+                <span class="${isBank ? 'text-indigo-900 font-bold' : 'text-slate-700'} truncate pr-1 flex items-center gap-1">
+                  ${channel}
+                  ${isMonthScope ? '<i class="ph ph-caret-right text-[10px] text-slate-400"></i>' : ''}
+                </span>
                 <span class="font-bold shrink-0 ${isBank ? 'text-indigo-900' : 'text-emerald-700'}">${this.formatINR(amt)} <span class="text-slate-400 font-normal">(${pct}%)</span></span>
               </div>
               <div class="w-full bg-slate-100 rounded-full h-1.5">
