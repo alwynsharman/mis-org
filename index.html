@@ -223,24 +223,24 @@
         </div>
       </section>
 
-      <!-- 2. MONTHLY COLLECTIONS (Aligned Mobile & Desktop Toolbar) -->
+      <!-- 2. MONTHLY COLLECTIONS (Clean, Non-wrapping Single-Row Header) -->
       <section id="view-collections" class="space-y-3 hidden">
         <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
-          <!-- Row 1: Title, Status Badge & Compact Month Chip (Aligned & Responsive) -->
-          <div class="flex flex-wrap items-center justify-between gap-2">
+          <!-- Row 1: Title, Frozen Badge (Only When Frozen) & Month Dropdown -->
+          <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-2 min-w-0">
-              <h2 class="text-base sm:text-lg font-bold text-slate-900 leading-tight truncate">Monthly Collections</h2>
-              <span id="coll-status-badge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 shrink-0">
-                <i class="ph ph-circle-wavy-check text-xs"></i> Open
+              <h2 class="text-base sm:text-lg font-bold text-slate-900 truncate leading-none">Collections</h2>
+              <span id="coll-status-badge" class="hidden items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-200 text-slate-700 shrink-0">
+                <i class="ph ph-lock-key text-xs"></i> Frozen
               </span>
             </div>
 
-            <!-- Month Dropdown Chip -->
+            <!-- Compact Month Dropdown Chip -->
             <div class="relative shrink-0">
               <select id="collection-month-select" onchange="app.onCollectionMonthChange(parseInt(this.value))" 
-                class="appearance-none pl-3 pr-7 py-1.5 text-xs font-bold text-indigo-950 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-2xs cursor-pointer">
+                class="appearance-none pl-2.5 pr-7 py-1.5 text-xs font-bold text-indigo-950 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-2xs cursor-pointer">
               </select>
-              <i class="ph ph-caret-down absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+              <i class="ph ph-caret-down absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
             </div>
           </div>
 
@@ -275,7 +275,7 @@
         </div>
       </section>
 
-      <!-- 3. REPORTS (With Reconcile/Freeze Banner) -->
+      <!-- 3. REPORTS (Pending First Tab, Reconcile/Freeze Banner & Drill-Down Modal) -->
       <section id="view-reports" class="space-y-2.5 hidden">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-3 sm:p-5 space-y-3">
           
@@ -349,7 +349,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="payment-mode-stats"></div>
           </div>
 
-          <!-- Statement Section -->
+          <!-- Statement Section (Pending First) -->
           <div class="border-t border-slate-200/80 pt-2.5 space-y-2">
             <div class="flex items-center justify-between gap-2 flex-wrap">
               <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
@@ -357,21 +357,21 @@
                 Subscribers
               </span>
               
-              <button id="rep-export-pending-btn" onclick="app.exportMonthlyPendingExcel()" class="hidden px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold items-center gap-1 shadow-2xs transition" title="Export Pending List to Excel (.xlsx)">
+              <button id="rep-export-pending-btn" onclick="app.exportMonthlyPendingExcel()" class="inline-flex px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold items-center gap-1 shadow-2xs transition" title="Export Pending List to Excel (.xlsx)">
                 <i class="ph ph-file-xls text-sm"></i> Export Pending
               </button>
             </div>
 
-            <!-- Segmented Filter -->
+            <!-- Segmented Filter: Pending First, Then Paid, Then All -->
             <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold border border-slate-200/60">
-              <button id="rep-filter-all" onclick="app.setReportFilter('all')" class="py-1.5 px-2 rounded-lg text-xs font-bold bg-white text-indigo-950 shadow-2xs transition text-center">
-                All (<span id="rep-cnt-all">0</span>)
+              <button id="rep-filter-pending" onclick="app.setReportFilter('pending')" class="py-1.5 px-2 rounded-lg text-xs font-bold bg-white text-indigo-950 shadow-2xs transition text-center">
+                Pending (<span id="rep-cnt-pending">0</span>)
               </button>
               <button id="rep-filter-paid" onclick="app.setReportFilter('paid')" class="py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition text-center">
                 Paid (<span id="rep-cnt-paid">0</span>)
               </button>
-              <button id="rep-filter-pending" onclick="app.setReportFilter('pending')" class="py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition text-center">
-                Pending (<span id="rep-cnt-pending">0</span>)
+              <button id="rep-filter-all" onclick="app.setReportFilter('all')" class="py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition text-center">
+                All (<span id="rep-cnt-all">0</span>)
               </button>
             </div>
 
@@ -1108,7 +1108,7 @@
         this.activeChitId = "group_a";
         this.currentMonthIdx = 1;
         this.reportSelectedMonth = 1;
-        this.reportFilter = 'all';
+        this.reportFilter = 'pending';
         this.channelReportScope = 'month';
         this.collectionSearchQuery = '';
         this.startYear = 2026;
@@ -1774,7 +1774,7 @@
         const select = document.getElementById('collection-month-select');
         const reportSelect = document.getElementById('report-month-select');
         const optionsHtml = MASTER_SCHEDULE.map(r => `
-          <option value="${r.m}">Month ${r.m} (${this.getMonthLabel(r.m)})</option>
+          <option value="${r.m}">M${r.m} • ${this.getMonthLabel(r.m)}</option>
         `).join('');
 
         if (select) select.innerHTML = optionsHtml;
@@ -2279,11 +2279,11 @@
         const badge = document.getElementById('coll-status-badge');
         if (badge) {
           if (isClosed) {
-            badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-200 text-slate-700 shrink-0";
-            badge.innerHTML = `<i class="ph ph-lock-key text-xs"></i> Frozen`;
+            badge.classList.remove('hidden');
+            badge.classList.add('inline-flex');
           } else {
-            badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 shrink-0";
-            badge.innerHTML = `<i class="ph ph-circle-wavy-check text-xs"></i> Open`;
+            badge.classList.add('hidden');
+            badge.classList.remove('inline-flex');
           }
         }
 
@@ -3174,7 +3174,7 @@
 
       setReportFilter(filterType) {
         this.reportFilter = filterType;
-        ['all', 'paid', 'pending'].forEach(f => {
+        ['pending', 'paid', 'all'].forEach(f => {
           const btn = document.getElementById(`rep-filter-${f}`);
           if (btn) {
             btn.className = f === filterType 
@@ -3778,6 +3778,17 @@
           this.populateMonthDropdowns();
         }
         if (repSel) repSel.value = this.reportSelectedMonth;
+
+        const pendingExportBtn = document.getElementById('rep-export-pending-btn');
+        if (pendingExportBtn) {
+          if (this.reportFilter === 'pending') {
+            pendingExportBtn.classList.remove('hidden');
+            pendingExportBtn.classList.add('inline-flex');
+          } else {
+            pendingExportBtn.classList.add('hidden');
+            pendingExportBtn.classList.remove('inline-flex');
+          }
+        }
 
         this.renderMonthlyReport();
         this.renderChannelStats();
