@@ -44,7 +44,7 @@
         overflow: visible !important;
       }
 
-      header, nav, #auth-screen, #toast, #collection-modal, #member-modal, #auction-modal, #receipt-modal, #channel-breakdown-modal, .no-print {
+      header, nav, #auth-screen, #toast, #collection-modal, #member-modal, #auction-modal, #disbursement-modal, #freeze-modal, #receipt-modal, #channel-breakdown-modal, .no-print {
         display: none !important;
       }
 
@@ -112,10 +112,16 @@
       </div>
     </div>
 
-    <!-- Navigation Tabs -->
+    <!-- Navigation Tabs (Reordered: Frequently Used Items First) -->
     <nav id="module-tabs" class="bg-indigo-950/70 border-t border-indigo-800/60 overflow-x-auto no-scrollbar flex space-x-1 px-3 py-1.5 no-print hidden">
       <button onclick="app.navigate('dashboard')" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5" data-tab="dashboard">
         <i class="ph ph-chart-pie-slice text-sm"></i> Dashboard
+      </button>
+      <button onclick="app.navigate('collections')" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5" data-tab="collections">
+        <i class="ph ph-money text-sm"></i> Collections
+      </button>
+      <button onclick="app.navigate('reports')" id="tab-reports" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5" data-tab="reports">
+        <i class="ph ph-file-text text-sm"></i> Reports
       </button>
       <button onclick="app.navigate('schedule')" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5" data-tab="schedule">
         <i class="ph ph-calendar text-sm"></i> Schedule
@@ -123,14 +129,8 @@
       <button onclick="app.navigate('members')" id="tab-members" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5" data-tab="members">
         <i class="ph ph-users text-sm"></i> Members
       </button>
-      <button onclick="app.navigate('collections')" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5" data-tab="collections">
-        <i class="ph ph-money text-sm"></i> Collections
-      </button>
       <button onclick="app.navigate('auctions')" id="tab-auctions" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5" data-tab="auctions">
         <i class="ph ph-gavel text-sm"></i> Auctions
-      </button>
-      <button onclick="app.navigate('reports')" id="tab-reports" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5" data-tab="reports">
-        <i class="ph ph-file-text text-sm"></i> Reports
       </button>
       <button onclick="app.navigate('audit')" id="tab-audit" class="tab-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-200 hover:text-white flex items-center gap-1.5 hidden" data-tab="audit">
         <i class="ph ph-list-magnifying-glass text-sm"></i> Audit Log
@@ -223,7 +223,175 @@
         </div>
       </section>
 
-      <!-- 2. MASTER SCHEDULE -->
+      <!-- 2. MONTHLY COLLECTIONS -->
+      <section id="view-collections" class="space-y-3 hidden">
+        <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <h2 class="text-base sm:text-lg font-bold text-slate-900 leading-none">Monthly Collections</h2>
+              <span id="coll-status-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Open</span>
+            </div>
+            <div class="relative">
+              <select id="collection-month-select" onchange="app.onCollectionMonthChange(parseInt(this.value))" class="appearance-none pl-3 pr-7 py-1.5 text-xs font-bold text-indigo-950 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-2xs cursor-pointer">
+              </select>
+              <i class="ph ph-caret-down absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+            </div>
+          </div>
+
+          <div class="relative">
+            <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="text" id="collection-search" placeholder="Search name, phone, M-ID..." oninput="app.filterCollections(this.value)" class="w-full pl-9 pr-8 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-600 bg-slate-50/50" />
+            <button id="coll-search-clear" onclick="app.clearCollectionSearch()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5">
+              <i class="ph ph-x-circle text-sm"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="collection-mobile-cards" class="sm:hidden space-y-2"></div>
+
+        <div class="hidden sm:block bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
+              <tr>
+                <th class="p-3">ID</th>
+                <th class="p-3">Account Name</th>
+                <th class="p-3 text-right">EMI</th>
+                <th class="p-3 text-right">Total Paid</th>
+                <th class="p-3 text-right">Due</th>
+                <th class="p-3">Channel / Last Collector</th>
+                <th class="p-3 text-center">Receipts</th>
+                <th class="p-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="collection-desktop-tbody" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 3. REPORTS (With Reconcile/Freeze Banner) -->
+      <section id="view-reports" class="space-y-2.5 hidden">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-3 sm:p-5 space-y-3">
+          
+          <!-- Month Selector & Excel Export -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-2.5">
+            <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2 min-w-0">
+              <i class="ph ph-receipt text-indigo-900 text-lg shrink-0"></i>
+              <span id="report-heading-title" class="truncate">Collection Report</span>
+            </h3>
+
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              <div class="relative flex-1 sm:flex-initial">
+                <select id="report-month-select" onchange="app.onReportMonthChange(parseInt(this.value))" 
+                  class="w-full sm:w-auto h-9 appearance-none pl-3 pr-8 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-600 focus:outline-none shadow-2xs cursor-pointer">
+                </select>
+                <i class="ph ph-caret-down absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+              </div>
+
+              <button onclick="app.exportMonthlyReportExcel()" 
+                class="h-9 px-3.5 bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition whitespace-nowrap shrink-0" 
+                title="Export Monthly Statement to Excel (.xlsx)">
+                <i class="ph ph-file-xls text-base"></i> Export Excel
+              </button>
+            </div>
+          </div>
+
+          <!-- Single-Row Status Strip (Active vs. Frozen) -->
+          <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-50 border border-slate-200/80 text-xs">
+            <div class="flex items-center gap-2">
+              <span id="rep-freeze-badge" class="font-bold flex items-center gap-1 text-emerald-800">
+                <i class="ph ph-circle-wavy-check text-emerald-600 text-sm"></i> Active Collections
+              </span>
+            </div>
+            <div id="rep-freeze-action-container">
+              <!-- Admin Button rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- 4-Stat Metric Strip -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50/80 p-1.5 rounded-xl border border-slate-200/60">
+            <div class="flex items-center justify-between sm:justify-start sm:gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-slate-100 shadow-2xs">
+              <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Target</span>
+              <span id="rep-stat-target" class="text-xs sm:text-sm font-extrabold text-slate-900">₹0</span>
+            </div>
+            <div class="flex items-center justify-between sm:justify-start sm:gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-emerald-100/60 shadow-2xs">
+              <span class="text-[9px] font-bold text-emerald-700 uppercase tracking-wider">Collected</span>
+              <span id="rep-stat-collected" class="text-xs sm:text-sm font-extrabold text-emerald-800">₹0</span>
+            </div>
+            <div class="flex items-center justify-between sm:justify-start sm:gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-indigo-100/60 shadow-2xs">
+              <span class="text-[9px] font-bold text-indigo-700 uppercase tracking-wider">Paid</span>
+              <span id="rep-stat-paid-count" class="text-xs sm:text-sm font-extrabold text-indigo-950">0 / 40</span>
+            </div>
+            <div class="flex items-center justify-between sm:justify-start sm:gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-rose-100/60 shadow-2xs">
+              <span class="text-[9px] font-bold text-rose-700 uppercase tracking-wider">Deficit</span>
+              <span id="rep-stat-deficit" class="text-xs sm:text-sm font-extrabold text-rose-700">₹0</span>
+            </div>
+          </div>
+
+          <!-- Collections by Channel Strip -->
+          <div class="bg-slate-50/70 p-2.5 sm:p-3 rounded-xl border border-slate-200/70 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-bold text-[11px] text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="ph ph-wallet text-indigo-900 text-sm"></i>
+                Collections by Channel
+              </span>
+              <div class="inline-flex p-0.5 bg-slate-200/80 rounded-lg text-[10px] font-semibold border border-slate-300/50">
+                <button id="scope-btn-month" onclick="app.setChannelScope('month')" class="px-2 py-0.5 rounded-md bg-white text-indigo-950 font-bold shadow-2xs transition">Month</button>
+                <button id="scope-btn-all" onclick="app.setChannelScope('all')" class="px-2 py-0.5 rounded-md text-slate-600 hover:text-slate-900 transition">All</button>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="payment-mode-stats"></div>
+          </div>
+
+          <!-- Statement Section -->
+          <div class="border-t border-slate-200/80 pt-2.5 space-y-2">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <i class="ph ph-users-three text-indigo-900"></i>
+                Subscribers
+              </span>
+              
+              <button id="rep-export-pending-btn" onclick="app.exportMonthlyPendingExcel()" class="hidden px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold items-center gap-1 shadow-2xs transition" title="Export Pending List to Excel (.xlsx)">
+                <i class="ph ph-file-xls text-sm"></i> Export Pending
+              </button>
+            </div>
+
+            <!-- Segmented Filter -->
+            <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold border border-slate-200/60">
+              <button id="rep-filter-all" onclick="app.setReportFilter('all')" class="py-1.5 px-2 rounded-lg text-xs font-bold bg-white text-indigo-950 shadow-2xs transition text-center">
+                All (<span id="rep-cnt-all">0</span>)
+              </button>
+              <button id="rep-filter-paid" onclick="app.setReportFilter('paid')" class="py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition text-center">
+                Paid (<span id="rep-cnt-paid">0</span>)
+              </button>
+              <button id="rep-filter-pending" onclick="app.setReportFilter('pending')" class="py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition text-center">
+                Pending (<span id="rep-cnt-pending">0</span>)
+              </button>
+            </div>
+
+            <!-- Statement Table -->
+            <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-2xs">
+              <table class="w-full text-left text-xs whitespace-nowrap">
+                <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                  <tr>
+                    <th class="p-2.5">ID</th>
+                    <th class="p-2.5">Account Name</th>
+                    <th class="p-2.5 text-right">Scheduled EMI</th>
+                    <th class="p-2.5 text-right">Total Paid</th>
+                    <th class="p-2.5 text-right">Balance Due</th>
+                    <th class="p-2.5">Last Payment</th>
+                    <th class="p-2.5">Channel(s)</th>
+                    <th class="p-2.5 text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="report-statement-tbody" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 4. MASTER SCHEDULE -->
       <section id="view-schedule" class="space-y-3 hidden">
         <div class="flex justify-between items-center">
           <div>
@@ -253,7 +421,7 @@
         </div>
       </section>
 
-      <!-- 3. MEMBER DIRECTORY (Clean Daily Action Toolbar + Excel Export Footer) -->
+      <!-- 5. MEMBER DIRECTORY -->
       <section id="view-members" class="space-y-3 hidden">
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
@@ -264,7 +432,6 @@
             <p class="text-xs text-slate-500 mt-0.5">Subscriber records, joint accounts & ledgers</p>
           </div>
 
-          <!-- Daily Action Toolbar -->
           <div class="flex items-center gap-2 w-full md:w-auto">
             <div class="relative flex-1 md:w-64">
               <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
@@ -276,10 +443,8 @@
           </div>
         </div>
 
-        <!-- Mobile Cards -->
         <div id="member-mobile-cards" class="sm:hidden space-y-2"></div>
 
-        <!-- Desktop Table -->
         <div class="hidden sm:block bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
           <table class="w-full text-left text-xs">
             <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
@@ -296,7 +461,6 @@
           </table>
         </div>
 
-        <!-- Relocated Directory Footer Bar (Native .xlsx Export with Merged Cells) -->
         <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
           <span id="member-footer-count" class="text-slate-500 font-medium">Showing 40 of 40 Active Accounts</span>
           <button onclick="app.exportMembersExcel()" class="w-full sm:w-auto px-4 py-2 border border-emerald-600/30 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 active:scale-95 rounded-xl font-bold transition flex items-center justify-center gap-1.5 shadow-2xs">
@@ -305,7 +469,7 @@
         </div>
       </section>
 
-      <!-- 4. SUBSCRIBER PASSBOOK -->
+      <!-- SUBSCRIBER PASSBOOK -->
       <section id="view-passbook" class="space-y-3 hidden">
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 no-print">
           <div class="flex items-center gap-2.5">
@@ -380,52 +544,6 @@
         </div>
       </section>
 
-      <!-- 5. MONTHLY COLLECTIONS (Compact Month Chip & 2-Row Left Accent Cards) -->
-      <section id="view-collections" class="space-y-3 hidden">
-        <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
-          <!-- Row 1: Title & Compact Month Chip -->
-          <div class="flex items-center justify-between">
-            <h2 class="text-base sm:text-lg font-bold text-slate-900 leading-none">Monthly Collections</h2>
-            <div class="relative">
-              <select id="collection-month-select" onchange="app.onCollectionMonthChange(parseInt(this.value))" class="appearance-none pl-3 pr-7 py-1.5 text-xs font-bold text-indigo-950 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-2xs cursor-pointer">
-              </select>
-              <i class="ph ph-caret-down absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
-            </div>
-          </div>
-
-          <!-- Row 2: Full-Width Real-Time Search Bar -->
-          <div class="relative">
-            <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" id="collection-search" placeholder="Search name, phone, M-ID..." oninput="app.filterCollections(this.value)" class="w-full pl-9 pr-8 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-600 bg-slate-50/50" />
-            <button id="coll-search-clear" onclick="app.clearCollectionSearch()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5">
-              <i class="ph ph-x-circle text-sm"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- Mobile View: Ultra-Slim 2-Row Accent Cards (Clean & Tap-Friendly) -->
-        <div id="collection-mobile-cards" class="sm:hidden space-y-2"></div>
-
-        <!-- Desktop View: Sleek Table -->
-        <div class="hidden sm:block bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
-          <table class="w-full text-left text-xs">
-            <thead class="bg-slate-50 text-slate-600 font-semibold border-b">
-              <tr>
-                <th class="p-3">ID</th>
-                <th class="p-3">Account Name</th>
-                <th class="p-3 text-right">EMI</th>
-                <th class="p-3 text-right">Total Paid</th>
-                <th class="p-3 text-right">Due</th>
-                <th class="p-3">Channel / Last Collector</th>
-                <th class="p-3 text-center">Receipts</th>
-                <th class="p-3 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody id="collection-desktop-tbody" class="divide-y divide-slate-100"></tbody>
-          </table>
-        </div>
-      </section>
-
       <!-- 6. AUCTIONS -->
       <section id="view-auctions" class="space-y-3 hidden">
         <h2 class="text-base sm:text-lg font-bold text-slate-900">Chit Auctions</h2>
@@ -436,7 +554,8 @@
                 <th class="p-2.5">Month</th>
                 <th class="p-2.5 text-right">Net Prize Money</th>
                 <th class="p-2.5">Winning Subscriber</th>
-                <th class="p-2.5">Date</th>
+                <th class="p-2.5">Auction Date</th>
+                <th class="p-2.5">Prize Disbursement</th>
                 <th class="p-2.5 text-right">Action</th>
               </tr>
             </thead>
@@ -445,119 +564,7 @@
         </div>
       </section>
 
-      <!-- 7. RESTRUCTURED & CLEAN REPORTS (With Aligned Controls & Native .xlsx Merged-Cell Exports) -->
-      <section id="view-reports" class="space-y-2.5 hidden">
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-3 sm:p-5 space-y-3">
-          
-          <!-- Perfectly Aligned Controls Header -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-2.5">
-            <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2 min-w-0">
-              <i class="ph ph-receipt text-indigo-900 text-lg shrink-0"></i>
-              <span id="report-heading-title" class="truncate">Collection Report</span>
-            </h3>
-
-            <!-- Matched Height & Aligned Controls -->
-            <div class="flex items-center gap-2 w-full sm:w-auto">
-              <div class="relative flex-1 sm:flex-initial">
-                <select id="report-month-select" onchange="app.onReportMonthChange(parseInt(this.value))" 
-                  class="w-full sm:w-auto h-9 appearance-none pl-3 pr-8 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-600 focus:outline-none shadow-2xs cursor-pointer">
-                </select>
-                <i class="ph ph-caret-down absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
-              </div>
-
-              <button onclick="app.exportMonthlyReportExcel()" 
-                class="h-9 px-3.5 bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition whitespace-nowrap shrink-0" 
-                title="Export Monthly Statement to Excel (.xlsx)">
-                <i class="ph ph-file-xls text-base"></i> Export Excel
-              </button>
-            </div>
-          </div>
-
-          <!-- Compact Single-Line 4-Stat Metric Strip -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50/80 p-1.5 rounded-xl border border-slate-200/60">
-            <div class="flex items-center justify-between sm:justify-start sm:gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-slate-100 shadow-2xs">
-              <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Target</span>
-              <span id="rep-stat-target" class="text-xs sm:text-sm font-extrabold text-slate-900">₹0</span>
-            </div>
-            <div class="flex items-center justify-between sm:justify-start sm:gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-emerald-100/60 shadow-2xs">
-              <span class="text-[9px] font-bold text-emerald-700 uppercase tracking-wider">Collected</span>
-              <span id="rep-stat-collected" class="text-xs sm:text-sm font-extrabold text-emerald-800">₹0</span>
-            </div>
-            <div class="flex items-center justify-between sm:justify-start sm:gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-indigo-100/60 shadow-2xs">
-              <span class="text-[9px] font-bold text-indigo-700 uppercase tracking-wider">Paid</span>
-              <span id="rep-stat-paid-count" class="text-xs sm:text-sm font-extrabold text-indigo-950">0 / 40</span>
-            </div>
-            <div class="flex items-center justify-between sm:justify-start sm:gap-2 px-2.5 py-1.5 bg-white rounded-lg border border-rose-100/60 shadow-2xs">
-              <span class="text-[9px] font-bold text-rose-700 uppercase tracking-wider">Deficit</span>
-              <span id="rep-stat-deficit" class="text-xs sm:text-sm font-extrabold text-rose-700">₹0</span>
-            </div>
-          </div>
-
-          <!-- Collections by Channel Strip -->
-          <div class="bg-slate-50/70 p-2.5 sm:p-3 rounded-xl border border-slate-200/70 space-y-2">
-            <div class="flex items-center justify-between gap-2">
-              <span class="font-bold text-[11px] text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                <i class="ph ph-wallet text-indigo-900 text-sm"></i>
-                Collections by Channel
-              </span>
-              <div class="inline-flex p-0.5 bg-slate-200/80 rounded-lg text-[10px] font-semibold border border-slate-300/50">
-                <button id="scope-btn-month" onclick="app.setChannelScope('month')" class="px-2 py-0.5 rounded-md bg-white text-indigo-950 font-bold shadow-2xs transition">Month</button>
-                <button id="scope-btn-all" onclick="app.setChannelScope('all')" class="px-2 py-0.5 rounded-md text-slate-600 hover:text-slate-900 transition">All</button>
-              </div>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="payment-mode-stats"></div>
-          </div>
-
-          <!-- Statement Section -->
-          <div class="border-t border-slate-200/80 pt-2.5 space-y-2">
-            <div class="flex items-center justify-between gap-2 flex-wrap">
-              <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                <i class="ph ph-users-three text-indigo-900"></i>
-                Subscribers
-              </span>
-              
-              <button id="rep-export-pending-btn" onclick="app.exportMonthlyPendingExcel()" class="hidden px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold items-center gap-1 shadow-2xs transition" title="Export Pending List to Excel (.xlsx)">
-                <i class="ph ph-file-xls text-sm"></i> Export Pending
-              </button>
-            </div>
-
-            <!-- Full-Width 3-Column Segmented Filter -->
-            <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold border border-slate-200/60">
-              <button id="rep-filter-all" onclick="app.setReportFilter('all')" class="py-1.5 px-2 rounded-lg text-xs font-bold bg-white text-indigo-950 shadow-2xs transition text-center">
-                All (<span id="rep-cnt-all">0</span>)
-              </button>
-              <button id="rep-filter-paid" onclick="app.setReportFilter('paid')" class="py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition text-center">
-                Paid (<span id="rep-cnt-paid">0</span>)
-              </button>
-              <button id="rep-filter-pending" onclick="app.setReportFilter('pending')" class="py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition text-center">
-                Pending (<span id="rep-cnt-pending">0</span>)
-              </button>
-            </div>
-
-            <!-- Statement Table -->
-            <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-2xs">
-              <table class="w-full text-left text-xs whitespace-nowrap">
-                <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
-                  <tr>
-                    <th class="p-2.5">ID</th>
-                    <th class="p-2.5">Account Name</th>
-                    <th class="p-2.5 text-right">Scheduled EMI</th>
-                    <th class="p-2.5 text-right">Total Paid</th>
-                    <th class="p-2.5 text-right">Balance Due</th>
-                    <th class="p-2.5">Last Payment</th>
-                    <th class="p-2.5">Channel(s)</th>
-                    <th class="p-2.5 text-center">Status</th>
-                  </tr>
-                </thead>
-                <tbody id="report-statement-tbody" class="divide-y divide-slate-100"></tbody>
-              </table>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- 8. ACTIVITY LOG (Admin Only) -->
+      <!-- 7. ACTIVITY LOG (Admin Only) -->
       <section id="view-audit" class="space-y-3 hidden">
         <h2 class="text-base sm:text-lg font-bold text-slate-900">Audit Trail (Read Only)</h2>
         <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
@@ -614,6 +621,89 @@
     </div>
   </div>
 
+  <!-- Reconcile & Freeze Confirmation Modal -->
+  <div id="freeze-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 sm:p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-start">
+        <div class="flex items-center gap-2 text-indigo-950 font-bold">
+          <i class="ph ph-lock-key text-xl text-indigo-700"></i>
+          <span id="freeze-modal-title">Close Month</span>
+        </div>
+        <button onclick="document.getElementById('freeze-modal').classList.add('hidden')" class="p-1 rounded-full text-slate-400 hover:text-slate-600">
+          <i class="ph ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <div class="bg-slate-50 rounded-2xl p-3 border border-slate-200/80 text-xs space-y-2">
+        <div class="flex justify-between">
+          <span class="text-slate-500">Prize Winner</span>
+          <span class="font-bold text-slate-800" id="fm-winner">-</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Prize Payout</span>
+          <span class="font-bold text-slate-800" id="fm-payout">₹0</span>
+        </div>
+        <div class="flex justify-between border-t border-slate-200/60 pt-1.5">
+          <span class="text-slate-500">Total Collected</span>
+          <span class="font-bold text-emerald-700" id="fm-collected">₹0</span>
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <button type="button" onclick="document.getElementById('freeze-modal').classList.add('hidden')" class="w-1/2 h-10 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600">Cancel</button>
+        <button type="button" onclick="app.executeMonthFreeze()" class="w-1/2 h-10 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow">Confirm & Freeze</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prize Disbursement Recording Modal -->
+  <div id="disbursement-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 shadow-2xl space-y-3.5">
+      <div class="flex justify-between items-start">
+        <div>
+          <h3 class="text-base font-bold text-slate-900" id="disb-modal-title">Record Prize Disbursement</h3>
+          <p class="text-xs text-slate-500" id="disb-modal-sub"></p>
+        </div>
+        <button onclick="document.getElementById('disbursement-modal').classList.add('hidden')" class="p-1 rounded-full text-slate-400 hover:text-slate-600">
+          <i class="ph ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <form id="disbursement-form" onsubmit="app.saveDisbursement(event)" class="space-y-3">
+        <input type="hidden" id="disb-month" />
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Disbursement Date</label>
+          <input type="date" id="disb-date" required class="w-full border rounded-xl px-3 py-2 text-xs" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Payment Method</label>
+          <select id="disb-method" class="w-full border rounded-xl px-3 py-2 text-xs bg-white font-medium">
+            <option value="Bank Transfer / RTGS">Bank Transfer / RTGS / NEFT</option>
+            <option value="Cheque">Bank Cheque</option>
+            <option value="Cash">Cash Handover</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">UTR / Cheque No / Ref</label>
+          <input type="text" id="disb-ref" required placeholder="Bank Transaction UTR or Cheque #" class="w-full border rounded-xl px-3 py-2 text-xs" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Remarks</label>
+          <input type="text" id="disb-remarks" placeholder="Optional guarantor sign-off notes" class="w-full border rounded-xl px-3 py-2 text-xs" />
+        </div>
+
+        <div class="flex gap-2 pt-1">
+          <button type="button" onclick="document.getElementById('disbursement-modal').classList.add('hidden')" class="w-1/2 h-10 border rounded-xl text-xs font-semibold text-slate-600">Cancel</button>
+          <button type="submit" class="w-1/2 h-10 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow">Save Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Record Collection Modal -->
   <div id="collection-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto space-y-3.5">
@@ -627,7 +717,6 @@
         </button>
       </div>
 
-      <!-- Installment Running Status Strip -->
       <div class="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-2xl border border-slate-200/80 text-center">
         <div>
           <span class="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Scheduled EMI</span>
@@ -643,7 +732,6 @@
         </div>
       </div>
 
-      <!-- Joint Co-Payers Status Banner -->
       <div id="coll-joint-status-box" class="hidden bg-indigo-50/70 border border-indigo-100 rounded-xl p-2.5 space-y-1.5 text-xs">
         <span class="text-[10px] font-bold text-indigo-950 uppercase tracking-wider flex items-center gap-1">
           <i class="ph ph-users-three"></i> Joint Account Allocation (50–50 Split)
@@ -651,20 +739,24 @@
         <div class="grid grid-cols-2 gap-2 text-[11px]" id="coll-joint-pills-container"></div>
       </div>
 
-      <!-- List of Recorded Payments for this Month -->
       <div class="space-y-1.5">
         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Recorded Payments for Month</span>
         <div id="coll-tranches-list" class="space-y-1.5"></div>
       </div>
 
-      <!-- Clean Cleared Banner -->
       <div id="coll-cleared-banner" class="hidden p-2.5 bg-emerald-50/90 border border-emerald-200 rounded-2xl text-center">
         <div class="flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-900">
           <i class="ph ph-check-circle text-base text-emerald-600"></i> Installment Cleared
         </div>
       </div>
 
-      <!-- Add New Payment Form -->
+      <div id="coll-frozen-banner" class="hidden p-2.5 bg-slate-100 border border-slate-300 rounded-2xl text-center">
+        <div class="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-700">
+          <i class="ph ph-lock-key text-base text-slate-600"></i> Month Reconciled & Frozen (Read-Only)
+        </div>
+      </div>
+
+      <!-- Add Payment Form -->
       <form id="collection-form" onsubmit="app.saveCollection(event)" class="space-y-3 border-t border-slate-200/70 pt-3">
         <input type="hidden" id="coll-member-id" />
         <input type="hidden" id="coll-month" />
@@ -673,7 +765,6 @@
           <i class="ph ph-plus-circle text-base text-indigo-600"></i> Add Payment Tranche
         </div>
 
-        <!-- Co-Payer Selector for Joint Accounts -->
         <div id="coll-joint-select-container" class="hidden">
           <label class="block text-xs font-semibold text-slate-500 mb-1">Paying Subscriber / Partner</label>
           <select id="coll-joint-payer-select" onchange="app.onJointPayerChange()" class="w-full border rounded-xl px-3 py-2 text-xs bg-white font-medium focus:ring-2 focus:ring-indigo-600"></select>
@@ -734,7 +825,6 @@
           <input type="text" id="mem-number" readonly required class="w-full border rounded-xl px-3 py-2 text-sm font-mono font-bold bg-slate-100 text-indigo-950 cursor-not-allowed select-none" />
         </div>
 
-        <!-- Joint Account Toggle Switch -->
         <div class="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100 flex items-center justify-between">
           <div>
             <span class="text-xs font-bold text-indigo-950 block">Joint Account (50–50 Shared)</span>
@@ -746,7 +836,6 @@
           </label>
         </div>
 
-        <!-- Single Member Section -->
         <div id="mem-single-fields" class="space-y-3">
           <div>
             <label class="block text-xs font-semibold text-slate-500 mb-1">Subscriber Full Name (Account Name)</label>
@@ -769,9 +858,7 @@
           </div>
         </div>
 
-        <!-- Joint Members Section (Co-Payer 1 & 2) -->
         <div id="mem-joint-fields" class="space-y-3 hidden">
-          <!-- Co-Payer 1 -->
           <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2">
             <span class="text-[10px] font-extrabold uppercase tracking-wider text-indigo-900 block">Co-Payer 1 (50% Share)</span>
             <input type="text" id="mem-cp1-name" placeholder="Full Name" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white" />
@@ -783,7 +870,6 @@
             <input type="text" id="mem-cp1-address" placeholder="Address" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white" />
           </div>
 
-          <!-- Co-Payer 2 -->
           <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2">
             <span class="text-[10px] font-extrabold uppercase tracking-wider text-indigo-900 block">Co-Payer 2 (50% Share)</span>
             <input type="text" id="mem-cp2-name" placeholder="Full Name" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white" />
@@ -809,7 +895,7 @@
     </div>
   </div>
 
-  <!-- Auction Modal -->
+  <!-- Award Auction Modal -->
   <div id="auction-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 shadow-2xl">
       <h3 class="text-base font-bold text-slate-900 mb-1">Award Auction</h3>
@@ -832,11 +918,9 @@
     </div>
   </div>
 
-  <!-- ================= PAYMENT RECEIPT MODAL ================= -->
+  <!-- Payment Receipt Modal -->
   <div id="receipt-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
     <div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 my-auto">
-      
-      <!-- Receipt Header -->
       <div class="border-b border-slate-200 pb-3 flex justify-between items-center">
         <div class="flex items-center gap-2.5">
           <div class="w-9 h-9 rounded-xl bg-amber-400 flex items-center justify-center text-indigo-950 font-black shadow-xs">
@@ -853,7 +937,6 @@
         </div>
       </div>
 
-      <!-- Structured Ledger Alignment -->
       <div class="space-y-3">
         <div class="border border-indigo-100 bg-indigo-50/80 p-3.5 rounded-2xl flex justify-between items-center">
           <div>
@@ -911,7 +994,6 @@
         </div>
       </div>
 
-      <!-- Action Buttons -->
       <div class="flex flex-wrap gap-2 pt-1 no-print">
         <button onclick="app.shareReceiptPDF()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition">
           <i class="ph ph-share-network text-base"></i> Share
@@ -1029,6 +1111,7 @@
         this.members = [];
         this.collections = [];
         this.auctions = [];
+        this.monthClosures = [];
         this.foremenList = [];
         this.currentReceiptData = null;
         
@@ -1095,6 +1178,11 @@
         if (sel) sel.value = this.currentMonthIdx;
         const repSel = document.getElementById('report-month-select');
         if (repSel) repSel.value = this.currentMonthIdx;
+      }
+
+      isMonthClosed(monthNum) {
+        const record = this.monthClosures.find(c => c.month === monthNum);
+        return Boolean(record?.isClosed);
       }
 
       generateNextMemberId() {
@@ -1628,6 +1716,9 @@
           const aucSnap = await getDocs(query(collection(db, "auctions"), where("chitId", "==", this.activeChitId)));
           this.auctions = aucSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
+          const clsSnap = await getDocs(query(collection(db, "month_closures"), where("chitId", "==", this.activeChitId)));
+          this.monthClosures = clsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
           try {
             const uSnap = await getDocs(collection(db, "users"));
             this.foremenList = uSnap.docs
@@ -1706,7 +1797,6 @@
         document.getElementById('dash-total-pending').innerText = this.formatINR(totalPending);
       }
 
-      // Render Members (Clean Daily List & Desktop Table)
       renderMembers(list = this.members) {
         const isAdmin = this.userRole === 'admin';
         const isFull = this.members.length >= 40;
@@ -1735,7 +1825,6 @@
           }
         }
 
-        // Mobile Cards: Clean, Compact 2-Row Alignment
         const mContainer = document.getElementById('member-mobile-cards');
         mContainer.innerHTML = list.length === 0 ? `<div class="p-6 text-center text-xs text-slate-400 bg-white rounded-2xl">No subscribers found.</div>` : list.map(m => {
           const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.totalPaid) || 0), 0);
@@ -1765,7 +1854,6 @@
           `;
         }).join('');
 
-        // Desktop Table: Structured Alignment
         const dBody = document.getElementById('member-desktop-tbody');
         dBody.innerHTML = list.map(m => {
           const totalPaid = this.collections.filter(c => c.memberNo === m.memberNo).reduce((s, c) => s + (Number(c.totalPaid) || 0), 0);
@@ -1808,7 +1896,6 @@
         this.renderMembers(filtered);
       }
 
-      // Robust binary writer for native .xlsx that opens in all mobile apps
       writeExcelFile(workbook, filename) {
         const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'binary' });
         const buf = new ArrayBuffer(wbout.length);
@@ -1829,7 +1916,6 @@
         URL.revokeObjectURL(link.href);
       }
 
-      // Member Directory Native Excel Export (.xlsx) with True Merged Cells
       exportMembersExcel() {
         if (!this.members || this.members.length === 0) {
           this.notify("No subscribers to export.", true);
@@ -1888,7 +1974,6 @@
               ""
             ]);
 
-            // Merge Member ID, Account Name, Account Type, Prized Status, Total Paid across the 2 co-payer rows
             merges.push({ s: { r: currentRow, c: 0 }, e: { r: currentRow + 1, c: 0 } });
             merges.push({ s: { r: currentRow, c: 1 }, e: { r: currentRow + 1, c: 1 } });
             merges.push({ s: { r: currentRow, c: 2 }, e: { r: currentRow + 1, c: 2 } });
@@ -2181,7 +2266,18 @@
 
       loadCollectionsGrid(monthNum) {
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
-        const isPastMonth = monthNum < this.currentMonthIdx;
+        const isClosed = this.isMonthClosed(monthNum);
+
+        const badge = document.getElementById('coll-status-badge');
+        if (badge) {
+          if (isClosed) {
+            badge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-800 flex items-center gap-1";
+            badge.innerHTML = `<i class="ph ph-lock-key"></i> Frozen`;
+          } else {
+            badge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800";
+            badge.innerText = "Open";
+          }
+        }
 
         let displayMembers = this.members;
         if (this.collectionSearchQuery) {
@@ -2197,7 +2293,7 @@
           );
         }
 
-        // Mobile View: Slim 2-Row Left Accent Cards (Clean & Tap-Friendly)
+        // Mobile Cards: Slim 2-Row Accent Cards
         const mCards = document.getElementById('collection-mobile-cards');
         if (displayMembers.length === 0) {
           mCards.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 bg-white rounded-2xl">No subscribers found matching search for Month ${monthNum}.</div>`;
@@ -2209,12 +2305,10 @@
             const isCleared = totalPaid >= sch.emi;
             const isPartial = totalPaid > 0 && !isCleared;
 
-            // Left status accent stripe
             const borderAccent = isCleared 
               ? 'border-l-4 border-l-emerald-500' 
               : (isPartial ? 'border-l-4 border-l-amber-500' : 'border-l-4 border-l-slate-300');
 
-            // Streamlined Row 2 math display
             let row2Financials = '';
             if (isCleared) {
               row2Financials = `
@@ -2242,25 +2336,18 @@
             return `
               <div onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}')" 
                 class="bg-white px-3 py-2.5 rounded-2xl border border-slate-200 ${borderAccent} shadow-2xs space-y-1.5 cursor-pointer hover:bg-slate-50/70 transition">
-                
-                <!-- Row 1: ID, Joint Badge & Full Account Name -->
                 <div class="flex items-center gap-1.5">
                   <span class="font-mono text-xs font-bold bg-indigo-50 text-indigo-900 px-1.5 py-0.5 rounded shrink-0">${m.memberNo}</span>
                   ${m.isJoint ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200 shrink-0">Joint</span>` : ''}
                   <span class="font-bold text-xs sm:text-sm text-slate-800 truncate leading-snug">${m.name}</span>
                 </div>
-
-                <!-- Row 2: Streamlined Financials + Action Button -->
                 <div class="flex items-center justify-between gap-2 pt-0.5">
                   ${row2Financials}
-
                   <div class="shrink-0">
-                    ${!isPastMonth ? `
-                      <button onclick="event.stopPropagation(); app.openCollectionModal(${monthNum}, '${m.memberNo}')" 
-                        class="px-3 py-1 ${isCleared ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-indigo-900 hover:bg-indigo-800 text-white'} rounded-xl text-xs font-bold active:scale-95 transition shadow-2xs">
-                        ${isCleared ? 'Details' : 'Collect'}
-                      </button>
-                    ` : `<span class="text-[11px] text-slate-400 italic">Locked</span>`}
+                    <button onclick="event.stopPropagation(); app.openCollectionModal(${monthNum}, '${m.memberNo}')" 
+                      class="px-3 py-1 ${isClosed ? 'bg-slate-100 text-slate-600' : (isCleared ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-indigo-900 hover:bg-indigo-800 text-white')} rounded-xl text-xs font-bold active:scale-95 transition shadow-2xs">
+                      ${isClosed ? 'View' : (isCleared ? 'Details' : 'Collect')}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -2278,7 +2365,6 @@
             const totalPaid = Number(entry?.totalPaid) || 0;
             const balanceDue = Math.max(0, sch.emi - totalPaid);
             const isCleared = totalPaid >= sch.emi;
-            const isPartial = totalPaid > 0 && !isCleared;
             const payments = Array.isArray(entry?.payments) ? entry.payments : [];
 
             let channelDisplay = "-";
@@ -2314,11 +2400,9 @@
                 <td class="p-3 text-xs text-slate-600">${channelDisplay}</td>
                 <td class="p-3 text-center">${receiptsBadgeList}</td>
                 <td class="p-3 text-right">
-                  ${!isPastMonth ? `
-                    <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}')" class="px-2.5 py-1 ${isCleared ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'} rounded-lg font-bold text-xs transition">
-                      ${isCleared ? 'Details' : 'Collect'}
-                    </button>
-                  ` : '<span class="text-slate-400 text-xs italic">Locked</span>'}
+                  <button onclick="app.openCollectionModal(${monthNum}, '${m.memberNo}')" class="px-2.5 py-1 ${isClosed ? 'bg-slate-100 text-slate-600' : (isCleared ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100')} rounded-lg font-bold text-xs transition">
+                    ${isClosed ? 'View' : (isCleared ? 'Details' : 'Collect')}
+                  </button>
                 </td>
               </tr>
             `;
@@ -2331,6 +2415,7 @@
         const existing = this.collections.find(c => c.month === monthNum && c.memberNo === memberNo);
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
         const emi = sch ? sch.emi : 12500;
+        const isClosed = this.isMonthClosed(monthNum);
 
         const totalPaid = Number(existing?.totalPaid) || 0;
         const balanceDue = Math.max(0, emi - totalPaid);
@@ -2346,7 +2431,6 @@
         document.getElementById('coll-stat-paid').innerText = this.formatINR(totalPaid);
         document.getElementById('coll-stat-due').innerText = this.formatINR(balanceDue);
 
-        // Joint Share Allocations Setup
         const jointStatusBox = document.getElementById('coll-joint-status-box');
         const jointSelectContainer = document.getElementById('coll-joint-select-container');
         const jointPayerSelect = document.getElementById('coll-joint-payer-select');
@@ -2388,7 +2472,6 @@
           jointSelectContainer.classList.add('hidden');
         }
 
-        // Render recorded tranches
         const tranchesContainer = document.getElementById('coll-tranches-list');
         if (payments.length === 0) {
           tranchesContainer.innerHTML = `<div class="p-2.5 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">No payments recorded yet for this month.</div>`;
@@ -2413,7 +2496,7 @@
                   <button type="button" onclick="app.viewReceipt(${monthNum}, '${memberNo}', '${p.paymentId}')" class="p-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 rounded-lg text-xs font-bold" title="View Receipt">
                     <i class="ph ph-receipt text-sm"></i>
                   </button>
-                  ${this.userRole === 'admin' ? `
+                  ${(this.userRole === 'admin' && !isClosed) ? `
                     <button type="button" onclick="app.deletePaymentTranche(${monthNum}, '${memberNo}', '${p.paymentId}')" class="p-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs" title="Revoke Payment">
                       <i class="ph ph-trash text-sm"></i>
                     </button>
@@ -2424,15 +2507,21 @@
           }).join('');
         }
 
-        // Lock form when full ticket is cleared
         const clearedBanner = document.getElementById('coll-cleared-banner');
+        const frozenBanner = document.getElementById('coll-frozen-banner');
         const formEl = document.getElementById('collection-form');
 
-        if (isCleared) {
+        if (isClosed) {
+          clearedBanner.classList.add('hidden');
+          frozenBanner.classList.remove('hidden');
+          formEl.classList.add('hidden');
+        } else if (isCleared) {
           clearedBanner.classList.remove('hidden');
+          frozenBanner.classList.add('hidden');
           formEl.classList.add('hidden');
         } else {
           clearedBanner.classList.add('hidden');
+          frozenBanner.classList.add('hidden');
           formEl.classList.remove('hidden');
 
           this.onJointPayerChange();
@@ -2488,8 +2577,8 @@
         const memberNo = document.getElementById('coll-member-id').value;
         const newAmount = parseFloat(document.getElementById('coll-amount').value);
 
-        if (monthNum < this.currentMonthIdx) {
-          this.notify("Past months are locked from editing", true);
+        if (this.isMonthClosed(monthNum)) {
+          this.notify("This month has been reconciled and frozen. Edits are locked.", true);
           return;
         }
 
@@ -2573,6 +2662,11 @@
       async deletePaymentTranche(monthNum, memberNo, paymentId) {
         if (this.userRole !== 'admin') {
           this.notify("Unauthorized: Admin privileges required.", true);
+          return;
+        }
+
+        if (this.isMonthClosed(monthNum)) {
+          this.notify("This month has been reconciled and frozen. Edits are locked.", true);
           return;
         }
 
@@ -2823,7 +2917,11 @@
 
       renderAuctions() {
         const tbody = document.getElementById('auction-table-body');
+        const isAdmin = this.userRole === 'admin';
+
         tbody.innerHTML = MASTER_SCHEDULE.map(sch => {
+          const isClosed = this.isMonthClosed(sch.m);
+
           if (sch.m === 1) {
             return `
               <tr class="bg-amber-50/60">
@@ -2833,6 +2931,7 @@
                   <span class="px-2 py-0.5 rounded-md bg-amber-200 text-amber-900 text-xs font-bold">Foreman's Chit</span> (Organizer Payout)
                 </td>
                 <td class="p-2.5 text-slate-500">${this.getMonthLabel(1)}</td>
+                <td class="p-2.5 text-xs text-slate-600">Reserved for Organizer</td>
                 <td class="p-2.5 text-right">
                   <span class="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">Foreman Reserved</span>
                 </td>
@@ -2843,17 +2942,32 @@
           const auc = this.auctions.find(a => a.month === sch.m);
           const winner = auc ? this.members.find(m => m.memberNo === auc.winnerMemberNo) : null;
 
+          let disbHtml = `<span class="text-slate-400 italic">Pending Release</span>`;
+          if (auc?.disbursedDate) {
+            disbHtml = `<span class="text-emerald-700 font-semibold">${this.formatDate(auc.disbursedDate)} (${auc.paymentMethod || 'Bank'})</span>`;
+          }
+
+          let actionBtn = `<span class="text-slate-400 text-xs italic">Pending</span>`;
+          if (!auc && isAdmin && !isClosed) {
+            actionBtn = `<button onclick="app.openAuctionModal(${sch.m})" class="px-2.5 py-1 bg-indigo-900 text-white rounded-lg text-xs font-bold">Award</button>`;
+          } else if (auc) {
+            if (!auc.disbursedDate && isAdmin && !isClosed) {
+              actionBtn = `<button onclick="app.openDisbursementModal(${sch.m})" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-indigo-950 font-bold rounded-lg text-xs">Record Payout</button>`;
+            } else if (auc.disbursedDate && isAdmin && !isClosed) {
+              actionBtn = `<button onclick="app.openDisbursementModal(${sch.m})" class="px-2.5 py-1 bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold rounded-lg text-xs">Edit Payout</button>`;
+            } else {
+              actionBtn = `<span class="text-emerald-700 font-bold text-xs">Awarded</span>`;
+            }
+          }
+
           return `
             <tr class="hover:bg-slate-50">
               <td class="p-2.5 font-bold">Month ${sch.m}</td>
               <td class="p-2.5 text-right font-extrabold text-indigo-900">${this.formatINR(sch.net)}</td>
               <td class="p-2.5 font-semibold">${winner ? `${winner.memberNo} - ${winner.name}` : '<span class="text-slate-400 italic">Not Awarded</span>'}</td>
               <td class="p-2.5 text-slate-500">${this.formatDate(auc?.auctionDate)}</td>
-              <td class="p-2.5 text-right">
-                ${!auc && this.userRole === 'admin' ? `
-                  <button onclick="app.openAuctionModal(${sch.m})" class="px-2.5 py-1 bg-indigo-900 text-white rounded-lg text-xs font-bold">Award</button>
-                ` : (auc ? '<span class="text-emerald-600 font-bold text-xs">Awarded</span>' : '<span class="text-slate-400 text-xs italic">Pending</span>')}
-              </td>
+              <td class="p-2.5 text-xs">${disbHtml}</td>
+              <td class="p-2.5 text-right">${actionBtn}</td>
             </tr>
           `;
         }).join('');
@@ -2862,6 +2976,11 @@
       openAuctionModal(monthNum) {
         if (this.userRole !== 'admin') {
           this.notify("Unauthorized: Only Admin can award auctions.", true);
+          return;
+        }
+
+        if (this.isMonthClosed(monthNum)) {
+          this.notify("This month is reconciled and frozen. Auctions are locked.", true);
           return;
         }
 
@@ -2898,13 +3017,142 @@
         };
 
         try {
-          await setDoc(doc(db, "auctions", `${this.activeChitId}_M${monthNum}`), payload);
+          await setDoc(doc(db, "auctions", `${this.activeChitId}_M${monthNum}`), payload, { merge: true });
           await setDoc(doc(db, "members", `${this.activeChitId}_${winnerNo}`), { isPrized: true, prizedMonth: monthNum, prizeMoney: sch.net }, { merge: true });
 
           await this.logActivity("Auctions", "AWARD_AUCTION", null, payload);
           this.notify(`Winner confirmed: ${winnerNo}`);
           document.getElementById('auction-modal').classList.add('hidden');
           await this.loadData();
+          this.renderAuctions();
+        } catch (err) {
+          this.notify(err.message, true);
+        }
+      }
+
+      openDisbursementModal(monthNum) {
+        if (this.userRole !== 'admin') return;
+
+        if (this.isMonthClosed(monthNum)) {
+          this.notify("This month is reconciled and frozen. Payout details are locked.", true);
+          return;
+        }
+
+        const auc = this.auctions.find(a => a.month === monthNum);
+        const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
+        const winner = this.members.find(m => m.memberNo === auc?.winnerMemberNo);
+
+        document.getElementById('disb-month').value = monthNum;
+        document.getElementById('disb-modal-title').innerText = `Record Month ${monthNum} Disbursement`;
+        document.getElementById('disb-modal-sub').innerText = `${winner?.name || 'Winner'} (${winner?.memberNo}) • ${this.formatINR(sch?.net)}`;
+
+        document.getElementById('disb-date').value = auc?.disbursedDate || new Date().toISOString().split('T')[0];
+        document.getElementById('disb-method').value = auc?.paymentMethod || "Bank Transfer / RTGS";
+        document.getElementById('disb-ref').value = auc?.transactionRef || "";
+        document.getElementById('disb-remarks').value = auc?.disbursementRemarks || "";
+
+        document.getElementById('disbursement-modal').classList.remove('hidden');
+      }
+
+      async saveDisbursement(e) {
+        e.preventDefault();
+        if (this.userRole !== 'admin') return;
+
+        const monthNum = parseInt(document.getElementById('disb-month').value);
+        if (this.isMonthClosed(monthNum)) {
+          this.notify("This month is frozen. Edits are locked.", true);
+          return;
+        }
+
+        const payload = {
+          disbursedDate: document.getElementById('disb-date').value,
+          paymentMethod: document.getElementById('disb-method').value,
+          transactionRef: document.getElementById('disb-ref').value.trim(),
+          disbursementRemarks: document.getElementById('disb-remarks').value.trim()
+        };
+
+        try {
+          await setDoc(doc(db, "auctions", `${this.activeChitId}_M${monthNum}`), payload, { merge: true });
+          await this.logActivity("Auctions", "RECORD_DISBURSEMENT", null, { monthNum, ...payload });
+          this.notify(`Disbursement recorded for Month ${monthNum}`);
+          document.getElementById('disbursement-modal').classList.add('hidden');
+          await this.loadData();
+          this.renderAuctions();
+        } catch (err) {
+          this.notify(err.message, true);
+        }
+      }
+
+      // ================= CLEARANCE & FREEZE ACTIVITY =================
+      promptMonthFreeze(monthNum) {
+        if (this.userRole !== 'admin') return;
+
+        const auc = this.auctions.find(a => a.month === monthNum);
+        const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
+
+        // Verification requirement: Auction Winner + Payout must be documented (except Month 1 Foreman Chit)
+        if (sch.m > 1) {
+          if (!auc || !auc.winnerMemberNo) {
+            this.notify(`Award Month ${monthNum} auction winner before freezing the month.`, true);
+            return;
+          }
+          if (!auc.disbursedDate) {
+            this.notify(`Record prize disbursement for Month ${monthNum} before freezing.`, true);
+            return;
+          }
+        }
+
+        const winner = auc ? this.members.find(m => m.memberNo === auc.winnerMemberNo) : null;
+        const monthCols = this.collections.filter(c => c.month === monthNum);
+        const totalRealized = monthCols.reduce((sum, c) => sum + (Number(c.totalPaid) || 0), 0);
+
+        document.getElementById('freeze-modal-title').innerText = `Close Month ${monthNum}`;
+        document.getElementById('fm-winner').innerText = (sch.m === 1) ? "Foreman Reserved" : `${winner?.name || 'Winner'} (${auc.winnerMemberNo})`;
+        document.getElementById('fm-payout').innerText = this.formatINR(sch.net);
+        document.getElementById('fm-collected').innerText = this.formatINR(totalRealized);
+
+        this.pendingFreezeMonth = monthNum;
+        document.getElementById('freeze-modal').classList.remove('hidden');
+      }
+
+      async executeMonthFreeze() {
+        if (this.userRole !== 'admin' || !this.pendingFreezeMonth) return;
+
+        const mNum = this.pendingFreezeMonth;
+        const payload = {
+          chitId: this.activeChitId,
+          month: mNum,
+          isClosed: true,
+          closedAt: new Date().toISOString(),
+          closedByEmail: this.currentUser.email
+        };
+
+        try {
+          await setDoc(doc(db, "month_closures", `${this.activeChitId}_M${mNum}`), payload, { merge: true });
+          await this.logActivity("Clearance", "FREEZE_MONTH", null, { monthNum: mNum });
+          this.notify(`Month ${mNum} reconciled & frozen`);
+          document.getElementById('freeze-modal').classList.add('hidden');
+          this.pendingFreezeMonth = null;
+          await this.loadData();
+          this.renderReports();
+          this.loadCollectionsGrid(this.reportSelectedMonth);
+          this.renderAuctions();
+        } catch (err) {
+          this.notify(err.message, true);
+        }
+      }
+
+      async unfreezeMonth(monthNum) {
+        if (this.userRole !== 'admin') return;
+        if (!confirm(`Emergency Unlock Month ${monthNum}? Edits will be enabled again.`)) return;
+
+        try {
+          await deleteDoc(doc(db, "month_closures", `${this.activeChitId}_M${monthNum}`));
+          await this.logActivity("Clearance", "UNFREEZE_MONTH", { monthNum }, null);
+          this.notify(`Month ${monthNum} unlocked`);
+          await this.loadData();
+          this.renderReports();
+          this.loadCollectionsGrid(this.reportSelectedMonth);
           this.renderAuctions();
         } catch (err) {
           this.notify(err.message, true);
@@ -2963,10 +3211,30 @@
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
         const totalMembers = this.members.length;
         const expectedTarget = (sch?.emi || 0) * totalMembers;
+        const isClosed = this.isMonthClosed(monthNum);
+        const isAdmin = this.userRole === 'admin';
 
         const headingEl = document.getElementById('report-heading-title');
         if (headingEl) {
           headingEl.innerText = `Collection Report • Month ${monthNum}`;
+        }
+
+        // Render Streamlined Freeze Status Strip
+        const badgeEl = document.getElementById('rep-freeze-badge');
+        const actionContainer = document.getElementById('rep-freeze-action-container');
+
+        if (isClosed) {
+          badgeEl.className = "font-bold flex items-center gap-1 text-slate-700";
+          badgeEl.innerHTML = `<i class="ph ph-lock-key text-slate-600 text-sm"></i> Reconciled &amp; Frozen`;
+          actionContainer.innerHTML = isAdmin 
+            ? `<button onclick="app.unfreezeMonth(${monthNum})" class="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-bold transition">Unlock Month</button>`
+            : '';
+        } else {
+          badgeEl.className = "font-bold flex items-center gap-1 text-emerald-800";
+          badgeEl.innerHTML = `<i class="ph ph-circle-wavy-check text-emerald-600 text-sm"></i> Active Collections`;
+          actionContainer.innerHTML = isAdmin 
+            ? `<button onclick="app.promptMonthFreeze(${monthNum})" class="px-3 py-1 bg-indigo-900 hover:bg-indigo-800 text-white rounded-lg text-xs font-bold active:scale-95 transition shadow-2xs">Close &amp; Freeze Month ${monthNum}</button>`
+            : '';
         }
 
         const monthCols = this.collections.filter(c => c.month === monthNum);
@@ -3059,7 +3327,6 @@
         }).join('');
       }
 
-      // Monthly Collection Statement Native Excel Export (.xlsx) with True Merged Cells & Totals
       exportMonthlyReportExcel() {
         const monthNum = this.reportSelectedMonth;
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
@@ -3181,7 +3448,6 @@
           }
         });
 
-        // Summary Total Row
         data.push([
           "TOTALS",
           `${this.members.length} Accounts`,
@@ -3207,7 +3473,6 @@
         this.notify(`Downloaded Month ${monthNum} collection statement (.xlsx)`);
       }
 
-      // Monthly Pending Statement Native Excel Export (.xlsx) with True Merged Cells
       exportMonthlyPendingExcel() {
         const monthNum = this.reportSelectedMonth;
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
