@@ -223,21 +223,28 @@
         </div>
       </section>
 
-      <!-- 2. MONTHLY COLLECTIONS -->
+      <!-- 2. MONTHLY COLLECTIONS (Aligned Mobile & Desktop Toolbar) -->
       <section id="view-collections" class="space-y-3 hidden">
         <div class="bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <h2 class="text-base sm:text-lg font-bold text-slate-900 leading-none">Monthly Collections</h2>
-              <span id="coll-status-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Open</span>
+          <!-- Row 1: Title, Status Badge & Compact Month Chip (Aligned & Responsive) -->
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <h2 class="text-base sm:text-lg font-bold text-slate-900 leading-tight truncate">Monthly Collections</h2>
+              <span id="coll-status-badge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 shrink-0">
+                <i class="ph ph-circle-wavy-check text-xs"></i> Open
+              </span>
             </div>
-            <div class="relative">
-              <select id="collection-month-select" onchange="app.onCollectionMonthChange(parseInt(this.value))" class="appearance-none pl-3 pr-7 py-1.5 text-xs font-bold text-indigo-950 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-2xs cursor-pointer">
+
+            <!-- Month Dropdown Chip -->
+            <div class="relative shrink-0">
+              <select id="collection-month-select" onchange="app.onCollectionMonthChange(parseInt(this.value))" 
+                class="appearance-none pl-3 pr-7 py-1.5 text-xs font-bold text-indigo-950 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-2xs cursor-pointer">
               </select>
               <i class="ph ph-caret-down absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
             </div>
           </div>
 
+          <!-- Row 2: Full-Width Real-Time Search Bar -->
           <div class="relative">
             <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
             <input type="text" id="collection-search" placeholder="Search name, phone, M-ID..." oninput="app.filterCollections(this.value)" class="w-full pl-9 pr-8 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-600 bg-slate-50/50" />
@@ -651,7 +658,7 @@
 
       <div class="flex gap-2">
         <button type="button" onclick="document.getElementById('freeze-modal').classList.add('hidden')" class="w-1/2 h-10 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600">Cancel</button>
-        <button type="button" onclick="app.executeMonthFreeze()" class="w-1/2 h-10 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow">Confirm & Freeze</button>
+        <button type="button" onclick="app.executeMonthFreeze()" class="w-1/2 h-10 bg-indigo-900 text-white rounded-xl text-xs font-bold active:scale-95 shadow">Confirm &amp; Freeze</button>
       </div>
     </div>
   </div>
@@ -752,7 +759,7 @@
 
       <div id="coll-frozen-banner" class="hidden p-2.5 bg-slate-100 border border-slate-300 rounded-2xl text-center">
         <div class="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-700">
-          <i class="ph ph-lock-key text-base text-slate-600"></i> Month Reconciled & Frozen (Read-Only)
+          <i class="ph ph-lock-key text-base text-slate-600"></i> Month Reconciled &amp; Frozen (Read-Only)
         </div>
       </div>
 
@@ -1114,6 +1121,7 @@
         this.monthClosures = [];
         this.foremenList = [];
         this.currentReceiptData = null;
+        this.pendingFreezeMonth = null;
         
         this.init();
       }
@@ -2271,11 +2279,11 @@
         const badge = document.getElementById('coll-status-badge');
         if (badge) {
           if (isClosed) {
-            badge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-800 flex items-center gap-1";
-            badge.innerHTML = `<i class="ph ph-lock-key"></i> Frozen`;
+            badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-200 text-slate-700 shrink-0";
+            badge.innerHTML = `<i class="ph ph-lock-key text-xs"></i> Frozen`;
           } else {
-            badge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800";
-            badge.innerText = "Open";
+            badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 shrink-0";
+            badge.innerHTML = `<i class="ph ph-circle-wavy-check text-xs"></i> Open`;
           }
         }
 
@@ -3090,7 +3098,6 @@
         const auc = this.auctions.find(a => a.month === monthNum);
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
 
-        // Verification requirement: Auction Winner + Payout must be documented (except Month 1 Foreman Chit)
         if (sch.m > 1) {
           if (!auc || !auc.winnerMemberNo) {
             this.notify(`Award Month ${monthNum} auction winner before freezing the month.`, true);
@@ -3219,7 +3226,6 @@
           headingEl.innerText = `Collection Report • Month ${monthNum}`;
         }
 
-        // Render Streamlined Freeze Status Strip
         const badgeEl = document.getElementById('rep-freeze-badge');
         const actionContainer = document.getElementById('rep-freeze-action-container');
 
