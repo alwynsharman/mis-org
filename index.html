@@ -20,7 +20,7 @@
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <!-- jsPDF for Direct Vector PDF Compilation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <!-- SheetJS CDN for Native Excel (.xlsx) Generation Supporting Android Excel & Merged Cells -->
+  <!-- SheetJS CDN for Native Excel (.xlsx) Generation Supporting Merged Cells -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <style>
@@ -881,7 +881,7 @@
             <span class="text-[10px] font-extrabold uppercase tracking-wider text-indigo-900 block">Co-Payer 2 (50% Share)</span>
             <input type="text" id="mem-cp2-name" placeholder="Full Name" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white" />
             <div class="flex rounded-lg shadow-2xs">
-              <span class="inline-flex items-center px-2.5 rounded-l-lg border border-r-0 border-slate-300 bg-slate-100 text-slate-600 text-[11px] font-bold select-none">+91</span>
+              <span class="inline-flex items-center px-2.5 rounded-l-lg border border-slate-300 bg-slate-100 text-slate-600 text-[11px] font-bold select-none">+91</span>
               <input type="tel" id="mem-cp2-phone" maxlength="10" placeholder="Phone Number" class="w-full border border-slate-300 rounded-r-lg px-2.5 py-1.5 text-xs bg-white" />
             </div>
             <input type="email" id="mem-cp2-email" placeholder="Google Email (for Passbook login)" class="w-full border rounded-lg px-2.5 py-1.5 text-xs bg-white" />
@@ -2307,7 +2307,7 @@
           mCards.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 bg-white rounded-2xl">No subscribers found matching search for Month ${monthNum}.</div>`;
         } else {
           mCards.innerHTML = displayMembers.map(m => {
-            const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
+            const entry = this.collections.find(c => Number(c.month) === Number(monthNum) && c.memberNo === m.memberNo);
             const totalPaid = Number(entry?.totalPaid) || 0;
             const balanceDue = Math.max(0, sch.emi - totalPaid);
             const isCleared = totalPaid >= sch.emi;
@@ -2369,7 +2369,7 @@
           dBody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-xs text-slate-400">No subscribers found matching search for Month ${monthNum}.</td></tr>`;
         } else {
           dBody.innerHTML = displayMembers.map(m => {
-            const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
+            const entry = this.collections.find(c => Number(c.month) === Number(monthNum) && c.memberNo === m.memberNo);
             const totalPaid = Number(entry?.totalPaid) || 0;
             const balanceDue = Math.max(0, sch.emi - totalPaid);
             const isCleared = totalPaid >= sch.emi;
@@ -2382,6 +2382,8 @@
                 return p.paymentMethod === 'Bank Transfer to Main Account' ? `Bank (${verifier})` : `Cash (${verifier})`;
               });
               channelDisplay = Array.from(new Set(list)).join(', ');
+            } else if (totalPaid > 0) {
+              channelDisplay = entry.paymentMethod || 'Cash';
             }
 
             let receiptsBadgeList = payments.length > 0 ? `
@@ -2420,7 +2422,7 @@
 
       openCollectionModal(monthNum, memberNo) {
         const mem = this.members.find(m => m.memberNo === memberNo);
-        const existing = this.collections.find(c => c.month === monthNum && c.memberNo === memberNo);
+        const existing = this.collections.find(c => Number(c.month) === Number(monthNum) && c.memberNo === memberNo);
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
         const emi = sch ? sch.emi : 12500;
         const isClosed = this.isMonthClosed(monthNum);
@@ -2563,7 +2565,7 @@
         const mem = this.members.find(m => m.memberNo === document.getElementById('coll-member-id').value);
         const sch = MASTER_SCHEDULE.find(s => s.m === parseInt(document.getElementById('coll-month').value));
         const emi = sch ? sch.emi : 12500;
-        const totalPaid = Number(this.collections.find(c => c.month === sch.m && c.memberNo === mem.memberNo)?.totalPaid) || 0;
+        const totalPaid = Number(this.collections.find(c => Number(c.month) === Number(sch.m) && c.memberNo === mem.memberNo)?.totalPaid) || 0;
         const ticketBalance = Math.max(0, emi - totalPaid);
 
         if (mem.isJoint && mem.coPayers) {
@@ -2599,7 +2601,7 @@
         const emi = sch ? sch.emi : 12500;
         const mem = this.members.find(m => m.memberNo === memberNo);
         const docKey = `${this.activeChitId}_M${monthNum}_${memberNo}`;
-        const existing = this.collections.find(c => c.month === monthNum && c.memberNo === memberNo);
+        const existing = this.collections.find(c => Number(c.month) === Number(monthNum) && c.memberNo === memberNo);
 
         const currentPaid = Number(existing?.totalPaid) || 0;
         if (currentPaid >= emi) {
@@ -2681,7 +2683,7 @@
         if (!confirm(`Are you sure you want to revoke payment entry ${paymentId}?`)) return;
 
         const docKey = `${this.activeChitId}_M${monthNum}_${memberNo}`;
-        const existing = this.collections.find(c => c.month === monthNum && c.memberNo === memberNo);
+        const existing = this.collections.find(c => Number(c.month) === Number(monthNum) && c.memberNo === memberNo);
         if (!existing || !Array.isArray(existing.payments)) return;
 
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
@@ -2716,7 +2718,7 @@
 
       viewReceipt(monthNum, memberNo, paymentId = null) {
         const mem = this.members.find(m => m.memberNo === memberNo);
-        const entry = this.collections.find(c => c.month === monthNum && c.memberNo === memberNo);
+        const entry = this.collections.find(c => Number(c.month) === Number(monthNum) && c.memberNo === memberNo);
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
 
         if (!entry || !Array.isArray(entry.payments) || entry.payments.length === 0) {
@@ -2845,7 +2847,7 @@
         const tbody = document.getElementById('passbook-ledger-body');
 
         tbody.innerHTML = MASTER_SCHEDULE.map(sch => {
-          const entry = this.collections.find(c => c.memberNo === memberNo && c.month === sch.m);
+          const entry = this.collections.find(c => c.memberNo === memberNo && Number(c.month) === Number(sch.m));
           const paid = Number(entry?.totalPaid) || 0;
           const excessShort = paid - sch.emi;
           runningBalance += excessShort;
@@ -2947,7 +2949,7 @@
             `;
           }
 
-          const auc = this.auctions.find(a => a.month === sch.m);
+          const auc = this.auctions.find(a => Number(a.month) === Number(sch.m));
           const winner = auc ? this.members.find(m => m.memberNo === auc.winnerMemberNo) : null;
 
           let disbHtml = `<span class="text-slate-400 italic">Pending Release</span>`;
@@ -3046,7 +3048,7 @@
           return;
         }
 
-        const auc = this.auctions.find(a => a.month === monthNum);
+        const auc = this.auctions.find(a => Number(a.month) === Number(monthNum));
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
         const winner = this.members.find(m => m.memberNo === auc?.winnerMemberNo);
 
@@ -3095,7 +3097,7 @@
       promptMonthFreeze(monthNum) {
         if (this.userRole !== 'admin') return;
 
-        const auc = this.auctions.find(a => a.month === monthNum);
+        const auc = this.auctions.find(a => Number(a.month) === Number(monthNum));
         const sch = MASTER_SCHEDULE.find(s => s.m === monthNum);
 
         if (sch.m > 1) {
@@ -3110,7 +3112,7 @@
         }
 
         const winner = auc ? this.members.find(m => m.memberNo === auc.winnerMemberNo) : null;
-        const monthCols = this.collections.filter(c => c.month === monthNum);
+        const monthCols = this.collections.filter(c => Number(c.month) === Number(monthNum));
         const totalRealized = monthCols.reduce((sum, c) => sum + (Number(c.totalPaid) || 0), 0);
 
         document.getElementById('freeze-modal-title').innerText = `Close Month ${monthNum}`;
@@ -3243,7 +3245,7 @@
             : '';
         }
 
-        const monthCols = this.collections.filter(c => c.month === monthNum);
+        const monthCols = this.collections.filter(c => Number(c.month) === Number(monthNum));
         const totalRealized = monthCols.reduce((sum, c) => sum + (Number(c.totalPaid) || 0), 0);
 
         let paidCount = 0;
@@ -3310,6 +3312,8 @@
               return p.paymentMethod === 'Bank Transfer to Main Account' ? `Bank (${verifier})` : `Cash/UPI (${verifier})`;
             });
             channelSummary = Array.from(new Set(list)).join(', ');
+          } else if (item.paid > 0) {
+            channelSummary = item.entry.paymentMethod || 'Cash';
           }
 
           return `
@@ -3366,7 +3370,7 @@
         let currentRow = 4;
 
         this.members.forEach(m => {
-          const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
+          const entry = this.collections.find(c => Number(c.month) === Number(monthNum) && c.memberNo === m.memberNo);
           const payments = Array.isArray(entry?.payments) ? entry.payments : [];
 
           if (m.isJoint && m.coPayers) {
@@ -3510,7 +3514,7 @@
         let currentRow = 4;
 
         this.members.forEach(m => {
-          const entry = this.collections.find(c => c.month === monthNum && c.memberNo === m.memberNo);
+          const entry = this.collections.find(c => Number(c.month) === Number(monthNum) && c.memberNo === m.memberNo);
           const payments = Array.isArray(entry?.payments) ? entry.payments : [];
 
           if (m.isJoint && m.coPayers) {
@@ -3656,23 +3660,31 @@
 
       showChannelBreakdown(channelName) {
         const monthNum = this.reportSelectedMonth;
-        const monthCols = this.collections.filter(c => c.month === monthNum);
+        const monthCols = this.collections.filter(c => Number(c.month) === Number(monthNum));
 
         const contributors = [];
 
         monthCols.forEach(c => {
           const mem = this.members.find(m => m.memberNo === c.memberNo);
-          const payments = Array.isArray(c.payments) ? c.payments : [];
+          const payments = Array.isArray(c.payments) && c.payments.length > 0
+            ? c.payments
+            : (Number(c.totalPaid) > 0 ? [{
+                amount: Number(c.totalPaid),
+                paymentMethod: c.paymentMethod || 'Cash / UPI to Foreman',
+                receivedBy: c.receivedBy || c.recordedByName || 'Foreman',
+                payerName: mem?.name
+              }] : []);
 
           payments.forEach(p => {
             const amt = Number(p.amount) || 0;
             if (amt <= 0) return;
 
             let key = "";
-            if (p.paymentMethod === 'Bank Transfer to Main Account' || p.paymentMethod === 'Bank Transfer') {
+            const method = (p.paymentMethod || '').trim();
+            if (method.includes('Bank Transfer') || method.includes('Main Account')) {
               key = "Bank Transfer (Main Account)";
             } else {
-              const foreman = (p.receivedBy && p.receivedBy !== 'Main Bank Account') ? p.receivedBy : (p.recordedByName || 'Foreman (General)');
+              const foreman = (p.receivedBy && p.receivedBy !== 'Main Bank Account') ? p.receivedBy : (p.recordedByName || 'Foreman');
               key = `Cash / UPI (${foreman})`;
             }
 
@@ -3716,24 +3728,35 @@
       renderChannelStats() {
         const isMonthScope = (this.channelReportScope === 'month');
         const targetCols = isMonthScope
-          ? this.collections.filter(c => c.month === this.reportSelectedMonth)
+          ? this.collections.filter(c => Number(c.month) === Number(this.reportSelectedMonth))
           : this.collections;
 
         const channelTotals = {};
         let grandTotal = 0;
 
         targetCols.forEach(c => {
-          const payments = Array.isArray(c.payments) ? c.payments : [];
+          const payments = Array.isArray(c.payments) && c.payments.length > 0
+            ? c.payments
+            : (Number(c.totalPaid) > 0 ? [{
+                amount: Number(c.totalPaid),
+                paymentMethod: c.paymentMethod || 'Cash / UPI to Foreman',
+                receivedBy: c.receivedBy || c.recordedByName || 'Foreman'
+              }] : []);
+
           payments.forEach(p => {
             const amt = Number(p.amount) || 0;
             if (amt <= 0) return;
             grandTotal += amt;
 
             let channelKey = "";
-            if (p.paymentMethod === 'Bank Transfer to Main Account' || p.paymentMethod === 'Bank Transfer') {
-              key = "Bank Transfer (Main Account)";
+            const method = (p.paymentMethod || '').trim();
+
+            if (method.includes('Bank Transfer') || method.includes('Main Account')) {
+              channelKey = "Bank Transfer (Main Account)";
             } else {
-              const foremanName = (p.receivedBy && p.receivedBy !== 'Main Bank Account') ? p.receivedBy : (p.recordedByName || 'Foreman (General)');
+              const foremanName = (p.receivedBy && p.receivedBy !== 'Main Bank Account')
+                ? p.receivedBy
+                : (p.recordedByName || 'Foreman');
               channelKey = `Cash / UPI (${foremanName})`;
             }
 
@@ -3747,19 +3770,20 @@
         const entries = Object.entries(channelTotals);
         if (entries.length === 0 || grandTotal <= 0) {
           const label = isMonthScope ? `Month ${this.reportSelectedMonth}` : 'the chit cycle';
-          statsContainer.innerHTML = `<div class="text-xs text-slate-400 py-1 col-span-2">No collections recorded for ${label}.</div>`;
+          statsContainer.innerHTML = `<div class="text-xs text-slate-400 py-2 col-span-1 sm:col-span-2 text-center bg-white rounded-xl border border-dashed border-slate-200">No collections recorded for ${label}.</div>`;
           return;
         }
 
-        // Percentage allocation guaranteeing total exactly equals 100% without rounding inflation
+        // Percentage allocation guaranteeing total strictly equals 100% without rounding inflation
         let allocatedTotal = 0;
         const calculatedItems = entries.map(([channel, amt]) => {
-          const pct = Math.floor((amt / grandTotal) * 100);
-          allocatedTotal += pct;
-          return { channel, amt, pct, remainder: ((amt / grandTotal) * 100) - pct };
+          const exactPct = (amt / grandTotal) * 100;
+          const floorPct = Math.floor(exactPct);
+          allocatedTotal += floorPct;
+          return { channel, amt, pct: floorPct, remainder: exactPct - floorPct };
         });
 
-        let remainderDiff = 100 - allocatedTotal;
+        const remainderDiff = Math.max(0, 100 - allocatedTotal);
         calculatedItems
           .sort((a, b) => b.remainder - a.remainder)
           .forEach((item, idx) => {
@@ -3768,20 +3792,23 @@
 
         statsContainer.innerHTML = calculatedItems.map(({ channel, amt, pct }) => {
           const isBank = channel.includes('Bank Transfer');
-          const clickAttr = isMonthScope ? `onclick="app.showChannelBreakdown('${channel.replace(/'/g, "\\'")}')"` : '';
+          const safeChannel = channel.replace(/'/g, "\\'");
+          const clickAttr = isMonthScope ? `onclick="app.showChannelBreakdown('${safeChannel}')"` : '';
           const hoverClasses = isMonthScope ? 'cursor-pointer hover:border-indigo-300 hover:shadow-xs active:scale-[0.99]' : '';
 
           return `
-            <div ${clickAttr} class="bg-white p-2 rounded-lg border border-slate-200/70 shadow-2xs transition select-none ${hoverClasses}">
-              <div class="flex justify-between items-center text-[11px] font-semibold mb-1">
-                <span class="${isBank ? 'text-indigo-900 font-bold' : 'text-slate-700'} truncate pr-1 flex items-center gap-1">
+            <div ${clickAttr} class="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-2xs transition select-none ${hoverClasses}">
+              <div class="flex justify-between items-center text-xs font-semibold mb-1.5">
+                <span class="${isBank ? 'text-indigo-950 font-bold' : 'text-slate-700'} truncate pr-1 flex items-center gap-1">
                   ${channel}
                   ${isMonthScope ? '<i class="ph ph-caret-right text-[10px] text-slate-400"></i>' : ''}
                 </span>
-                <span class="font-bold shrink-0 ${isBank ? 'text-indigo-900' : 'text-emerald-700'}">${this.formatINR(amt)} <span class="text-slate-400 font-normal">(${pct}%)</span></span>
+                <span class="font-bold shrink-0 ${isBank ? 'text-indigo-900' : 'text-emerald-700'}">
+                  ${this.formatINR(amt)} <span class="text-slate-400 font-normal">(${pct}%)</span>
+                </span>
               </div>
-              <div class="w-full bg-slate-100 rounded-full h-1.5">
-                <div class="${isBank ? 'bg-indigo-600' : 'bg-emerald-500'} h-1.5 rounded-full" style="width: ${pct}%"></div>
+              <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div class="${isBank ? 'bg-indigo-600' : 'bg-emerald-500'} h-1.5 rounded-full transition-all duration-300" style="width: ${pct}%"></div>
               </div>
             </div>
           `;
